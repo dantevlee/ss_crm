@@ -22,12 +22,17 @@ router.post("/register/user", async (req, res) => {
     } else {
       const salt = await bcrypt.genSalt();
       if (password === confirmPassword) {
-        const hashedPassword = await bcrypt.hash(password, salt);
-        await db.query(
-          `INSERT INTO "Users"("firstName", "lastName", "userName", "email", "password") VALUES($1, $2, $3, $4, $5) RETURNING *`,
-          [firstName, lastName, userName, email, hashedPassword]
-        );
-        return res.json({ username: userName, email });
+        try{
+          const hashedPassword = await bcrypt.hash(password, salt);
+          await db.query(
+            `INSERT INTO "Users"("firstName", "lastName", "userName", "email", "password") VALUES($1, $2, $3, $4, $5) RETURNING *`,
+            [firstName, lastName, userName, email, hashedPassword]
+          );
+          return res.json({ username: userName, email: email });
+        } catch(error){
+          console.error("An error occured with saving a new user.",error)
+        }
+     
       } else {
         return res.status(400).json({
           message:
@@ -183,23 +188,29 @@ router.post("/password/reset", async (req, res) => {
         });
       }
 
-      const salt = await bcrypt.genSalt();
-      const hashedPassword = await bcrypt.hash(newPassword, salt);
+      try{
+        const salt = await bcrypt.genSalt();
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+  
+        const currentPassword = await db.query(`SELECT "password" FROM "Users" WHERE "email" = $1`, [email]);
+        const isSamePassword = await bcrypt.compare(newPassword, currentPassword[0].password);
+  
+        if (isSamePassword) {
+          return res.status(400).json({ message: "New password cannot be the same as old password." });
+        }
+  
+        if (newPassword === confirmPassword) {
+          await db.query(`UPDATE "Users" SET "password" = $1 WHERE "email" = $2`, [hashedPassword, email]);
+          await db.query(`DELETE FROM "Reset_Tokens" WHERE "email" = $1 AND "token" = $2`, [email, token]);
+          return res.status(204).json({ message: "Password reset successful!" });
+        } else {
+          return res.status(400).json({ message: "Passwords must match. Please try again." });
+        }
 
-      const currentPassword = await db.query(`SELECT "password" FROM "Users" WHERE "email" = $1`, [email]);
-      const isSamePassword = await bcrypt.compare(newPassword, currentPassword[0].password);
-
-      if (isSamePassword) {
-        return res.status(400).json({ message: "New password cannot be the same as old password." });
+      } catch(error){
+        console.error(`An error occurred with updating the new password for email: ${email}`,error)
       }
-
-      if (newPassword === confirmPassword) {
-        await db.query(`UPDATE "Users" SET "password" = $1 WHERE "email" = $2`, [hashedPassword, email]);
-        await db.query(`DELETE FROM "Reset_Tokens" WHERE "email" = $1 AND "token" = $2`, [email, token]);
-        return res.status(204).json({ message: "Password reset successful!" });
-      } else {
-        return res.status(400).json({ message: "Passwords must match. Please try again." });
-      }
+     
     });
   } catch (error) {
     console.error(error);
