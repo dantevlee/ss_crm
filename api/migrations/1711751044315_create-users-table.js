@@ -1,6 +1,3 @@
-require('dotenv').config()
-exports.shorthands = undefined;
-
 exports.up = pgm => {
   pgm.createTable('Users',{
     id: 'id',
