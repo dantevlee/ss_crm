@@ -7,13 +7,11 @@ import UserRegistration from "./components/pages/UserRegistration";
 const App = () => {
   return (
     <>
-      <div>
         <Routes>
           <Route path="/" element={<UserLogin/>}></Route>
-          <Route path="/summary" element={<Dashboard />}></Route>
+          <Route path="/summary-dashboard" element={<Dashboard />}></Route>
           <Route path="/register" element={<UserRegistration />}> </Route>
         </Routes>
-      </div>
     </>
   );
 };
