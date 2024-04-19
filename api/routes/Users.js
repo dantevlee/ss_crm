@@ -113,7 +113,7 @@ router.post("/logout", async (req, res) => {
   }
 });
 
-router.post("/password-reset/request", async (req, res) => {
+router.post("/reset/request", async (req, res) => {
   const { email } = req.body;
   const db = await dbPromise;
   try {
