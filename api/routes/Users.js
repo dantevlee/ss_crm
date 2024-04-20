@@ -8,27 +8,27 @@ const jwt = require("jsonwebtoken");
 router.post("/register/user", async (req, res) => {
   const db = await dbPromise;
   try {
-    const { firstName, lastName, userName, email, password, confirmPassword } =
+    const { firstName, lastName, email, password, confirmPassword } =
       req.body;
     const userExists = await db.query(
-      `SELECT * FROM "Users" WHERE "Users"."userName" = $1`,
-      [userName]
+      `SELECT * FROM "Users" WHERE "Users"."email" = $1`,
+      [email]
     );
 
     if (userExists.length > 0) {
       return res
         .status(409)
-        .json({ error: `A user with username: ${userName} already exists` });
+        .json({ error: `A user with email: ${email} already exists` });
     } else {
       const salt = await bcrypt.genSalt();
       if (password === confirmPassword) {
         try{
           const hashedPassword = await bcrypt.hash(password, salt);
           await db.query(
-            `INSERT INTO "Users"("firstName", "lastName", "userName", "email", "password") VALUES($1, $2, $3, $4, $5) RETURNING *`,
-            [firstName, lastName, userName, email, hashedPassword]
+            `INSERT INTO "Users"("firstName", "lastName", "email", "password") VALUES($1, $2, $3, $4) RETURNING *`,
+            [firstName, lastName, email, hashedPassword]
           );
-          return res.json({ username: userName, email: email });
+          return res.json({email: email });
         } catch(error){
           console.error("An error occured with saving a new user.",error)
         }
@@ -48,11 +48,11 @@ router.post("/register/user", async (req, res) => {
 
 router.post("/login", async (req, res) => {
   const db = await dbPromise;
-  const { username } = req.body;
+  const { email } = req.body;
   try {
     const user = await db.query(
-      `SELECT * FROM "Users" WHERE "Users"."userName" = $1`,
-      [username]
+      `SELECT * FROM "Users" WHERE "Users"."email" = $1`,
+      [email]
     );
     if (user.length === 0) {
       return res.status(401).json({
@@ -86,8 +86,9 @@ router.post("/login", async (req, res) => {
     res.cookie("SessionID", token);
     return res.status(200).json({
       status: "success",
-      username: user[0].userName,
+      email: user[0].email,
       message: "Login Successful!",
+      token: token
     });
   } catch (error) {
     console.error(error);

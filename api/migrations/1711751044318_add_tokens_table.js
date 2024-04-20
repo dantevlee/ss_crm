@@ -8,5 +8,4 @@ exports.up = pgm => {
 };
 
 exports.down = pgm => {
-  pgm.dropTable('Reset_Tokens')
 };
