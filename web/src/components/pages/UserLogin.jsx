@@ -75,7 +75,6 @@ const UserLogin = ({ setIsLoggedIn }) => {
         await axios
           .post(`http://localhost:3000/api/login`, requestBody)
           .then((res) => {
-            console.log(res.status)
             if (res.status === 200) {
               Cookies.set("SessionID", res.data.token, {
                 secure: true,
@@ -164,14 +163,13 @@ const UserLogin = ({ setIsLoggedIn }) => {
                     Please enter your password.
                   </FormErrorMessage>
                   {showAlert && (
-                    <Alert status="error">
+                    <Alert mt={showAlert ? 4 : 0} status="error">
                       <AlertIcon />
                       <AlertDescription>
                         {errorMessage}
                       </AlertDescription>
                     </Alert>
                   )}
-
                   <FormHelperText textAlign="center">
                     <Link href="/password/reset">Forgot Password?</Link>
                   </FormHelperText>

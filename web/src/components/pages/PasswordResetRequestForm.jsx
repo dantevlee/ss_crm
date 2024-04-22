@@ -3,6 +3,9 @@ import {
   Stack,
   Heading,
   Box,
+  Alert,
+  AlertIcon,
+  AlertDescription,
   FormControl,
   Input,
   InputGroup,
@@ -11,7 +14,8 @@ import {
   FormErrorMessage,
   chakra, 
   Icon,
-  Link
+  Link, 
+  useToast
 } from "@chakra-ui/react";
 import { FaEnvelope, FaLock } from "react-icons/fa";
 import { useState } from 'react'
@@ -22,8 +26,11 @@ const CFaMailAlt = chakra(FaEnvelope);
 
 const PasswordResetRequestForm = () => {
   const [email, setemail] = useState("");
+  const [errorMessage, setErrorMessage] = useState("")
+  const [showAlert, setShowAlert] = useState(false);
   const [emailTouched, setemailTouched] = useState(false);
-  const history = useNavigate()
+  const history = useNavigate();
+  const toast = useToast();
 
   const emailInputError =
   (email.trim() === "" || !/^\S+@\S+\.\S+$/.test(email)) && emailTouched;
@@ -43,10 +50,25 @@ const PasswordResetRequestForm = () => {
 
     if(!emailInputError && emailTouched){
       try {
-        const passwordResetRequestResponse = await axios.post(`http://localhost:3000/api/reset/request`, requestBody)
-        if(passwordResetRequestResponse.status === 200){
-          history('/')
-        }
+        await axios.post(`http://localhost:3000/api/reset/request`, requestBody).then((res) => {
+          if(res.status === 200){
+            if(showAlert){
+              setShowAlert(false)
+            }
+            toast({
+              title: "Password Reset Request Submitted!",
+              description: res.data.message,
+              status: "success",
+              duration: 5000,
+              position: 'top',
+              isClosable: true,
+            });
+            history('/')
+          }
+        }).catch((error) => {
+          setErrorMessage(error.response.data.error)
+          setShowAlert(true);
+        })
       } catch(error){
         console.error(error)
       }
@@ -92,6 +114,14 @@ const PasswordResetRequestForm = () => {
                     <Input type="text" placeholder="E-mail" onChange={handleEmailChange} onBlur={() => setemailTouched(true)} />
                   </InputGroup>
                   <FormErrorMessage>Enter a valid email.</FormErrorMessage>
+                  {showAlert && (
+                    <Alert mt={showAlert ? 4 : 0} status="error">
+                      <AlertIcon />
+                      <AlertDescription>
+                        {errorMessage}
+                      </AlertDescription>
+                    </Alert>
+                  )}
                 </FormControl>
                 <Button
                   borderRadius={0}
