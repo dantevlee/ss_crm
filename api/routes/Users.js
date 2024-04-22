@@ -107,7 +107,7 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({
         status: "failed",
         userData: [],
-        message: "This user does not exit. Please create an account.",
+        message: "This user does not exist. Please create an account.",
       });
     }
 
@@ -129,7 +129,7 @@ router.post("/login", async (req, res) => {
         status: "failed",
         userData: [],
         message:
-          "Invalid email or password. Please try again with the correct credentials.",
+          "Invalid email or password. Please try again.",
       });
 
     const loggedInUserPayload = {
