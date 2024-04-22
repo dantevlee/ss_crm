@@ -4,6 +4,9 @@ import {
   Stack,
   Heading,
   Box,
+  Alert,
+  AlertIcon,
+  AlertDescription,
   FormControl,
   Input,
   InputGroup,
@@ -12,6 +15,7 @@ import {
   Button,
   Link,
   FormErrorMessage,
+  useToast
 } from "@chakra-ui/react";
 import {
   FaLock,
@@ -55,6 +59,7 @@ const UserRegistration = () => {
   const [showPassword, setShowPassword] = useState(false);
   const handleShowClick = () => setShowPassword(!showPassword);
   const history = useNavigate();
+  const toast = useToast();
 
   const handleFirstNameChange = (e) => {
     setFirstName(e.target.value);
@@ -113,16 +118,29 @@ const UserRegistration = () => {
         confirmPassword: confirmPassword,
       };
       try {
-        const userRegistrationResponse = await axios.post(
+        await axios.post(
           "http://localhost:3000/api/register/user",
           requestBody
-        );
+        ).then((res) => {
+          if(res.status === 200){
+            if(showAlert){
+              setShowAlert(false)
+            }
+            toast({
+              title: "Account Created!",
+              description: res.data.message,
+              status: "success",
+              duration: 5000,
+              position: 'top',
+              isClosable: true,
+            });
+            history('/');
+          }
+        }).catch((error) => {
+         setErrorMessage(error.response.data.error)
+         setShowAlert(true);
+        })
 
-        if (userRegistrationResponse.status === 200) {
-          history("/");
-        } else {
-          return;
-        }
       } catch (error) {
         console.error(error);
       }
@@ -236,7 +254,7 @@ const UserRegistration = () => {
                     <FormErrorMessage>Password is required</FormErrorMessage>
                   )}
                 </FormControl>
-                <FormControl isInvalid={confirmPasswordInputError}>
+                <FormControl  isInvalid={confirmPasswordInputError}>
                   <InputGroup>
                     <InputLeftElement
                       pointerEvents="none"
@@ -252,6 +270,14 @@ const UserRegistration = () => {
                   </InputGroup>
                   {confirmPasswordInputError && (
                     <FormErrorMessage>Passwords do not match.</FormErrorMessage>
+                  )}
+                     {showAlert && (
+                    <Alert mt={showAlert ? 4 : 0} status="error">
+                      <AlertIcon />
+                      <AlertDescription>
+                        {errorMessage}
+                      </AlertDescription>
+                    </Alert>
                   )}
                 </FormControl>
                 <Button

@@ -19,7 +19,7 @@ router.post("/register/user", async (req, res) => {
     if (userExists.length > 0) {
       return res
         .status(409)
-        .json({ error: `A user with email: ${email} already exists` });
+        .json({ error: `A user with this email already exists.` });
     } else {
       const salt = await bcrypt.genSalt();
       if (password === confirmPassword) {
@@ -45,18 +45,18 @@ router.post("/register/user", async (req, res) => {
               console.error(error);
               return res
                 .status(500)
-                .json({ error: `Could not send confirmation email due to internal server error.` });
+                .json({ error: `Could not send confirmation email. Please try again later.` });
             } else {
               res.json({ message: `Confirmation email sent! Please check your email to activate your account.` });
             }
           });
         } catch (error) {
-          console.error("An error occurred with saving a new user.", error)
+          console.error("An error occurred with creating your account.", error)
         }
       } else {
         return res.status(400).json({
           message:
-            "Passwords don't match. Please retry with creating a password.",
+            "Passwords don't match. Please try another password.",
         });
       }
     }
@@ -183,7 +183,7 @@ router.post("/reset/request", async (req, res) => {
     if (emailExists.length === 0) {
       return res.status(401).json({
         status: "failed",
-        message: `The email: ${email} does not exist in our records. Please try again later.`,
+        error: `That e-mail does not exist in our records.`,
       });
     }
 
@@ -212,7 +212,7 @@ router.post("/reset/request", async (req, res) => {
           .status(500)
           .json({ error: `Could not send mail due to internal server error.` });
       } else {
-        res.json({ message: `Reset password email successfully sent!` });
+        res.json({ message: `Check your email to reset your password!` });
       }
     });
   } catch (error) {
