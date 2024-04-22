@@ -6,6 +6,7 @@ import Cookies from "js-cookie";
 import UserLogin from "./components/pages/UserLogin";
 import UserRegistration from "./components/pages/UserRegistration";
 import PasswordResetRequestForm from "./components/pages/PasswordResetRequestForm";
+import ResetRequestForm from "./components/pages/ResetRequestForm";
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(!!Cookies.get("SessionID"));
@@ -35,6 +36,7 @@ const App = () => {
         />
         <Route path="/register" element={<UserRegistration />} />
         <Route path="/password/reset" element={<PasswordResetRequestForm />} />
+        <Route path="/change-password" element={<ResetRequestForm/>}/>
       </Routes>
     </>
   );

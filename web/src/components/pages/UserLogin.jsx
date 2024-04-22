@@ -16,7 +16,7 @@ import {
   FormErrorMessage,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaUserAlt, FaLock } from "react-icons/fa";
 import axios from "axios";
 import Cookies from 'js-cookie'
@@ -29,6 +29,7 @@ const UserLogin = ({setIsLoggedIn}) => {
   const [password, setPassword] = useState("");
   const [emailTouched, setemailTouched] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
+
 
   const history = useNavigate()
 
