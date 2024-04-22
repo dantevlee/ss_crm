@@ -4,6 +4,7 @@ const router = express.Router();
 const { dbPromise, transporter } = require("../resources/config");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const crypto = require('crypto')
 
 router.post("/register/user", async (req, res) => {
   const db = await dbPromise;
@@ -24,19 +25,38 @@ router.post("/register/user", async (req, res) => {
       if (password === confirmPassword) {
         try{
           const hashedPassword = await bcrypt.hash(password, salt);
+          const confirmationToken = crypto.randomBytes(20).toString('hex');
           await db.query(
-            `INSERT INTO "Users"("firstName", "lastName", "email", "password") VALUES($1, $2, $3, $4) RETURNING *`,
-            [firstName, lastName, email, hashedPassword]
+            `INSERT INTO "Users"("firstName", "lastName", "email", "password", "confirmation_token") VALUES($1, $2, $3, $4, $5) RETURNING *`,
+            [firstName, lastName, email, hashedPassword, confirmationToken]
           );
-          return res.json({email: email });
-        } catch(error){
-          console.error("An error occured with saving a new user.",error)
+          
+          const confirmationUrl = `http://localhost:3000/api/confirm-email?token=${confirmationToken}`;
+          const mailContent = {
+            from: process.env.ADMIN_EMAIL,
+            to: email,
+            subject: `Confirm Your Account`,
+            text:  `Welcome to our platform! Please confirm your email address by clicking the following link: 
+           ${confirmationUrl}`,
+          };
+
+          transporter.sendMail(mailContent, (error) => {
+            if (error) {
+              console.error(error);
+              return res
+                .status(500)
+                .json({ error: `Could not send confirmation email due to internal server error.` });
+            } else {
+              res.json({ message: `Confirmation email sent! Please check your email to activate your account.` });
+            }
+          });
+        } catch (error) {
+          console.error("An error occurred with saving a new user.", error)
         }
-     
       } else {
         return res.status(400).json({
           message:
-            "Password don't match. Please retry with creating a password.",
+            "Passwords don't match. Please retry with creating a password.",
         });
       }
     }
@@ -45,6 +65,35 @@ router.post("/register/user", async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 });
+
+router.get("/confirm-email", async (req, res) => {
+  const { token } = req.query;
+  const db = await dbPromise;
+  try {
+    const user = await db.query(
+      `SELECT * FROM "Users" WHERE "confirmation_token" = $1`,
+      [token]
+    );
+
+    if (user.length === 0) {
+      return res.status(401).json({
+        status: "failed",
+        message: "Invalid confirmation token.",
+      });
+    }
+
+    await db.query(
+      `UPDATE "Users" SET "confirmed_user" = $1 WHERE "confirmation_token" = $2`,
+      ['Y', token]
+    );
+    const loginUrl = `http://localhost:5173/`
+    return res.send(`Email confirmed! Log into your account by clicking <a href="${loginUrl}">Here</a>!`);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Could not confirm email. Please try again later." });
+  }
+});
+
 
 router.post("/login", async (req, res) => {
   const db = await dbPromise;
@@ -59,6 +108,14 @@ router.post("/login", async (req, res) => {
         status: "failed",
         userData: [],
         message: "This user does not exit. Please create an account.",
+      });
+    }
+
+    if (user[0].confirmed_user !== 'Y') {
+      return res.status(401).json({
+        status: "failed",
+        userData: [],
+        message: "Please confirm your email to log in.",
       });
     }
 
@@ -139,11 +196,13 @@ router.post("/reset/request", async (req, res) => {
       [email, resetToken]
     );
 
+    const resetUrl = `http://localhost:5173/change-password?token=${resetToken}`;
+
     const mailContent = {
       from: process.env.ADMIN_EMAIL,
       to: email,
       subject: `CRM Password Reset`,
-      text: `You recently requested a password reset. Click this link and follow the prompts to continue.`,
+      text: `You recently requested a password reset. Click on the following link to reset your password: ${resetUrl}`,
     };
 
     transporter.sendMail(mailContent, (error) => {
@@ -166,11 +225,23 @@ router.post("/reset/request", async (req, res) => {
 });
 
 router.post("/password/reset", async (req, res) => {
-  const { token, newPassword, confirmPassword } = req.body;
-  const { email } = req.query;
+  const { newPassword, confirmPassword } = req.body;
+  const { token } = req.query;
   const db = await dbPromise;
 
   try {
+
+    const findEmail = await db.query(`SELECT email from "Reset_Tokens" WHERE "token" = $1`, [token])
+   
+    if (findEmail.length === 0) {
+      return res.status(401).json({
+        status: "failed",
+        message: `Could not locate a valid token in our records. Please request a new one.`,
+      });
+    }
+
+    const email = findEmail[0].email
+
     const validToken = await db.query(
       `SELECT * FROM "Reset_Tokens" WHERE "email" = $1 AND "token" = $2`,
       [email, token]
@@ -182,7 +253,7 @@ router.post("/password/reset", async (req, res) => {
       });
     }
 
-    jwt.verify(token, process.env.SECRET_ACCESS_TOKEN, async (err, decoded) => {
+    jwt.verify(token, process.env.SECRET_ACCESS_TOKEN, async (err) => {
       if (err) {
         return res.status(401).json({
           message: "Invalid or expired reset token. Please request a new one.",

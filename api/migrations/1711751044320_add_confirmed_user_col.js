@@ -1,7 +1,7 @@
 exports.up = pgm => {
   pgm.sql(`
     ALTER TABLE "Users"
-    DROP COLUMN "userName"; 
+    ADD COLUMN "confirmed_user" VARCHAR(1) DEFAULT 'N';
   `);
 };
 

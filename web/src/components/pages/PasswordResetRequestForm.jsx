@@ -108,7 +108,7 @@ const PasswordResetRequestForm = () => {
         </form>
         <Box>
           Ready to login?{" "}
-          <Link color="blue.500" href="/register">
+          <Link color="blue.500" href="/">
            Login
           </Link>
         </Box>
