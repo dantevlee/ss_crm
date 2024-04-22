@@ -34,7 +34,8 @@ const UserRegistration = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
+  const [errorMessage, setErrorMessage] = useState("")
+  const [showAlert, setShowAlert] = useState(false);
   const [firstNameTouched, setFirstNameTouched] = useState(false);
   const [lastNameTouched, setLastNameTouched] = useState(false);
   const [emailTouched, setEmailTouched] = useState(false);

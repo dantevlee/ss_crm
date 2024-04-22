@@ -3,6 +3,9 @@ import {
   Flex,
   Stack,
   Avatar,
+  Alert,
+  AlertIcon,
+  AlertDescription,
   Heading,
   Box,
   FormControl,
@@ -19,19 +22,20 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { FaUserAlt, FaLock } from "react-icons/fa";
 import axios from "axios";
-import Cookies from 'js-cookie'
+import Cookies from "js-cookie";
 
 const CFaUserAlt = chakra(FaUserAlt);
 const CFaLock = chakra(FaLock);
 
-const UserLogin = ({setIsLoggedIn}) => {
+const UserLogin = ({ setIsLoggedIn }) => {
   const [email, setemail] = useState("");
   const [password, setPassword] = useState("");
   const [emailTouched, setemailTouched] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("")
+  const [showAlert, setShowAlert] = useState(false);
 
-
-  const history = useNavigate()
+  const history = useNavigate();
 
   const emailInputError =
     (email.trim() === "" || !/^\S+@\S+\.\S+$/.test(email)) && emailTouched;
@@ -68,14 +72,25 @@ const UserLogin = ({setIsLoggedIn}) => {
           password: password,
         };
 
-        const loginResponse = await axios.post(
-          `http://localhost:3000/api/login`, requestBody
-        );
-        if (loginResponse.status === 200) {
-          Cookies.set('SessionID', loginResponse.data.token, {secure: true})
-          setIsLoggedIn(true)
-          history('/summary-dashboard')
-        }
+        await axios
+          .post(`http://localhost:3000/api/login`, requestBody)
+          .then((res) => {
+            console.log(res.status)
+            if (res.status === 200) {
+              Cookies.set("SessionID", res.data.token, {
+                secure: true,
+              });
+              setIsLoggedIn(true);
+              if(showAlert){
+                setShowAlert(false)
+              }
+              history("/summary-dashboard");
+            }
+          })
+          .catch((error) => {
+            setErrorMessage(error.response.data.message)
+            setShowAlert(true);
+          });
       } catch (error) {
         console.error(error);
       }
@@ -148,6 +163,15 @@ const UserLogin = ({setIsLoggedIn}) => {
                   <FormErrorMessage>
                     Please enter your password.
                   </FormErrorMessage>
+                  {showAlert && (
+                    <Alert status="error">
+                      <AlertIcon />
+                      <AlertDescription>
+                        {errorMessage}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
                   <FormHelperText textAlign="center">
                     <Link href="/password/reset">Forgot Password?</Link>
                   </FormHelperText>
