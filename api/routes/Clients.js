@@ -2,26 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const router = express.Router();
 const { dbPromise } = require("../resources/config");
-const jwt = require("jsonwebtoken");
-
-const authenticateUser = (req, res, next) => {
-  const token = req.headers.authorization;
-
-  if (!token) {
-    return res.status(401).json({
-      status: "Unauthorized",
-      message: "You are not authorized to perform this action.",
-    });
-  }
-
-  try {
-    const decoded = jwt.verify(token, process.env.SECRET_ACCESS_TOKEN);
-    req.id = decoded.id;
-    next();
-  } catch (error) {
-    return res.status(401).json({ message: "Invalid token" });
-  }
-};
+const { authenticateUser } = require("../middleware/authenticateUser");
 
 router.post("/create-client", authenticateUser, async (req, res) => {
   const db = await dbPromise;
@@ -79,8 +60,46 @@ router.delete(
   }
 );
 
-router.put('/update/client/:clientId', authenticateUser, async (req, res) => {
-  //TODO
-})
+router.put("/update/client/:clientId", authenticateUser, async (req, res) => {
+  const db = await dbPromise;
+
+  try {
+    const clientId = req.params.clientId;
+    const { firstName, lastName, clientEmail, isLead } = req.body;
+    const updatedClient = await db.query(
+      'UPDATE "Clients" SET "firstName" = $1, "lastName" = $2, "client_email" = $3, "is_lead" = $4 WHERE "id" = $5 RETURNING *',
+      [firstName, lastName, clientEmail, isLead, clientId]
+    );
+    res.json(updatedClient[0]);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Internal Servor Error. Unable to update client details.",
+    });
+  }
+});
+
+router.patch(
+  "/archive/client/:clientId",
+  authenticateUser,
+  async (req, res) => {
+    const db = await dbPromise;
+
+    try {
+      const clientId = req.params.clientId;
+      const { archivedIndicator } = req.body;
+      const archivedClient = await db.query(
+        `UPDATE "Clients" SET "is_archived" = $1 WHERE "id" = $2 RETURNING *`,
+        [archivedIndicator, clientId]
+      );
+      res.json(archivedClient[0]);
+    } catch (error) {
+      console.error(error);
+      res
+        .status(500)
+        .json({ message: "Internal Server Error. Could not Archive Client" });
+    }
+  }
+);
 
 module.exports = router;
