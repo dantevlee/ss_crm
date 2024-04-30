@@ -134,6 +134,7 @@ router.post("/login", async (req, res) => {
 
     const loggedInUserPayload = {
       id: user[0].id,
+      email: user[0].email
     };
 
     const token = jwt.sign(
@@ -143,6 +144,7 @@ router.post("/login", async (req, res) => {
     res.cookie("SessionID", token);
     return res.status(200).json({
       status: "success",
+      id: user[0].id,
       email: user[0].email,
       message: "Login Successful!",
       token: token

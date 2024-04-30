@@ -11,5 +11,8 @@ app.use(express.json())
 app.use(cookieParser())
 
 app.use('/api', require('./routes/Users'))
+app.use('/api', require('./routes/Clients'))
+app.use('/api', require('./routes/Notes'))
+
 
 server.listen(port, () =>console.log(`Server is listening on ${port}.`))
