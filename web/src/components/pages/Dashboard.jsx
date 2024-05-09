@@ -13,13 +13,16 @@ import {
   DrawerOverlay,
   DrawerContent,
   DrawerCloseButton,
+  Link,
   useDisclosure,
+  Stack,
 } from "@chakra-ui/react";
 import { HamburgerIcon, Icon } from "@chakra-ui/icons";
 import axios from "axios";
 import Cookies from "js-cookie";
-import { useNavigate } from "react-router-dom";
+import { Outlet, Route, Routes, useNavigate } from "react-router-dom";
 import { useRef } from "react";
+import ClientPage from "./ClientPage";
 
 const Dashboard = ({ setIsLoggedIn }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -31,6 +34,16 @@ const Dashboard = ({ setIsLoggedIn }) => {
     setIsLoggedIn(false);
     navigate("/");
   };
+
+  const navigateToClientPage = () => {
+    navigate("/summary-dashboard/clients");
+    onClose();
+  };
+
+  const navigateToSummaryDashboard = () =>{
+    navigate("/summary-dashboard");
+    onClose();
+  }
 
   return (
     <>
@@ -68,11 +81,20 @@ const Dashboard = ({ setIsLoggedIn }) => {
           <DrawerCloseButton />
           <DrawerHeader>Create your account</DrawerHeader>
 
-          <DrawerBody></DrawerBody>
+          <DrawerBody>
+            <Stack spacing={4}>
+            <Link onClick={navigateToSummaryDashboard}>Home</Link>
+            <Link onClick={navigateToClientPage}>Clients</Link>
+            </Stack>
+          </DrawerBody>
 
           <DrawerFooter></DrawerFooter>
         </DrawerContent>
       </Drawer>
+      <Routes>
+        <Route path="/clients" element={<ClientPage />} />
+      </Routes>
+      <Outlet />
     </>
   );
 };

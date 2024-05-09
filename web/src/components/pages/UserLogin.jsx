@@ -92,6 +92,8 @@ const UserLogin = ({ setIsLoggedIn }) => {
           });
       } catch (error) {
         console.error(error);
+        setErrorMessage('Internal Server Error.')
+        setShowAlert(true);
       }
     }
   };
