@@ -9,10 +9,10 @@ router.post("/create-client", authenticateUser, async (req, res) => {
 
   try {
     const userId = req.id;
-    const { firstName, lastName, clientEmail, isLead } = req.body;
+    const { firstName, lastName, clientEmail, startDate, endDate } = req.body;
     const client = await db.query(
-      'INSERT into "Clients"("user_id", "firstName", "lastName", "client_email", "is_lead") VALUES($1, $2, $3, $4, $5) RETURNING*',
-      [userId, firstName, lastName, clientEmail, isLead]
+      'INSERT into "Clients"("user_id", "firstName", "lastName", "client_email", "start_date", "end_date") VALUES($1, $2, $3, $4, $5, $6) RETURNING*',
+      [userId, firstName, lastName, clientEmail, startDate, endDate]
     );
 
     res.json(client[0]);
