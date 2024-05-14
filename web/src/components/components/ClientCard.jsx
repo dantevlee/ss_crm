@@ -1,3 +1,4 @@
+import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
 import {
   Box,
   Card,
@@ -6,9 +7,45 @@ import {
   Stack,
   StackDivider,
   Text,
+  IconButton,
+  CardHeader,
+  useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
+  Button,
 } from "@chakra-ui/react";
+import { useState } from "react";
+import ClientForm from "./ClientForm";
 
-const ClientCard = ({ client }) => {
+const ClientCard = ({ client, onDelete, onEdit }) => {
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const openDeleteModal = () => {
+    onOpen();
+    setIsDeleting(true);
+  };
+
+  const openEditModal = () => {
+    onOpen();
+    setIsEditing(true);
+  };
+
+  const closeDeleteModal = () => {
+    onClose();
+    setIsDeleting(false);
+  };
+
+  const closeEditModal = () => {
+    onClose();
+    setIsEditing(false);
+  };
+
   const formatDate = (dateString) => {
     if (dateString) {
       const date = new Date(dateString);
@@ -19,9 +56,33 @@ const ClientCard = ({ client }) => {
     }
   };
 
+  const handleDelete = () => {
+    onDelete(client.id);
+    onClose();
+  };
+
+  const handleEdit = () => {
+    onEdit(client.id)
+    onClose()
+  }
+
   return (
     <>
       <Card>
+        <CardHeader>
+          <IconButton
+            onClick={openEditModal}
+            variant="outline"
+            colorScheme="teal"
+            icon={<EditIcon />}
+          ></IconButton>
+          <IconButton
+            onClick={openDeleteModal}
+            variant="outline"
+            colorScheme="teal"
+            icon={<DeleteIcon />}
+          ></IconButton>
+        </CardHeader>
         <CardBody>
           <Stack divider={<StackDivider />} spacing="4">
             <Box>
@@ -59,6 +120,37 @@ const ClientCard = ({ client }) => {
           </Stack>
         </CardBody>
       </Card>
+      {isDeleting && (
+        <Modal isOpen={isOpen} onClose={closeDeleteModal}>
+          <ModalOverlay />
+
+          <ModalContent>
+            <ModalCloseButton />
+            <ModalBody>
+              Delete Client: {client.firstName} {client.lastName}?
+            </ModalBody>
+            <ModalFooter>
+              <Button colorScheme="blue" mr={3} onClick={handleDelete}>
+                Confirm
+              </Button>
+              <Button colorScheme="red" mr={3} onClick={closeDeleteModal}>
+                Cancel
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+      )}
+      {isEditing && (
+        <Modal isOpen={isOpen} onClose={closeEditModal}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalCloseButton />
+            <ModalBody>
+              <ClientForm clientFormValue={client} onCancel={closeEditModal} onEdit={handleEdit} />
+            </ModalBody>
+          </ModalContent>
+        </Modal>
+      )}
     </>
   );
 };

@@ -64,6 +64,39 @@ const ClientPage = () => {
     }
   };
 
+  const deleteClient = async (clientId) => {
+    try{
+      const token = Cookies.get("SessionID");
+      await axios.delete(`http://localhost:3000/api/delete/client/${clientId}`, {
+        headers: {
+          Authorization: `${token}`,
+        },
+      }).then((res) => {
+        if(res.status === 200){
+          fetchClients()
+        }
+      })
+    } catch(error){
+      console.error(error)
+    }
+    
+  }
+
+  const editClient = async (clientId) => {
+    try {
+      const token = Cookies.get("SessionID");
+      await axios.put(`http://localhost:3000/api/update/client/${clientId}`, {
+        headers: {
+          Authorization: `${token}`
+        }
+      }).then((res) => {
+        console.log(res.status)
+      })
+    } catch(error){
+      console.error(error)
+    }
+  }
+
   return (
     <>
       <Button
@@ -78,7 +111,7 @@ const ClientPage = () => {
       </Button>
       <Stack direction="row" spacing={4}>
         {clients.map((client, idx) => (
-          <ClientCard mt={12} key={idx} client={client} />
+          <ClientCard mt={12} key={idx} client={client} onDelete={deleteClient} />
         ))}
       </Stack>
       <Modal isOpen={isOpen} onClose={onClose}>
@@ -87,7 +120,7 @@ const ClientPage = () => {
           <ModalHeader>Add New Client</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
-            <ClientForm onSave={saveClient} onCancel={onClose} />
+            <ClientForm onSave={saveClient} onCancel={onClose} onEdit={editClient} />
           </ModalBody>
         </ModalContent>
       </Modal>

@@ -12,16 +12,33 @@ import {
   Flex,
   Spacer,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-const ClientForm = ({ onSave, onCancel }) => {
+const ClientForm = ({ onSave, onEdit, onCancel, clientFormValue }) => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [startDate, setStartDate] = useState(new Date());
+  const [startDate, setStartDate] = useState('');
   const [numberOfWeeks, setNumberOfWeeks] = useState(1);
-  const [endDate, setEndDate] = useState(new Date());
+  const [endDate, setEndDate] = useState('');
   const [endDateCalcuated, setEndDateCalculated] = useState(false);
+  const [isEditingEntry, setIsEditingEntry] = useState(false)
+
+  useEffect(() => {
+    if (clientFormValue) {
+      setEndDateCalculated(true);
+      setFirstName(clientFormValue.firstName);
+      setLastName(clientFormValue.lastName);
+      setEmail(clientFormValue.client_email);
+      setStartDate(
+        clientFormValue.start_date ? clientFormValue.start_date.split("T")[0] : ""
+      );
+      setEndDate(
+        clientFormValue.end_date ? clientFormValue.end_date.split("T")[0] : ""
+      );
+      setIsEditingEntry(true)
+    }
+  }, [clientFormValue]);
 
   const handleFirstNameChange = (e) => {
     setFirstName(e.target.value);
@@ -36,9 +53,14 @@ const ClientForm = ({ onSave, onCancel }) => {
   };
 
   const handleStartDateChange = (e) => {
-    const newStartDate = new Date(e.target.value);
+    const newStartDate = e.target.value;
     setStartDate(newStartDate);
   };
+
+  const handleEndDateChange = (e) => {
+  const newEndDate = e.target.value
+  setEndDate(newEndDate)
+  }
 
   const handleNumberOfWeeksChange = (e) => {
     setNumberOfWeeks(parseInt(e.target.value));
@@ -47,8 +69,11 @@ const ClientForm = ({ onSave, onCancel }) => {
   const calculateEndDate = () => {
     const millisecondsInWeek = 7 * 24 * 60 * 60 * 1000;
     const durationInMilliseconds = numberOfWeeks * millisecondsInWeek;
+    
+    const startDateObject = new Date(startDate);
+
     const endDateResult = new Date(
-      startDate.getTime() + durationInMilliseconds
+      startDateObject.getTime() + durationInMilliseconds
     );
 
     const endDateFormatted = endDateResult.toISOString().split("T")[0];
@@ -56,6 +81,7 @@ const ClientForm = ({ onSave, onCancel }) => {
     setEndDate(endDateFormatted);
     setEndDateCalculated(true);
   };
+
 
   const handleFormSubmission = () => {
     const formData = {
@@ -65,7 +91,12 @@ const ClientForm = ({ onSave, onCancel }) => {
       startDate: startDate,
       endDate: endDate,
     };
-    onSave(formData);
+    if(!isEditingEntry){
+      onSave(formData);
+    } else {
+      onEdit(clientFormValue.id)
+    }
+    
   };
 
   const handleCancel = () => {
@@ -76,15 +107,15 @@ const ClientForm = ({ onSave, onCancel }) => {
     <>
       <FormControl>
         <FormLabel>First Name</FormLabel>
-        <Input onChange={handleFirstNameChange} placeholder="First Name" />
+        <Input onChange={handleFirstNameChange} placeholder="First Name" value={firstName} />
       </FormControl>
       <FormControl mt={4}>
         <FormLabel>Last name</FormLabel>
-        <Input onChange={handleLastNameChange} placeholder="Last Name" />
+        <Input onChange={handleLastNameChange} placeholder="Last Name" value={lastName}  />
       </FormControl>
       <FormControl mt={4}>
         <FormLabel>E-mail</FormLabel>
-        <Input onChange={handleEmailChange} placeholder="E-mail" />
+        <Input onChange={handleEmailChange} placeholder="E-mail" value={email} />
       </FormControl>
       <FormControl mt={4}>
         <FormLabel>Start Date</FormLabel>
@@ -93,6 +124,7 @@ const ClientForm = ({ onSave, onCancel }) => {
           placeholder="Select Date"
           size="md"
           type="date"
+          value={startDate}
         />
       </FormControl>
       <FormControl mt={4}>
@@ -120,6 +152,7 @@ const ClientForm = ({ onSave, onCancel }) => {
           <FormControl mt={4}>
             <FormLabel>End Date</FormLabel>
             <Input
+              onChange={handleEndDateChange}
               value={endDate}
               placeholder="Select Date"
               size="md"
