@@ -94,7 +94,7 @@ const ClientForm = ({ onSave, onEdit, onCancel, clientFormValue }) => {
     if(!isEditingEntry){
       onSave(formData);
     } else {
-      onEdit(clientFormValue.id)
+      onEdit(clientFormValue.id, formData)
     }
     
   };
@@ -163,7 +163,7 @@ const ClientForm = ({ onSave, onEdit, onCancel, clientFormValue }) => {
       </FormControl>
       <Flex mt={6} justifyContent="flex-start">
         <Button onClick={handleFormSubmission} colorScheme="blue">
-          Save
+             {(isEditingEntry ? 'Update' : 'Save')}
         </Button>
         <Button onClick={handleCancel} colorScheme="gray" ml={4}>
           Cancel

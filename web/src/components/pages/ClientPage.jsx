@@ -82,10 +82,10 @@ const ClientPage = () => {
     
   }
 
-  const editClient = async (clientId) => {
+  const editClient = async (clientId, formData) => {
     try {
       const token = Cookies.get("SessionID");
-      await axios.put(`http://localhost:3000/api/update/client/${clientId}`, {
+      await axios.put(`http://localhost:3000/api/update/client/${clientId}`, formData, {
         headers: {
           Authorization: `${token}`
         }

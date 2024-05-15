@@ -146,7 +146,7 @@ const ClientCard = ({ client, onDelete, onEdit }) => {
           <ModalContent>
             <ModalCloseButton />
             <ModalBody>
-              <ClientForm clientFormValue={client} onCancel={closeEditModal} onEdit={handleEdit} />
+              <ClientForm clientFormValue={client} onCancel={closeEditModal} />
             </ModalBody>
           </ModalContent>
         </Modal>
