@@ -74,6 +74,7 @@ const ClientPage = () => {
       }).then((res) => {
         if(res.status === 200){
           fetchClients()
+          onClose();
         }
       })
     } catch(error){
@@ -82,15 +83,20 @@ const ClientPage = () => {
     
   }
 
-  const editClient = async (clientId, formData) => {
+  const editClient = async (formData, clientId) => {
+   
     try {
+      console.log('page', formData)
       const token = Cookies.get("SessionID");
       await axios.put(`http://localhost:3000/api/update/client/${clientId}`, formData, {
         headers: {
           Authorization: `${token}`
         }
       }).then((res) => {
-        console.log(res.status)
+       if(res.status === 200){
+        fetchClients()
+        onClose();
+       } 
       })
     } catch(error){
       console.error(error)
@@ -110,8 +116,8 @@ const ClientPage = () => {
         <AddIcon mr={2} /> Add Client
       </Button>
       <Stack direction="row" spacing={4}>
-        {clients.map((client, idx) => (
-          <ClientCard mt={12} key={idx} client={client} onDelete={deleteClient} />
+        {clients.map((client) => (
+          <ClientCard mt={12} key={client.id} client={client} onDelete={deleteClient} onEdit={editClient}  />
         ))}
       </Stack>
       <Modal isOpen={isOpen} onClose={onClose}>

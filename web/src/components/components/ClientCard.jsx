@@ -21,7 +21,7 @@ import {
 import { useState } from "react";
 import ClientForm from "./ClientForm";
 
-const ClientCard = ({ client, onDelete, onEdit }) => {
+const ClientCard = ({ client, onDelete, onEdit}) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -61,10 +61,10 @@ const ClientCard = ({ client, onDelete, onEdit }) => {
     onClose();
   };
 
-  const handleEdit = () => {
-    onEdit(client.id)
-    onClose()
-  }
+   const handleEdit = (formData) => { 
+    onEdit(formData, client.id);
+    closeEditModal();
+  };
 
   return (
     <>
@@ -146,7 +146,7 @@ const ClientCard = ({ client, onDelete, onEdit }) => {
           <ModalContent>
             <ModalCloseButton />
             <ModalBody>
-              <ClientForm clientFormValue={client} onCancel={closeEditModal} />
+              <ClientForm clientFormValue={client} onCancel={closeEditModal} onEdit={handleEdit} />
             </ModalBody>
           </ModalContent>
         </Modal>

@@ -11,6 +11,9 @@ import {
   NumberInputStepper,
   Flex,
   Spacer,
+  RadioGroup,
+  Radio,
+  Stack,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
@@ -18,11 +21,12 @@ const ClientForm = ({ onSave, onEdit, onCancel, clientFormValue }) => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [startDate, setStartDate] = useState('');
+  const [startDate, setStartDate] = useState("");
   const [numberOfWeeks, setNumberOfWeeks] = useState(1);
-  const [endDate, setEndDate] = useState('');
+  const [endDate, setEndDate] = useState("");
   const [endDateCalcuated, setEndDateCalculated] = useState(false);
-  const [isEditingEntry, setIsEditingEntry] = useState(false)
+  const [isEditingEntry, setIsEditingEntry] = useState(false);
+  const [archive, setArchive] = useState("N");
 
   useEffect(() => {
     if (clientFormValue) {
@@ -31,12 +35,14 @@ const ClientForm = ({ onSave, onEdit, onCancel, clientFormValue }) => {
       setLastName(clientFormValue.lastName);
       setEmail(clientFormValue.client_email);
       setStartDate(
-        clientFormValue.start_date ? clientFormValue.start_date.split("T")[0] : ""
+        clientFormValue.start_date
+          ? clientFormValue.start_date.split("T")[0]
+          : ""
       );
       setEndDate(
         clientFormValue.end_date ? clientFormValue.end_date.split("T")[0] : ""
       );
-      setIsEditingEntry(true)
+      setIsEditingEntry(true);
     }
   }, [clientFormValue]);
 
@@ -58,18 +64,22 @@ const ClientForm = ({ onSave, onEdit, onCancel, clientFormValue }) => {
   };
 
   const handleEndDateChange = (e) => {
-  const newEndDate = e.target.value
-  setEndDate(newEndDate)
-  }
+    const newEndDate = e.target.value;
+    setEndDate(newEndDate);
+  };
 
-  const handleNumberOfWeeksChange = (e) => {
+  const handleStepperChange = (value) => {
+    setNumberOfWeeks(value);
+  };
+
+  const handlInputWeeksChange = (e) => {
     setNumberOfWeeks(parseInt(e.target.value));
   };
 
   const calculateEndDate = () => {
     const millisecondsInWeek = 7 * 24 * 60 * 60 * 1000;
     const durationInMilliseconds = numberOfWeeks * millisecondsInWeek;
-    
+
     const startDateObject = new Date(startDate);
 
     const endDateResult = new Date(
@@ -82,7 +92,6 @@ const ClientForm = ({ onSave, onEdit, onCancel, clientFormValue }) => {
     setEndDateCalculated(true);
   };
 
-
   const handleFormSubmission = () => {
     const formData = {
       firstName: firstName,
@@ -91,12 +100,11 @@ const ClientForm = ({ onSave, onEdit, onCancel, clientFormValue }) => {
       startDate: startDate,
       endDate: endDate,
     };
-    if(!isEditingEntry){
+    if (!isEditingEntry) {
       onSave(formData);
     } else {
-      onEdit(clientFormValue.id, formData)
+      onEdit(formData, clientFormValue.id);
     }
-    
   };
 
   const handleCancel = () => {
@@ -107,15 +115,27 @@ const ClientForm = ({ onSave, onEdit, onCancel, clientFormValue }) => {
     <>
       <FormControl>
         <FormLabel>First Name</FormLabel>
-        <Input onChange={handleFirstNameChange} placeholder="First Name" value={firstName} />
+        <Input
+          onChange={handleFirstNameChange}
+          placeholder="First Name"
+          value={firstName}
+        />
       </FormControl>
       <FormControl mt={4}>
         <FormLabel>Last name</FormLabel>
-        <Input onChange={handleLastNameChange} placeholder="Last Name" value={lastName}  />
+        <Input
+          onChange={handleLastNameChange}
+          placeholder="Last Name"
+          value={lastName}
+        />
       </FormControl>
       <FormControl mt={4}>
         <FormLabel>E-mail</FormLabel>
-        <Input onChange={handleEmailChange} placeholder="E-mail" value={email} />
+        <Input
+          onChange={handleEmailChange}
+          placeholder="E-mail"
+          value={email}
+        />
       </FormControl>
       <FormControl mt={4}>
         <FormLabel>Start Date</FormLabel>
@@ -132,10 +152,14 @@ const ClientForm = ({ onSave, onEdit, onCancel, clientFormValue }) => {
         <Flex justifyContent="space-between">
           <InputGroup>
             <NumberInput defaultValue={1} min={1} max={52}>
-              <NumberInputField onChange={handleNumberOfWeeksChange} />
+              <NumberInputField onChange={handlInputWeeksChange} />
               <NumberInputStepper>
-                <NumberIncrementStepper />
-                <NumberDecrementStepper />
+                <NumberIncrementStepper
+                  onClick={() => handleStepperChange(numberOfWeeks + 1)}
+                />
+                <NumberDecrementStepper
+                  onClick={() => handleStepperChange(numberOfWeeks - 1)}
+                />
               </NumberInputStepper>
             </NumberInput>
           </InputGroup>
@@ -160,10 +184,21 @@ const ClientForm = ({ onSave, onEdit, onCancel, clientFormValue }) => {
             />
           </FormControl>
         )}
+        {isEditingEntry && (
+          <FormControl mt={4}>
+            <FormLabel>Archive Client?</FormLabel>
+            <RadioGroup onChange={setArchive} value={archive}>
+              <Stack direction="column">
+                <Radio value="Y">Yes</Radio>
+                <Radio value="N">No</Radio>
+              </Stack>
+            </RadioGroup>
+          </FormControl>
+        )}
       </FormControl>
       <Flex mt={6} justifyContent="flex-start">
         <Button onClick={handleFormSubmission} colorScheme="blue">
-             {(isEditingEntry ? 'Update' : 'Save')}
+          {isEditingEntry ? "Update" : "Save"}
         </Button>
         <Button onClick={handleCancel} colorScheme="gray" ml={4}>
           Cancel
