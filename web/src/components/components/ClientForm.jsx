@@ -17,7 +17,13 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
-const ClientForm = ({ onSave, onEdit, onCancel, clientFormValue }) => {
+const ClientForm = ({
+  onSave,
+  onEdit,
+  onArchive,
+  onCancel,
+  clientFormValue,
+}) => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -100,10 +106,16 @@ const ClientForm = ({ onSave, onEdit, onCancel, clientFormValue }) => {
       startDate: startDate,
       endDate: endDate,
     };
-    if (!isEditingEntry) {
-      onSave(formData);
-    } else {
+    if (isEditingEntry) {
       onEdit(formData, clientFormValue.id);
+      if (archive === "Y") {
+        const archiveBody = {
+          archivedIndicator: archive
+        }
+        onArchive(archiveBody, clientFormValue.id);
+      }
+    } else {
+      onSave(formData);
     }
   };
 

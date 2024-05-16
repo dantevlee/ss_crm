@@ -102,4 +102,23 @@ router.patch(
   }
 );
 
+router.get("/clients/archived", authenticateUser, async (req, res) => {
+  const db = await dbPromise;
+
+  try {
+    const userId = req.id;
+    const ARCHVIED = 'Y'
+    const getArchivedClients = await db.query(
+      'SELECT * FROM "Clients" WHERE "Clients"."is_archived" = $1 AND "Clients"."user_id"= $2',
+      [ARCHVIED, userId]
+    );
+    return res.json(getArchivedClients);
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Internal Server Error. Unable To Retrieved Archived Clients." });
+  }
+});
+
 module.exports = router;

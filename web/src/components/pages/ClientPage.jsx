@@ -31,7 +31,10 @@ const ClientPage = () => {
         },
       });
       if (response.status === 200) {
-        setClients(response.data);
+        const activeClients = response.data.filter((r) =>
+          r.is_archived !== 'Y'
+        )
+        setClients(activeClients);
       }
     } catch (error) {
       console.error(error);
@@ -86,7 +89,6 @@ const ClientPage = () => {
   const editClient = async (formData, clientId) => {
    
     try {
-      console.log('page', formData)
       const token = Cookies.get("SessionID");
       await axios.put(`http://localhost:3000/api/update/client/${clientId}`, formData, {
         headers: {
@@ -99,6 +101,25 @@ const ClientPage = () => {
        } 
       })
     } catch(error){
+      console.error(error)
+    }
+  }
+
+  const archiveClient = async (archiveIndicator,clientId) => {
+    const token = Cookies.get("SessionID");
+
+    try {
+      await axios.patch(`http://localhost:3000/api/archive/client/${clientId}`, archiveIndicator, {
+        headers: {
+          Authorization: `${token}`
+        }
+      }).then((res) => {
+        if(res.status === 200){
+          fetchClients()
+         } 
+      })
+
+    } catch (error){
       console.error(error)
     }
   }
@@ -117,7 +138,7 @@ const ClientPage = () => {
       </Button>
       <Stack direction="row" spacing={4}>
         {clients.map((client) => (
-          <ClientCard mt={12} key={client.id} client={client} onDelete={deleteClient} onEdit={editClient}  />
+          <ClientCard mt={12} key={client.id} client={client} onDelete={deleteClient} onEdit={editClient} onArchive={archiveClient}  />
         ))}
       </Stack>
       <Modal isOpen={isOpen} onClose={onClose}>
@@ -126,7 +147,7 @@ const ClientPage = () => {
           <ModalHeader>Add New Client</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
-            <ClientForm onSave={saveClient} onCancel={onClose} onEdit={editClient} />
+            <ClientForm onSave={saveClient} onCancel={onClose}  />
           </ModalBody>
         </ModalContent>
       </Modal>

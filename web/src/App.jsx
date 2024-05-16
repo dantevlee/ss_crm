@@ -7,7 +7,6 @@ import UserLogin from "./components/pages/UserLogin";
 import UserRegistration from "./components/pages/UserRegistration";
 import PasswordResetRequestForm from "./components/pages/PasswordResetRequestForm";
 import ResetRequestForm from "./components/pages/ResetRequestForm";
-import ClientPage from "./components/pages/ClientPage";
 
 
 const App = () => {

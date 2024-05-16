@@ -23,6 +23,7 @@ import Cookies from "js-cookie";
 import { Outlet, Route, Routes, useNavigate } from "react-router-dom";
 import { useRef } from "react";
 import ClientPage from "./ClientPage";
+import ArchivePage from "./ArchivePage";
 
 const Dashboard = ({ setIsLoggedIn }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -39,6 +40,11 @@ const Dashboard = ({ setIsLoggedIn }) => {
     navigate("/summary-dashboard/clients");
     onClose();
   };
+
+  const navigateToArchivesPage = () =>{
+    navigate("/summary-dashboard/archives");
+    onClose();
+  }
 
   const navigateToSummaryDashboard = () =>{
     navigate("/summary-dashboard");
@@ -85,6 +91,7 @@ const Dashboard = ({ setIsLoggedIn }) => {
             <Stack spacing={4}>
             <Link onClick={navigateToSummaryDashboard}>Home</Link>
             <Link onClick={navigateToClientPage}>Clients</Link>
+            <Link onClick={navigateToArchivesPage}>Archives</Link>
             </Stack>
           </DrawerBody>
 
@@ -93,6 +100,7 @@ const Dashboard = ({ setIsLoggedIn }) => {
       </Drawer>
       <Routes>
         <Route path="/clients" element={<ClientPage />} />
+        <Route path='/archives' element={<ArchivePage/>}/>
       </Routes>
       <Outlet />
     </>

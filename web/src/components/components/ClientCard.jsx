@@ -1,4 +1,4 @@
-import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
+import { DeleteIcon, EditIcon, UnlockIcon } from "@chakra-ui/icons";
 import {
   Box,
   Card,
@@ -21,7 +21,7 @@ import {
 import { useState } from "react";
 import ClientForm from "./ClientForm";
 
-const ClientCard = ({ client, onDelete, onEdit}) => {
+const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -36,6 +36,10 @@ const ClientCard = ({ client, onDelete, onEdit}) => {
     setIsEditing(true);
   };
 
+  const openArchiveModal = () => {
+    onOpen();
+  };
+
   const closeDeleteModal = () => {
     onClose();
     setIsDeleting(false);
@@ -45,6 +49,10 @@ const ClientCard = ({ client, onDelete, onEdit}) => {
     onClose();
     setIsEditing(false);
   };
+
+  const closeArchiveModal = () => {
+    onClose()
+  }
 
   const formatDate = (dateString) => {
     if (dateString) {
@@ -61,21 +69,41 @@ const ClientCard = ({ client, onDelete, onEdit}) => {
     onClose();
   };
 
-   const handleEdit = (formData) => { 
+  const handleEdit = (formData) => {
     onEdit(formData, client.id);
     closeEditModal();
   };
+
+  const handleArchive = (archiveIndicator) => {
+    onArchive(archiveIndicator, client.id);
+    closeEditModal();
+  };
+
+  const handleArchiveToActive = (archiveIndicator) => {
+    onArchive(archiveIndicator, client.id)
+    closeEditModal();
+  }
 
   return (
     <>
       <Card>
         <CardHeader>
-          <IconButton
-            onClick={openEditModal}
-            variant="outline"
-            colorScheme="teal"
-            icon={<EditIcon />}
-          ></IconButton>
+          {client.is_archived === "Y" ? (
+            <IconButton
+              onClick={openArchiveModal}
+              variant="outline"
+              colorScheme="teal"
+              icon={<UnlockIcon />}
+            ></IconButton>
+          ) : (
+            <IconButton
+              onClick={openEditModal}
+              variant="outline"
+              colorScheme="teal"
+              icon={<EditIcon />}
+            ></IconButton>
+          )}
+
           <IconButton
             onClick={openDeleteModal}
             variant="outline"
@@ -130,10 +158,10 @@ const ClientCard = ({ client, onDelete, onEdit}) => {
               Delete Client: {client.firstName} {client.lastName}?
             </ModalBody>
             <ModalFooter>
-              <Button colorScheme="blue" mr={3} onClick={handleDelete}>
+              <Button colorScheme="blue" mr={3} onClick={handleArchiveToActive}>
                 Confirm
               </Button>
-              <Button colorScheme="red" mr={3} onClick={closeDeleteModal}>
+              <Button colorScheme="red" mr={3} onClick={closeArchiveModal}>
                 Cancel
               </Button>
             </ModalFooter>
@@ -146,8 +174,32 @@ const ClientCard = ({ client, onDelete, onEdit}) => {
           <ModalContent>
             <ModalCloseButton />
             <ModalBody>
-              <ClientForm clientFormValue={client} onCancel={closeEditModal} onEdit={handleEdit} />
+              <ClientForm
+                clientFormValue={client}
+                onCancel={closeEditModal}
+                onEdit={handleEdit}
+                onArchive={handleArchive}
+              />
             </ModalBody>
+          </ModalContent>
+        </Modal>
+      )}
+      {client.is_archived === "Y" && (
+        <Modal isOpen={isOpen} onClose={closeArchiveModal}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalCloseButton />
+            <ModalBody>
+              Convert {client.firstName} {client.lastName} To Active Client?
+            </ModalBody>
+            <ModalFooter>
+              <Button colorScheme="blue" mr={3} onClick={handleArchiveToActive}>
+                Confirm
+              </Button>
+              <Button colorScheme="red" mr={3} onClick={closeArchiveModal}>
+                Cancel
+              </Button>
+            </ModalFooter>
           </ModalContent>
         </Modal>
       )}
