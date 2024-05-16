@@ -158,10 +158,10 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
               Delete Client: {client.firstName} {client.lastName}?
             </ModalBody>
             <ModalFooter>
-              <Button colorScheme="blue" mr={3} onClick={handleArchiveToActive}>
+              <Button colorScheme="blue" mr={3} onClick={handleDelete}>
                 Confirm
               </Button>
-              <Button colorScheme="red" mr={3} onClick={closeArchiveModal}>
+              <Button colorScheme="red" mr={3} onClick={closeDeleteModal}>
                 Cancel
               </Button>
             </ModalFooter>
@@ -193,7 +193,7 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
               Convert {client.firstName} {client.lastName} To Active Client?
             </ModalBody>
             <ModalFooter>
-              <Button colorScheme="blue" mr={3} onClick={handleArchiveToActive}>
+              <Button value='N' colorScheme="blue" mr={3} onClick={handleArchiveToActive}>
                 Confirm
               </Button>
               <Button colorScheme="red" mr={3} onClick={closeArchiveModal}>
