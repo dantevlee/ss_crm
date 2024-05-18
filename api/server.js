@@ -13,6 +13,7 @@ app.use(cookieParser())
 app.use('/api', require('./routes/Users'))
 app.use('/api', require('./routes/Clients'))
 app.use('/api', require('./routes/Notes'))
+app.use('/api', require('./routes/Leads'))
 
 
 server.listen(port, () =>console.log(`Server is listening on ${port}.`))

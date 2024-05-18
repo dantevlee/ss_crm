@@ -24,6 +24,7 @@ import { Outlet, Route, Routes, useNavigate } from "react-router-dom";
 import { useRef } from "react";
 import ClientPage from "./ClientPage";
 import ArchivePage from "./ArchivePage";
+import LeadsPage from "./LeadsPage";
 
 const Dashboard = ({ setIsLoggedIn }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -51,9 +52,14 @@ const Dashboard = ({ setIsLoggedIn }) => {
     onClose();
   }
 
+  const navigateToLeadsPage = () => {
+    navigate("/summary-dashboard/leads");
+    onClose();
+  }
+
   return (
     <>
-      <Box bg="black" w="2000%" p={4}>
+      <Box bg="black" w="3000%" p={4}>
         <Button ref={btnRef} onClick={onOpen} color="teal">
           <HamburgerIcon color="teal" />
         </Button>
@@ -92,6 +98,7 @@ const Dashboard = ({ setIsLoggedIn }) => {
             <Link onClick={navigateToSummaryDashboard}>Home</Link>
             <Link onClick={navigateToClientPage}>Clients</Link>
             <Link onClick={navigateToArchivesPage}>Archives</Link>
+            <Link onClick={navigateToLeadsPage}>Leads</Link>
             </Stack>
           </DrawerBody>
 
@@ -101,6 +108,7 @@ const Dashboard = ({ setIsLoggedIn }) => {
       <Routes>
         <Route path="/clients" element={<ClientPage />} />
         <Route path='/archives' element={<ArchivePage/>}/>
+        <Route path='/leads' element={<LeadsPage/>} />
       </Routes>
       <Outlet />
     </>
