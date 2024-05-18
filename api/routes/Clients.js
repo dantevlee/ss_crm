@@ -107,7 +107,7 @@ router.get("/clients/archived", authenticateUser, async (req, res) => {
 
   try {
     const userId = req.id;
-    const ARCHVIED = 'Y'
+    const ARCHVIED = "Y";
     const getArchivedClients = await db.query(
       'SELECT * FROM "Clients" WHERE "Clients"."is_archived" = $1 AND "Clients"."user_id"= $2',
       [ARCHVIED, userId]
@@ -117,8 +117,36 @@ router.get("/clients/archived", authenticateUser, async (req, res) => {
     console.error(error);
     return res
       .status(500)
-      .json({ message: "Internal Server Error. Unable To Retrieved Archived Clients." });
+      .json({
+        message: "Internal Server Error. Unable To Retrieved Archived Clients.",
+      });
   }
 });
+
+router.patch(
+  "/archived/restore/:clientId",
+  authenticateUser,
+  async (req, res) => {
+    const db = await dbPromise;
+
+    try {
+      const clientId = req.params.clientId;
+      const ARCHVIED = "N";
+      const restoredClient = await db.query(
+        `UPDATE "Clients" SET "is_archived" = $1 WHERE "id" = $2 RETURNING *`,
+        [ARCHVIED, clientId]
+      );
+      res.json(restoredClient[0]);
+
+    } catch (error) {
+      console.error(error);
+      return res
+        .status(500)
+        .json({
+          message: "Internal Server Error. Unable to make client active.",
+        });
+    }
+  }
+);
 
 module.exports = router;

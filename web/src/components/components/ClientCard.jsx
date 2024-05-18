@@ -21,9 +21,10 @@ import {
 import { useState } from "react";
 import ClientForm from "./ClientForm";
 
-const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
+const ClientCard = ({ client, onDelete, onEdit, onArchive, onRestore }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isRestoring, setIsRestoring] = useState(false)
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const openDeleteModal = () => {
@@ -38,6 +39,7 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
 
   const openArchiveModal = () => {
     onOpen();
+    setIsRestoring(true)
   };
 
   const closeDeleteModal = () => {
@@ -52,6 +54,7 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
 
   const closeArchiveModal = () => {
     onClose()
+    setIsRestoring(false)
   }
 
   const formatDate = (dateString) => {
@@ -79,8 +82,8 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
     closeEditModal();
   };
 
-  const handleArchiveToActive = (archiveIndicator) => {
-    onArchive(archiveIndicator, client.id)
+  const handleArchiveToActive = () => {
+    onRestore(client.id)
     closeEditModal();
   }
 
@@ -184,7 +187,7 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
           </ModalContent>
         </Modal>
       )}
-      {client.is_archived === "Y" && (
+      {isRestoring && (
         <Modal isOpen={isOpen} onClose={closeArchiveModal}>
           <ModalOverlay />
           <ModalContent>
