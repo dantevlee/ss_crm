@@ -25,7 +25,7 @@ const LeadsPage = () => {
           <ModalHeader>Add Lead</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
-            <LeadsForm/>
+            <LeadsForm onCancel={onClose}/>
           </ModalBody>
         </ModalContent>
       </Modal>

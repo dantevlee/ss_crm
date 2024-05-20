@@ -24,4 +24,8 @@ router.post('/create-lead', authenticateUser, async(req, res) => {
   }
 })
 
+router.get('/leads', authenticateUser, async (req, res) => {
+  // TO-DO
+})
+
 module.exports = router;

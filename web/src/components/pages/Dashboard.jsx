@@ -91,7 +91,7 @@ const Dashboard = ({ setIsLoggedIn }) => {
         <DrawerOverlay />
         <DrawerContent>
           <DrawerCloseButton />
-          <DrawerHeader>Create your account</DrawerHeader>
+          <DrawerHeader>"Company Name"</DrawerHeader>
 
           <DrawerBody>
             <Stack spacing={4}>
