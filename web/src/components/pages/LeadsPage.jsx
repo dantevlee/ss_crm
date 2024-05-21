@@ -10,13 +10,56 @@ import {
   Stack,
   useDisclosure,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import LeadsForm from "../components/LeadsForm";
 import LeadsCard from "../components/LeadsCard";
+import axios from "axios";
+import Cookies from "js-cookie";
 
 const LeadsPage = () => {
   const [leads, setLeads] = useState([]);
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const token = Cookies.get("SessionID");
+
+  const fetchLeads = async () => {
+    try {
+      const response = await axios.get(`http://localhost:3000/api/leads`, {
+        headers: {
+          Authorization: `${token}`,
+        },
+      });
+      console.log(response.data);
+      if (response.status === 200) {
+        setLeads(response.data);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchLeads();
+  }, []);
+
+  const createLead = async (formData) => {
+    try {
+      const response = await axios.post(
+        `http://localhost:3000/api/create-lead`,
+        formData,
+        {
+          headers: {
+            Authorization: `${token}`,
+          },
+        }
+      );
+      if (response.status === 200) {
+        fetchLeads();
+        onClose();
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
     <>
@@ -31,9 +74,7 @@ const LeadsPage = () => {
         <AddIcon mr={2} /> Add Lead
       </Button>
       <Stack direction="row" spacing={6}>
-        {leads.map((lead) => {
-          <LeadsCard lead={lead} />;
-        })}
+      {leads.map((lead) => (<LeadsCard mt={12} key={lead.id} lead={lead} />))}
       </Stack>
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
@@ -41,7 +82,7 @@ const LeadsPage = () => {
           <ModalHeader>Add Lead</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
-            <LeadsForm onCancel={onClose} />
+            <LeadsForm onSave={createLead} onCancel={onClose} />
           </ModalBody>
         </ModalContent>
       </Modal>

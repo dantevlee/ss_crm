@@ -10,7 +10,6 @@ import {
   NumberInputField,
   NumberInputStepper,
   Flex,
-  Spacer,
   RadioGroup,
   Radio,
   Stack,
@@ -153,7 +152,6 @@ const ClientForm = ({
         <FormLabel>Start Date</FormLabel>
         <Input
           onChange={handleStartDateChange}
-          placeholder="Select Date"
           size="md"
           type="date"
           value={startDate}

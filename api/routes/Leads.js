@@ -11,11 +11,12 @@ router.post('/create-lead', authenticateUser, async(req, res) => {
   try{
     const userId = req.id;
     const LEAD_INDICATOR = 'Y'
-    const { firstName, lastName, clientEmail, startDate, endDate } = req.body;
+    const { firstName, lastName, clientEmail, lastContactedAt, phoneNumber, socialMediaSource, socialMedia } = req.body;
     const lead = await db.query(
-      'INSERT into "Clients"("user_id", "firstName", "lastName", "client_email", "start_date", "end_date", "is_lead") VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING*',
-      [userId, firstName, lastName, clientEmail, startDate, endDate, LEAD_INDICATOR]
+      'INSERT into "Clients"("user_id", "firstName", "lastName", "client_email", "last_contacted_at", "is_lead", "phone_number", "social_media_source", "social_media") VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING*',
+      [userId, firstName, lastName, clientEmail, lastContactedAt, LEAD_INDICATOR, phoneNumber, socialMediaSource, socialMedia]
     );
+    res.json(lead[0]);
   } catch(error){
     console.error(error);
     res.status(500).json({
@@ -25,7 +26,19 @@ router.post('/create-lead', authenticateUser, async(req, res) => {
 })
 
 router.get('/leads', authenticateUser, async (req, res) => {
-  // TO-DO
+  const db = await dbPromise
+
+  try{
+
+    const userId = req.id;
+    const LEAD_INDICATOR = 'Y'
+    const leads = await db.query('SELECT "id", "user_id", "firstName", "lastName", "client_email", "last_contacted_at", "is_lead", "phone_number", "social_media_source", "social_media" FROM "Clients" WHERE "Clients"."user_id"= $1 AND "Clients"."is_lead"= $2', [userId, LEAD_INDICATOR])
+    return res.json(leads)
+  } catch(error){
+    return res
+      .status(500)
+      .json({ message: "Internal Server Error. Unable To Retrieve Leads." });
+  }
 })
 
 module.exports = router;

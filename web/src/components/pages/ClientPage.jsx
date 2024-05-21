@@ -32,7 +32,7 @@ const ClientPage = () => {
       });
       if (response.status === 200) {
         const activeClients = response.data.filter((r) =>
-          r.is_archived !== 'Y'
+          r.is_archived !== 'Y' && r.is_lead !== 'Y'
         )
         setClients(activeClients);
       }
@@ -45,7 +45,7 @@ const ClientPage = () => {
     fetchClients();
   }, []);
 
-  const saveClient = async (formData) => {
+  const createClient = async (formData) => {
     const token = Cookies.get("SessionID");
 
     try {
@@ -147,7 +147,7 @@ const ClientPage = () => {
           <ModalHeader>Add New Client</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
-            <ClientForm onSave={saveClient} onCancel={onClose}  />
+            <ClientForm onSave={createClient} onCancel={onClose}  />
           </ModalBody>
         </ModalContent>
       </Modal>
