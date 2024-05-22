@@ -17,6 +17,7 @@ import {
   ModalBody,
   ModalFooter,
   Button,
+  Tooltip,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import ClientForm from "./ClientForm";
@@ -92,27 +93,32 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive, onRestore }) => {
       <Card>
         <CardHeader>
           {client.is_archived === "Y" ? (
+            <Tooltip label='Convert To Client'>
             <IconButton
               onClick={openArchiveModal}
               variant="outline"
               colorScheme="teal"
               icon={<UnlockIcon />}
             ></IconButton>
+            </Tooltip>
           ) : (
+            <Tooltip label='Edit'>
             <IconButton
               onClick={openEditModal}
               variant="outline"
               colorScheme="teal"
               icon={<EditIcon />}
             ></IconButton>
+            </Tooltip>
           )}
-
+          <Tooltip label='Delete'>
           <IconButton
             onClick={openDeleteModal}
             variant="outline"
             colorScheme="teal"
             icon={<DeleteIcon />}
           ></IconButton>
+          </Tooltip>
         </CardHeader>
         <CardBody>
           <Stack divider={<StackDivider />} spacing="4">

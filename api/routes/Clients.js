@@ -65,10 +65,10 @@ router.put("/update/client/:clientId", authenticateUser, async (req, res) => {
 
   try {
     const clientId = req.params.clientId;
-    const { firstName, lastName, clientEmail, startDate, endDate } = req.body;
+    const { firstName, lastName, clientEmail, startDate, endDate, leadIndicator } = req.body;
     const updatedClient = await db.query(
-      'UPDATE "Clients" SET "firstName" = $1, "lastName" = $2, "client_email" = $3, "start_date" = $4, "end_date" = $5 WHERE "id" = $6 RETURNING *',
-      [firstName, lastName, clientEmail, startDate, endDate, clientId]
+      'UPDATE "Clients" SET "firstName" = $1, "lastName" = $2, "client_email" = $3, "start_date" = $4, "end_date" = $5, "is_lead" = $6  WHERE "id" = $7 RETURNING *',
+      [firstName, lastName, clientEmail, startDate, endDate, leadIndicator, clientId]
     );
     res.json(updatedClient[0]);
   } catch (error) {

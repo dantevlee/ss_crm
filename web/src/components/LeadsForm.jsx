@@ -10,7 +10,7 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
-const LeadsForm = ({ onSave, onCancel, leadsFormData }) => {
+const LeadsForm = ({ onSave, onEdit, onCancel, leadsFormData }) => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -69,15 +69,17 @@ const LeadsForm = ({ onSave, onCancel, leadsFormData }) => {
   };
 
   const handleSocialMediaSourceChange = (e) => {
-    setSocialMediaSource(e)
-    setSocialMedia("")
-  }
+    setSocialMediaSource(e);
+    setSocialMedia("");
+  };
 
   const handleContactSourceChange = (e) => {
-    setContactSource(e)
-    setSocialMediaSource('')
-    setSocialMedia('')
-  }
+    setContactSource(e);
+    setSocialMediaSource("");
+    setSocialMedia("");
+    setPhoneNumber("")
+    setEmail("")
+  };
 
   const handleFormSubmission = () => {
     const formData = {
@@ -89,8 +91,11 @@ const LeadsForm = ({ onSave, onCancel, leadsFormData }) => {
       socialMediaSource: socialMediaSource,
       socialMedia: socialMedia,
     };
-
-    onSave(formData);
+    if (isEditingEntry) {
+      onEdit(formData, leadsFormData.id);
+    } else {
+      onSave(formData);
+    }
   };
 
   const handleCancel = () => {
@@ -128,7 +133,10 @@ const LeadsForm = ({ onSave, onCancel, leadsFormData }) => {
       {contactSource === "Social Media" && (
         <FormControl mt={4}>
           <FormLabel>Social Media?</FormLabel>
-          <RadioGroup onChange={handleSocialMediaSourceChange} value={socialMediaSource}>
+          <RadioGroup
+            onChange={handleSocialMediaSourceChange}
+            value={socialMediaSource}
+          >
             <Stack direction="column">
               <Radio value="Instagram">Instagram</Radio>
               <Radio value="Facebook">Facebook</Radio>
@@ -210,7 +218,7 @@ const LeadsForm = ({ onSave, onCancel, leadsFormData }) => {
       </FormControl>
       <Flex mt={6} justifyContent="flex-start">
         <Button onClick={handleFormSubmission} colorScheme="blue">
-          Save
+          {isEditingEntry ? "Update" : "Save"}
         </Button>
         <Button onClick={handleCancel} colorScheme="gray" ml={4}>
           Cancel

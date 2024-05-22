@@ -12,18 +12,23 @@ import {
   ModalCloseButton,
   ModalContent,
   ModalFooter,
+  ModalHeader,
   ModalOverlay,
   Stack,
   StackDivider,
   Text,
+  Tooltip,
   useDisclosure,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import LeadsForm from "./LeadsForm";
+import { FaUserAlt } from "react-icons/fa";
+import ConvertToLeadForm from "./ConvertToLeadForm";
 
-const LeadsCard = ({ lead, onDelete }) => {
+const LeadsCard = ({ lead, onDelete, onEdit, onFetchLeads }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isConverting, setIsConverting] = useState(false)
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const openDeleteModal = () => {
@@ -41,6 +46,11 @@ const LeadsCard = ({ lead, onDelete }) => {
     onClose();
   };
 
+  const handleEdit = (formData) => {
+    onEdit(formData, lead.id);
+    closeEditModal();
+  };
+
   const openEditModal = () => {
     onOpen();
     setIsEditing(true);
@@ -50,6 +60,16 @@ const LeadsCard = ({ lead, onDelete }) => {
     onClose();
     setIsEditing(false);
   };
+
+  const openLeadConversionModal = () => {
+    onOpen()
+    setIsConverting(true)
+  }
+
+  const closeConvertingModal = () => {
+    onClose()
+    setIsConverting(false)
+  }
 
   const formatDate = (dateString) => {
     if (dateString) {
@@ -61,23 +81,35 @@ const LeadsCard = ({ lead, onDelete }) => {
     }
   };
 
-
   return (
     <>
       <Card>
         <CardHeader>
+          <Tooltip label='Convert To Client?'>
+            <IconButton
+            onClick={openLeadConversionModal}
+            variant='outline'
+            colorScheme="teal"
+            icon={<FaUserAlt/>}
+            >
+            </IconButton>
+          </Tooltip>
+          <Tooltip label='Edit'>
           <IconButton
             onClick={openEditModal}
             variant="outline"
             colorScheme="teal"
             icon={<EditIcon />}
           ></IconButton>
+          </Tooltip>
+          <Tooltip label='Delete'>
           <IconButton
             onClick={openDeleteModal}
             variant="outline"
             colorScheme="teal"
             icon={<DeleteIcon />}
           ></IconButton>
+          </Tooltip>
         </CardHeader>
         <CardBody>
           <Stack divider={<StackDivider />} spacing="4">
@@ -143,6 +175,7 @@ const LeadsCard = ({ lead, onDelete }) => {
         <Modal isOpen={isOpen} onClose={closeDeleteModal}>
           <ModalOverlay />
           <ModalContent>
+          <ModalHeader>Delete Lead?</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
               Delete Lead: {lead.firstName} {lead.lastName}?
@@ -157,19 +190,35 @@ const LeadsCard = ({ lead, onDelete }) => {
             </ModalFooter>
           </ModalContent>
         </Modal>
-             )}
-          {isEditing && (
+      )}
+      {isEditing && (
         <Modal isOpen={isOpen} onClose={closeEditModal}>
           <ModalOverlay />
           <ModalContent>
+          <ModalHeader>Edit Lead</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
-             <LeadsForm onCancel={closeEditModal} leadsFormData={lead}/>
+              <LeadsForm
+                onEdit={handleEdit}
+                onCancel={closeEditModal}
+                leadsFormData={lead}
+              />
             </ModalBody>
           </ModalContent>
         </Modal>
       )}
- 
+       {isConverting && (
+        <Modal isOpen={isOpen} onClose={closeConvertingModal}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>Convert To Client</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+            <ConvertToLeadForm lead={lead} onCancel={closeConvertingModal} onFetchLeads={onFetchLeads}/>
+            </ModalBody>
+          </ModalContent>
+        </Modal>
+      )}
     </>
   );
 };

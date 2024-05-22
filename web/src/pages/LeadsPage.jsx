@@ -28,7 +28,6 @@ const LeadsPage = () => {
           Authorization: `${token}`,
         },
       });
-      console.log(response.data);
       if (response.status === 200) {
         setLeads(response.data);
       }
@@ -78,6 +77,23 @@ const LeadsPage = () => {
     }
   }
 
+  const editLead = async (formData, leadId) => {
+    try{
+      await axios.put(`http://localhost:3000/api/update/lead/${leadId}`, formData, { 
+        headers: {
+          Authorization: `${token}`
+      }
+    }).then((res) => {
+      if(res.status === 200){
+        fetchLeads()
+        onClose()
+      }
+    })
+    } catch(error){
+      console.error(error)
+    }
+  }
+
   return (
     <>
       <Button
@@ -91,7 +107,7 @@ const LeadsPage = () => {
         <AddIcon mr={2} /> Add Lead
       </Button>
       <Stack direction="row" spacing={6}>
-      {leads.map((lead) => (<LeadsCard mt={12} key={lead.id} lead={lead} onDelete={deleteLead} />))}
+      {leads.map((lead) => (<LeadsCard mt={12} key={lead.id} lead={lead} onDelete={deleteLead} onEdit={editLead} onFetchLeads={fetchLeads} />))}
       </Stack>
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
