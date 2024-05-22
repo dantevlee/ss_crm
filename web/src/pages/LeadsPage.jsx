@@ -11,7 +11,7 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import LeadsForm from "../components/LeadsForm";
+import LeadsForm from "../components/LeadsForm"
 import LeadsCard from "../components/LeadsCard";
 import axios from "axios";
 import Cookies from "js-cookie";
@@ -61,6 +61,23 @@ const LeadsPage = () => {
     }
   };
 
+  const deleteLead = async (leadId) => {
+    try{
+      await axios.delete(`http://localhost:3000/api/delete/lead/${leadId}`, {
+        headers: {
+          Authorization: `${token}`,
+        },
+      }).then((res) => {
+        if(res.status === 200){
+          fetchLeads()
+          onClose();
+        }
+      })
+    } catch(error){
+      console.error(error)
+    }
+  }
+
   return (
     <>
       <Button
@@ -74,7 +91,7 @@ const LeadsPage = () => {
         <AddIcon mr={2} /> Add Lead
       </Button>
       <Stack direction="row" spacing={6}>
-      {leads.map((lead) => (<LeadsCard mt={12} key={lead.id} lead={lead} />))}
+      {leads.map((lead) => (<LeadsCard mt={12} key={lead.id} lead={lead} onDelete={deleteLead} />))}
       </Stack>
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />

@@ -41,4 +41,24 @@ router.get('/leads', authenticateUser, async (req, res) => {
   }
 })
 
+router.delete(
+  `/delete/lead/:clientId`,
+  authenticateUser,
+  async (req, res) => {
+    const db = await dbPromise;
+
+    try {
+      const clientId = req.params.clientId;
+      const LEAD_INDICATOR = 'Y'
+      await db.query(`DELETE FROM "Clients" WHERE "id" = $1 AND "is_lead" = $2`, [clientId, LEAD_INDICATOR]);
+      return res.json({ message: "Lead Successfully Deleted." });
+    } catch (error) {
+      console.error(error);
+      return res
+        .status(500)
+        .json({ message: "Internal Server Error. Unable To Delete Lead." });
+    }
+  }
+);
+
 module.exports = router;

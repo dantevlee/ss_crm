@@ -17,8 +17,7 @@ import {
   useDisclosure,
   Stack,
 } from "@chakra-ui/react";
-import { HamburgerIcon, Icon } from "@chakra-ui/icons";
-import axios from "axios";
+import { HamburgerIcon } from "@chakra-ui/icons";
 import Cookies from "js-cookie";
 import { Outlet, Route, Routes, useNavigate } from "react-router-dom";
 import { useRef } from "react";
@@ -97,8 +96,8 @@ const Dashboard = ({ setIsLoggedIn }) => {
             <Stack spacing={4}>
             <Link onClick={navigateToSummaryDashboard}>Home</Link>
             <Link onClick={navigateToClientPage}>Clients</Link>
-            <Link onClick={navigateToArchivesPage}>Archives</Link>
             <Link onClick={navigateToLeadsPage}>Leads</Link>
+            <Link onClick={navigateToArchivesPage}>Archives</Link>
             </Stack>
           </DrawerBody>
 
