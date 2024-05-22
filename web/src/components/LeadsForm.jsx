@@ -8,9 +8,9 @@ import {
   RadioGroup,
   Stack,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-const LeadsForm = ({onSave, onCancel}) => {
+const LeadsForm = ({ onSave, onCancel, leadsFormData }) => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -18,7 +18,30 @@ const LeadsForm = ({onSave, onCancel}) => {
   const [lastContactedAt, setLastContactedAt] = useState("");
   const [contactSource, setContactSource] = useState("");
   const [socialMediaSource, setSocialMediaSource] = useState("");
-  const [socialMedia, setSocialMedia] = useState('')
+  const [socialMedia, setSocialMedia] = useState("");
+  const [isEditingEntry, setIsEditingEntry] = useState(false);
+
+  useEffect(() => {
+    if (leadsFormData) {
+      setFirstName(leadsFormData.firstName);
+      setLastName(leadsFormData.lastName);
+      setEmail(leadsFormData.client_email ? leadsFormData.client_email : "");
+      setPhoneNumber(
+        leadsFormData.phone_number ? leadsFormData.phone_number : ""
+      );
+      setLastContactedAt(leadsFormData.last_contacted_at.split("T")[0]);
+      if (leadsFormData.client_email) {
+        setContactSource("E-mail");
+      } else if (leadsFormData.phone_number) {
+        setContactSource("Phone Number");
+      } else if (leadsFormData.social_media_source) {
+        setContactSource("Social Media");
+        setSocialMediaSource(leadsFormData.social_media_source);
+        setSocialMedia(leadsFormData.social_media);
+      }
+      setIsEditingEntry(true);
+    }
+  }, [leadsFormData]);
 
   const handleFirstNameChange = (e) => {
     setFirstName(e.target.value);
@@ -42,7 +65,18 @@ const LeadsForm = ({onSave, onCancel}) => {
   };
 
   const handleSocialMediaChange = (e) => {
-    setSocialMedia(e.target.value)
+    setSocialMedia(e.target.value);
+  };
+
+  const handleSocialMediaSourceChange = (e) => {
+    setSocialMediaSource(e)
+    setSocialMedia("")
+  }
+
+  const handleContactSourceChange = (e) => {
+    setContactSource(e)
+    setSocialMediaSource('')
+    setSocialMedia('')
   }
 
   const handleFormSubmission = () => {
@@ -54,36 +88,36 @@ const LeadsForm = ({onSave, onCancel}) => {
       phoneNumber: phoneNumber,
       socialMediaSource: socialMediaSource,
       socialMedia: socialMedia,
-    }
+    };
 
-    onSave(formData)
-  }
+    onSave(formData);
+  };
 
   const handleCancel = () => {
-    onCancel()
-  }
+    onCancel();
+  };
 
   return (
     <>
       <FormControl>
         <FormLabel>First Name:</FormLabel>
         <Input
-        onChange={handleFirstNameChange}
-        placeholder="First Name"
-        value={firstName}
+          onChange={handleFirstNameChange}
+          placeholder="First Name"
+          value={firstName}
         />
       </FormControl>
-      <FormControl  mt={4}>
+      <FormControl mt={4}>
         <FormLabel>Last Name:</FormLabel>
-        <Input 
+        <Input
           onChange={handleLastNameChange}
           placeholder="Last Name"
           value={lastName}
         />
       </FormControl>
-      <FormControl  mt={4}>
+      <FormControl mt={4}>
         <FormLabel>Contact Source?</FormLabel>
-        <RadioGroup onChange={setContactSource} value={contactSource}>
+        <RadioGroup onChange={handleContactSourceChange} value={contactSource}>
           <Stack direction="column">
             <Radio value="Social Media">Social Media</Radio>
             <Radio value="E-mail">E-mail</Radio>
@@ -92,9 +126,9 @@ const LeadsForm = ({onSave, onCancel}) => {
         </RadioGroup>
       </FormControl>
       {contactSource === "Social Media" && (
-        <FormControl  mt={4}>
+        <FormControl mt={4}>
           <FormLabel>Social Media?</FormLabel>
-          <RadioGroup onChange={setSocialMediaSource} value={socialMediaSource}>
+          <RadioGroup onChange={handleSocialMediaSourceChange} value={socialMediaSource}>
             <Stack direction="column">
               <Radio value="Instagram">Instagram</Radio>
               <Radio value="Facebook">Facebook</Radio>
@@ -106,64 +140,78 @@ const LeadsForm = ({onSave, onCancel}) => {
         </FormControl>
       )}{" "}
       {socialMediaSource === "Instagram" && (
-        <FormControl  mt={4}>
+        <FormControl mt={4}>
           <FormLabel>IG:</FormLabel>
-          <Input 
-          placeholder="Instagram"
-          onChange={handleSocialMediaChange} />
+          <Input
+            value={socialMedia}
+            placeholder="Instagram"
+            onChange={handleSocialMediaChange}
+          />
         </FormControl>
       )}
-       {socialMediaSource === "Facebook" && (
-        <FormControl  mt={4}>
+      {socialMediaSource === "Facebook" && (
+        <FormControl mt={4}>
           <FormLabel>Facebook:</FormLabel>
-          <Input 
-          placeholder="Facebook"
-          onChange={handleSocialMediaChange} />
+          <Input
+            value={socialMedia}
+            placeholder="Facebook"
+            onChange={handleSocialMediaChange}
+          />
         </FormControl>
       )}
-       {socialMediaSource === "LinkedIn" && (
-        <FormControl  mt={4}>
+      {socialMediaSource === "LinkedIn" && (
+        <FormControl mt={4}>
           <FormLabel>LinkedIn:</FormLabel>
-          <Input 
-          placeholder="LinkedIn"
-          onChange={handleSocialMediaChange} />
+          <Input
+            value={socialMedia}
+            placeholder="LinkedIn"
+            onChange={handleSocialMediaChange}
+          />
         </FormControl>
       )}
-       {socialMediaSource === "Tik Tok" && (
-        <FormControl  mt={4}>
+      {socialMediaSource === "Tik Tok" && (
+        <FormControl mt={4}>
           <FormLabel>Tik Tok:</FormLabel>
           <Input
-          placeholder="Tik-Tok" 
-          onChange={handleSocialMediaChange} />
+            value={socialMedia}
+            placeholder="Tik-Tok"
+            onChange={handleSocialMediaChange}
+          />
         </FormControl>
       )}
       {contactSource === "E-mail" && (
-        <FormControl  mt={4}>
+        <FormControl mt={4}>
           <FormLabel>E-mail</FormLabel>
           <Input
-           onChange={handleEmailChange}
-           placeholder="E-mail"
-           value={email} />
+            onChange={handleEmailChange}
+            placeholder="E-mail"
+            value={email}
+          />
         </FormControl>
       )}
       {contactSource === "Phone Number" && (
-        <FormControl  mt={4}>
+        <FormControl mt={4}>
           <FormLabel>Phone Number</FormLabel>
           <Input
-           onChange={handlePhoneNumberChange}
-           placeholder="Phone Number"
-           value={phoneNumber}  />
+            onChange={handlePhoneNumberChange}
+            placeholder="Phone Number"
+            value={phoneNumber}
+          />
         </FormControl>
       )}
-      <FormControl  mt={4}>
+      <FormControl mt={4}>
         <FormLabel>Last Contacted?</FormLabel>
-        <Input onChange={handleLastContactedAt} 
-        size="md" 
-        type="date"
-        value={lastContactedAt} />
+        <Input
+          onChange={handleLastContactedAt}
+          size="md"
+          type="date"
+          value={lastContactedAt}
+        />
       </FormControl>
       <Flex mt={6} justifyContent="flex-start">
-        <Button onClick={handleFormSubmission} colorScheme="blue">Save</Button>
+        <Button onClick={handleFormSubmission} colorScheme="blue">
+          Save
+        </Button>
         <Button onClick={handleCancel} colorScheme="gray" ml={4}>
           Cancel
         </Button>

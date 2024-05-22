@@ -19,6 +19,7 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { useState } from "react";
+import LeadsForm from "./LeadsForm";
 
 const LeadsCard = ({ lead, onDelete }) => {
   const [isDeleting, setIsDeleting] = useState(false);
@@ -40,6 +41,16 @@ const LeadsCard = ({ lead, onDelete }) => {
     onClose();
   };
 
+  const openEditModal = () => {
+    onOpen();
+    setIsEditing(true);
+  };
+
+  const closeEditModal = () => {
+    onClose();
+    setIsEditing(false);
+  };
+
   const formatDate = (dateString) => {
     if (dateString) {
       const date = new Date(dateString);
@@ -56,6 +67,7 @@ const LeadsCard = ({ lead, onDelete }) => {
       <Card>
         <CardHeader>
           <IconButton
+            onClick={openEditModal}
             variant="outline"
             colorScheme="teal"
             icon={<EditIcon />}
@@ -145,7 +157,19 @@ const LeadsCard = ({ lead, onDelete }) => {
             </ModalFooter>
           </ModalContent>
         </Modal>
+             )}
+          {isEditing && (
+        <Modal isOpen={isOpen} onClose={closeEditModal}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalCloseButton />
+            <ModalBody>
+             <LeadsForm onCancel={closeEditModal} leadsFormData={lead}/>
+            </ModalBody>
+          </ModalContent>
+        </Modal>
       )}
+ 
     </>
   );
 };
