@@ -21,11 +21,14 @@ import {
 } from "@chakra-ui/react";
 import { useState } from "react";
 import ClientForm from "./ClientForm";
+import LeadsForm from "./LeadsForm";
 
 const ArchiveCard = ({ archives, onRestore }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
+  const [isRestoringAsLead, setIsRestoringAsLead] = useState(false)
+  const [isRestoringAsClient, setIsRestoringAsClient] = useState(false)
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const openDeleteModal = () => {
@@ -78,15 +81,31 @@ const ArchiveCard = ({ archives, onRestore }) => {
     closeEditModal();
   };
 
-  const handleArchiveToActive = () => {
-    onRestore(archives.id);
-    closeEditModal();
+  const handleArchiveToClient = () => {
+    onOpen()
+    setIsRestoringAsClient(true)
   };
+
+  const handleArchiveToLead = () => {
+    onOpen()
+    setIsRestoringAsLead(true)
+  }
+
+  const closeClientForm = () => {
+    onClose();
+    setIsRestoringAsClient(false)
+  }
+
+  const closeLeadForm = () => {
+    onClose();
+    setIsRestoringAsLead(false)
+  }
+
   return (
     <>
       <Card>
         <CardHeader>
-          <Tooltip label="Convert To Client">
+          <Tooltip label="Restore">
             <IconButton
               onClick={openArchiveModal}
               variant="outline"
@@ -201,7 +220,6 @@ const ArchiveCard = ({ archives, onRestore }) => {
       {isDeleting && (
         <Modal isOpen={isOpen} onClose={closeDeleteModal}>
           <ModalOverlay />
-
           <ModalContent>
             <ModalCloseButton />
             <ModalBody>
@@ -239,21 +257,47 @@ const ArchiveCard = ({ archives, onRestore }) => {
           <ModalContent>
             <ModalCloseButton />
             <ModalBody>
-              Convert {archives.firstName} {archives.lastName} To Active Client?
+              Restore {archives.firstName} {archives.lastName} As..?
             </ModalBody>
             <ModalFooter>
               <Button
-                value="N"
                 colorScheme="blue"
                 mr={3}
-                onClick={handleArchiveToActive}
+                onClick={handleArchiveToClient}
               >
-                Confirm
+                Client
               </Button>
-              <Button colorScheme="red" mr={3} onClick={closeArchiveModal}>
-                Cancel
+              <Button colorScheme="green" mr={3} onClick={handleArchiveToLead}>
+                Lead
               </Button>
             </ModalFooter>
+          </ModalContent>
+        </Modal>
+      )}
+        {(isRestoringAsLead && 
+        <Modal isOpen={isOpen} onClose={closeLeadForm} >
+           <ModalOverlay />
+          <ModalContent>
+          <ModalCloseButton />
+          <ModalBody>
+            <LeadsForm
+            onCancel={closeLeadForm}
+            leadsFormData={archives}/>
+          </ModalBody>
+          </ModalContent>
+        </Modal>
+      )}
+          {(isRestoringAsClient && 
+        <Modal isOpen={isOpen} onClose={closeClientForm}>
+           <ModalOverlay />
+          <ModalContent>
+          <ModalCloseButton />
+          <ModalBody>
+            <ClientForm
+             clientFormValue={archives}
+             onCancel={closeClientForm}
+            />
+          </ModalBody>
           </ModalContent>
         </Modal>
       )}

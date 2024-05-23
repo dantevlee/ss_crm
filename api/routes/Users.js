@@ -4,7 +4,8 @@ const router = express.Router();
 const { dbPromise, transporter } = require("../resources/config");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const crypto = require('crypto')
+const crypto = require('crypto');
+const { authenticateUser } = require("../middleware/authenticateUser");
 
 router.post("/register/user", async (req, res) => {
   const db = await dbPromise;
@@ -291,5 +292,14 @@ router.post("/password/reset", async (req, res) => {
     res.status(500).json({ message: "Could not reset password. Please try again later." });
   }
 });
+
+router.get('/users/company-name', authenticateUser, async(req, res) => {
+  const db = await dbPromise;
+  try{
+    //TODO
+  } catch(error){
+    console.error(error)
+  }
+})
 
 module.exports = router;
