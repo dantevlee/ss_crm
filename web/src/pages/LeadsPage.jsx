@@ -29,7 +29,11 @@ const LeadsPage = () => {
         },
       });
       if (response.status === 200) {
-        setLeads(response.data);
+          const activeLeads = response.data.filter((r) =>
+            r.is_archived !== 'Y'
+          )
+        
+        setLeads(activeLeads);
       }
     } catch (error) {
       console.error(error);
@@ -94,6 +98,25 @@ const LeadsPage = () => {
     }
   }
 
+  const archiveLead = async (archiveIndicator,clientId) => {
+    console.log(archiveIndicator)
+    console.log(clientId)
+    try{
+      await axios.patch(`http://localhost:3000/api/archive/client/${clientId}`, archiveIndicator, {
+        headers: {
+          Authorization: `${token}`
+        }
+      }).then((res) => {
+        console.log(res)
+        if(res.status === 200){
+          fetchLeads()
+         } 
+      })
+    } catch(error){
+      console.error(error)
+    }
+  }
+
   return (
     <>
       <Button
@@ -107,7 +130,7 @@ const LeadsPage = () => {
         <AddIcon mr={2} /> Add Lead
       </Button>
       <Stack direction="row" spacing={6}>
-      {leads.map((lead) => (<LeadsCard mt={12} key={lead.id} lead={lead} onDelete={deleteLead} onEdit={editLead} onFetchLeads={fetchLeads} />))}
+      {leads.map((lead) => (<LeadsCard mt={12} key={lead.id} lead={lead} onDelete={deleteLead} onEdit={editLead} onFetchLeads={fetchLeads} onArchive={archiveLead} />))}
       </Stack>
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />

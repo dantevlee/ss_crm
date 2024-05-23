@@ -1,8 +1,8 @@
 import { Stack } from "@chakra-ui/react";
-import ClientCard from "../components/ClientCard";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
+import ArchiveCard from "../components/ArchiveCard";
 
 const ArchivePage = () => {
   const [archives, setArchives] = useState([]);
@@ -57,10 +57,10 @@ const ArchivePage = () => {
     <>
       <Stack direction="row" spacing={4}>
         {archives.map((a) => (
-          <ClientCard
+          <ArchiveCard
             mt={12}
             key={a.id}
-            client={a}
+            archives={a}
             onRestore={restoreClientToActive}
           />
         ))}

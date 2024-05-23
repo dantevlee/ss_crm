@@ -25,7 +25,7 @@ import LeadsForm from "./LeadsForm";
 import { FaUserAlt } from "react-icons/fa";
 import ConvertToLeadForm from "./ConvertToLeadForm";
 
-const LeadsCard = ({ lead, onDelete, onEdit, onFetchLeads }) => {
+const LeadsCard = ({ lead, onDelete, onEdit, onArchive,onFetchLeads }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isConverting, setIsConverting] = useState(false)
@@ -80,6 +80,11 @@ const LeadsCard = ({ lead, onDelete, onEdit, onFetchLeads }) => {
       return `${month}/${day}/${year}`;
     }
   };
+
+  const handleArchive = (archiveIndicator) => {
+    onArchive(archiveIndicator, lead.id)
+    closeEditModal();
+  }
 
   return (
     <>
@@ -202,6 +207,7 @@ const LeadsCard = ({ lead, onDelete, onEdit, onFetchLeads }) => {
                 onEdit={handleEdit}
                 onCancel={closeEditModal}
                 leadsFormData={lead}
+                onArchive={handleArchive}
               />
             </ModalBody>
           </ModalContent>

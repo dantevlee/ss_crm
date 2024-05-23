@@ -92,16 +92,6 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive, onRestore }) => {
     <>
       <Card>
         <CardHeader>
-          {client.is_archived === "Y" ? (
-            <Tooltip label='Convert To Client'>
-            <IconButton
-              onClick={openArchiveModal}
-              variant="outline"
-              colorScheme="teal"
-              icon={<UnlockIcon />}
-            ></IconButton>
-            </Tooltip>
-          ) : (
             <Tooltip label='Edit'>
             <IconButton
               onClick={openEditModal}
@@ -110,7 +100,6 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive, onRestore }) => {
               icon={<EditIcon />}
             ></IconButton>
             </Tooltip>
-          )}
           <Tooltip label='Delete'>
           <IconButton
             onClick={openDeleteModal}
@@ -190,25 +179,6 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive, onRestore }) => {
                 onArchive={handleArchive}
               />
             </ModalBody>
-          </ModalContent>
-        </Modal>
-      )}
-      {isRestoring && (
-        <Modal isOpen={isOpen} onClose={closeArchiveModal}>
-          <ModalOverlay />
-          <ModalContent>
-            <ModalCloseButton />
-            <ModalBody>
-              Convert {client.firstName} {client.lastName} To Active Client?
-            </ModalBody>
-            <ModalFooter>
-              <Button value='N' colorScheme="blue" mr={3} onClick={handleArchiveToActive}>
-                Confirm
-              </Button>
-              <Button colorScheme="red" mr={3} onClick={closeArchiveModal}>
-                Cancel
-              </Button>
-            </ModalFooter>
           </ModalContent>
         </Modal>
       )}

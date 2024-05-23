@@ -10,7 +10,7 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
-const LeadsForm = ({ onSave, onEdit, onCancel, leadsFormData }) => {
+const LeadsForm = ({ onSave, onEdit, onArchive, onCancel, leadsFormData }) => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -19,6 +19,7 @@ const LeadsForm = ({ onSave, onEdit, onCancel, leadsFormData }) => {
   const [contactSource, setContactSource] = useState("");
   const [socialMediaSource, setSocialMediaSource] = useState("");
   const [socialMedia, setSocialMedia] = useState("");
+  const [archive, setArchive] = useState("N")
   const [isEditingEntry, setIsEditingEntry] = useState(false);
 
   useEffect(() => {
@@ -93,6 +94,12 @@ const LeadsForm = ({ onSave, onEdit, onCancel, leadsFormData }) => {
     };
     if (isEditingEntry) {
       onEdit(formData, leadsFormData.id);
+      if (archive === "Y") {
+        const archiveBody = {
+          archivedIndicator: archive
+        }
+        onArchive(archiveBody, leadsFormData.id);
+      }
     } else {
       onSave(formData);
     }
@@ -216,6 +223,17 @@ const LeadsForm = ({ onSave, onEdit, onCancel, leadsFormData }) => {
           value={lastContactedAt}
         />
       </FormControl>
+      {isEditingEntry && (
+          <FormControl mt={4}>
+            <FormLabel>Archive Lead?</FormLabel>
+            <RadioGroup onChange={setArchive} value={archive}>
+              <Stack direction="column">
+                <Radio value="Y">Yes</Radio>
+                <Radio value="N">No</Radio>
+              </Stack>
+            </RadioGroup>
+          </FormControl>
+        )}
       <Flex mt={6} justifyContent="flex-start">
         <Button onClick={handleFormSubmission} colorScheme="blue">
           {isEditingEntry ? "Update" : "Save"}

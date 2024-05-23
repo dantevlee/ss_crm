@@ -49,7 +49,7 @@ router.get("/leads", authenticateUser, async (req, res) => {
     const userId = req.id;
     const LEAD_INDICATOR = "Y";
     const leads = await db.query(
-      'SELECT "id", "user_id", "firstName", "lastName", "client_email", "last_contacted_at", "is_lead", "phone_number", "social_media_source", "social_media" FROM "Clients" WHERE "Clients"."user_id"= $1 AND "Clients"."is_lead"= $2',
+      'SELECT "id", "user_id", "firstName", "lastName", "client_email", "last_contacted_at", "is_lead", "phone_number", "social_media_source", "social_media", "is_archived" FROM "Clients" WHERE "Clients"."user_id"= $1 AND "Clients"."is_lead"= $2',
       [userId, LEAD_INDICATOR]
     );
     return res.json(leads);
