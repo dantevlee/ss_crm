@@ -133,13 +133,13 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive,onFetchLeads }) => {
                 {formatDate(lead.last_contacted_at)}
               </Text>
             </Box>
-            {lead.client_email && (
+            {lead.lead_email && (
               <Box>
                 <Heading size="xs" textTransform="uppercase">
                   Email
                 </Heading>
                 <Text pt="2" fontSize="sm">
-                  {lead.client_email}
+                  {lead.lead_email}
                 </Text>
               </Box>
             )}
@@ -163,13 +163,13 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive,onFetchLeads }) => {
                 </Text>
               </Box>
             )}
-            {lead.social_media && (
+            {lead.soical_media && (
               <Box>
                 <Heading size="xs" textTransform="uppercase">
                   Social Media Handle
                 </Heading>
                 <Text pt="2" fontSize="sm">
-                  {lead.social_media}
+                  {lead.soical_media}
                 </Text>
               </Box>
             )}

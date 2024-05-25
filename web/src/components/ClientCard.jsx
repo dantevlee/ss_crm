@@ -38,11 +38,6 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
     setIsEditing(true);
   };
 
-  const openArchiveModal = () => {
-    onOpen();
-    setIsRestoring(true)
-  };
-
   const closeDeleteModal = () => {
     onClose();
     setIsDeleting(false);
@@ -52,11 +47,6 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
     onClose();
     setIsEditing(false);
   };
-
-  const closeArchiveModal = () => {
-    onClose()
-    setIsRestoring(false)
-  }
 
   const formatDate = (dateString) => {
     if (dateString) {
@@ -78,8 +68,8 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
     closeEditModal();
   };
 
-  const handleArchive = (archiveIndicator) => {
-    onArchive(archiveIndicator, client.id);
+  const handleArchive = (formData) => {
+    onArchive(formData, client.id);
     closeEditModal();
   };
 

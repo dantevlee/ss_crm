@@ -67,8 +67,8 @@ router.put("/update/client/:clientId", authenticateUser, async (req, res) => {
     const clientId = req.params.clientId;
     const { firstName, lastName, clientEmail, startDate, endDate, leadIndicator } = req.body;
     const updatedClient = await db.query(
-      'UPDATE "Clients" SET "firstName" = $1, "lastName" = $2, "client_email" = $3, "start_date" = $4, "end_date" = $5, "is_lead" = $6  WHERE "id" = $7 RETURNING *',
-      [firstName, lastName, clientEmail, startDate, endDate, leadIndicator, clientId]
+      'UPDATE "Clients" SET "firstName" = $1, "lastName" = $2, "client_email" = $3, "start_date" = $4, "end_date" = $5 WHERE "id" = $6 RETURNING *',
+      [firstName, lastName, clientEmail, startDate, endDate, clientId]
     );
     res.json(updatedClient[0]);
   } catch (error) {
@@ -79,20 +79,23 @@ router.put("/update/client/:clientId", authenticateUser, async (req, res) => {
   }
 });
 
-router.patch(
+router.post(
   "/archive/client/:clientId",
   authenticateUser,
   async (req, res) => {
     const db = await dbPromise;
 
     try {
-      const clientId = req.params.clientId;
-      const { archivedIndicator } = req.body;
+      const userId = req.id;
+      const clientId = req.params.clientId
+      const { firstName, lastName, email, phoneNumber, socialMediaSource, socialMedia, lastActiveDate  } = req.body;
       const archivedClient = await db.query(
-        `UPDATE "Clients" SET "is_archived" = $1 WHERE "id" = $2 RETURNING *`,
-        [archivedIndicator, clientId]
+      'INSERT into "Archives"("user_id", "firstName", "lastName", "email", "phone_number", "social_media_source", "soical_media", "last_active_date") VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING*', [userId, firstName, lastName, email, phoneNumber, socialMediaSource, socialMedia, lastActiveDate]
       );
       res.json(archivedClient[0]);
+      if (archivedClient.length > 0){
+        await db.query('DELETE FROM "Clients" WHERE "id" = $1 AND user_id = $2', [clientId, userId ])
+      }
     } catch (error) {
       console.error(error);
       res
@@ -102,26 +105,6 @@ router.patch(
   }
 );
 
-router.get("/clients/archived", authenticateUser, async (req, res) => {
-  const db = await dbPromise;
-
-  try {
-    const userId = req.id;
-    const ARCHVIED = "Y";
-    const getArchivedClients = await db.query(
-      'SELECT * FROM "Clients" WHERE "Clients"."is_archived" = $1 AND "Clients"."user_id"= $2',
-      [ARCHVIED, userId]
-    );
-    return res.json(getArchivedClients);
-  } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({
-        message: "Internal Server Error. Unable To Retrieved Archived Clients.",
-      });
-  }
-});
 
 router.patch(
   "/archived/restore/:clientId",

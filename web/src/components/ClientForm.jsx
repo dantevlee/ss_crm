@@ -113,16 +113,24 @@ const ClientForm = ({
     };
     if (isEditingEntry) {
       onEdit(formData, clientFormValue.id);
-      if (archive === "Y") {
-        const archiveBody = {
-          archivedIndicator: archive
-        }
-        onArchive(archiveBody, clientFormValue.id);
+      if(archive === 'Y'){
+        handleArchiveSubmission()
       }
     } else {
       onSave(formData);
     }
   };
+
+  const handleArchiveSubmission = () => {
+    const formData = {
+      firstName: firstName,
+      lastName: lastName,
+      email: email,
+      lastActiveDate: endDate
+    }
+
+    onArchive(formData, clientFormValue.id)
+  }
 
   const handleCancel = () => {
     onCancel();

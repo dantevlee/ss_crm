@@ -175,33 +175,23 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit }) => {
                 {archives.firstName} {archives.lastName}
               </Text>
             </Box>
-            {archives.client_email && (
+            {archives.email && (
               <Box>
                 <Heading size="xs" textTransform="uppercase">
                   Email
                 </Heading>
                 <Text pt="2" fontSize="sm">
-                  {archives.client_email}
+                  {archives.email}
                 </Text>
               </Box>
             )}
-            {archives.start_date && (
+            {archives.last_active_date && (
               <Box>
                 <Heading size="xs" textTransform="uppercase">
-                  Start Date
+                  Last Active Date
                 </Heading>
                 <Text pt="2" fontSize="sm">
-                  {formatDate(archives.start_date)}
-                </Text>
-              </Box>
-            )}
-            {archives.end_date && (
-              <Box>
-                <Heading size="xs" textTransform="uppercase">
-                  End Date
-                </Heading>
-                <Text pt="2" fontSize="sm">
-                  {formatDate(archives.end_date)}
+                  {formatDate(archives.last_active_date)}
                 </Text>
               </Box>
             )}
@@ -215,16 +205,7 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit }) => {
                 </Text>
               </Box>
             )}
-            {archives.last_contacted_at && (
-              <Box>
-                <Heading size="xs" textTransform="uppercase">
-                  Last Contacted
-                </Heading>
-                <Text pt="2" fontSize="sm">
-                  {formatDate(archives.last_contacted_at)}
-                </Text>
-              </Box>
-            )}
+            
             {archives.social_media_source && (
               <Box>
                 <Heading size="xs" textTransform="uppercase">
@@ -235,13 +216,13 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit }) => {
                 </Text>
               </Box>
             )}
-            {archives.social_media && (
+            {archives.soical_media && (
               <Box>
                 <Heading size="xs" textTransform="uppercase">
                   Social Media Handle
                 </Heading>
                 <Text pt="2" fontSize="sm">
-                  {archives.social_media}
+                  {archives.soical_media}
                 </Text>
               </Box>
             )}

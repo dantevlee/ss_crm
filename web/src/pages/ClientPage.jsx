@@ -31,10 +31,7 @@ const ClientPage = () => {
         },
       });
       if (response.status === 200) {
-        const activeClients = response.data.filter((r) =>
-          r.is_archived !== 'Y' && r.is_lead !== 'Y'
-        )
-        setClients(activeClients);
+        setClients(response.data);
       }
     } catch (error) {
       console.error(error);
@@ -105,11 +102,12 @@ const ClientPage = () => {
     }
   }
 
-  const archiveClient = async (archiveIndicator,clientId) => {
+  const archiveClient = async (formData, clientId) => {
     const token = Cookies.get("SessionID");
 
     try {
-      await axios.patch(`http://localhost:3000/api/archive/client/${clientId}`, archiveIndicator, {
+      await axios.post(`http://localhost:3000/api/archive/client/${clientId}`, formData, 
+      {
         headers: {
           Authorization: `${token}`
         }

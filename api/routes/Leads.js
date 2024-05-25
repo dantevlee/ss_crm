@@ -9,28 +9,26 @@ router.post("/create-lead", authenticateUser, async (req, res) => {
 
   try {
     const userId = req.id;
-    const LEAD_INDICATOR = "Y";
     const {
       firstName,
       lastName,
-      clientEmail,
+      leadEmail,
       lastContactedAt,
       phoneNumber,
       socialMediaSource,
-      socialMedia,
+      soicalMedia,
     } = req.body;
     const lead = await db.query(
-      'INSERT into "Clients"("user_id", "firstName", "lastName", "client_email", "last_contacted_at", "is_lead", "phone_number", "social_media_source", "social_media") VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING*',
+      'INSERT into "Leads"("user_id", "firstName", "lastName", "lead_email", "last_contacted_at", "phone_number", "social_media_source", "soical_media") VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING*',
       [
         userId,
         firstName,
         lastName,
-        clientEmail,
+        leadEmail,
         lastContactedAt,
-        LEAD_INDICATOR,
         phoneNumber,
         socialMediaSource,
-        socialMedia,
+        soicalMedia,
       ]
     );
     res.json(lead[0]);
@@ -47,10 +45,9 @@ router.get("/leads", authenticateUser, async (req, res) => {
 
   try {
     const userId = req.id;
-    const LEAD_INDICATOR = "Y";
     const leads = await db.query(
-      'SELECT "id", "user_id", "firstName", "lastName", "client_email", "last_contacted_at", "is_lead", "phone_number", "social_media_source", "social_media", "is_archived" FROM "Clients" WHERE "Clients"."user_id"= $1 AND "Clients"."is_lead"= $2',
-      [userId, LEAD_INDICATOR]
+      'SELECT * FROM "Leads" WHERE "Leads"."user_id" = $1 ',
+      [userId]
     );
     return res.json(leads);
   } catch (error) {

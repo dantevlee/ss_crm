@@ -101,11 +101,11 @@ const LeadsForm = ({
     const formData = {
       firstName: firstName,
       lastName: lastName,
-      clientEmail: email,
+      leadEmail: email,
       lastContactedAt: lastContactedAt,
       phoneNumber: phoneNumber,
       socialMediaSource: socialMediaSource,
-      socialMedia: socialMedia,
+      soicalMedia: socialMedia,
     };
     if (isEditingEntry) {
       onEdit(formData, leadsFormData.id);

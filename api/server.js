@@ -12,6 +12,7 @@ app.use(cookieParser())
 
 app.use('/api', require('./routes/Users'))
 app.use('/api', require('./routes/Clients'))
+app.use('/api', require('./routes/Archives'))
 app.use('/api', require('./routes/Notes'))
 app.use('/api', require('./routes/Leads'))
 app.use('/api', require('./routes/ClientFiles'))
