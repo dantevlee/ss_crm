@@ -81,8 +81,8 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive,onFetchLeads }) => {
     }
   };
 
-  const handleArchive = (archiveIndicator) => {
-    onArchive(archiveIndicator, lead.id)
+  const handleArchive = (formData) => {
+    onArchive(formData, lead.id)
     closeEditModal();
   }
 

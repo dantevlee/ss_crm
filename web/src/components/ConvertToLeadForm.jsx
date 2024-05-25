@@ -65,17 +65,18 @@ const ConvertToLeadForm = ({ onCancel, lead, onFetchLeads }) => {
 
   const convertLeadToClient = async () => {
     const token = Cookies.get('SessionID')
-    const LEAD_INDICATOR = 'N'
     const formData = {
       firstName: lead.firstName, 
       lastName: lead.lastName,
-      clientEmail: lead.client_email || email,
+      clientEmail: lead.lead_email || email,
       startDate: startDate,
       endDate: endDate,
-      leadIndicator: LEAD_INDICATOR
+      phoneNumber: lead.phone_number,
+      socialMediaSource: lead.social_media_source,
+      socialMedia: lead.soical_media
     }
     try{
-      await axios.put(`http://localhost:3000/api/update/client/${lead.id}`, formData, {
+      await axios.post(`http://localhost:3000/api/lead/convert/client/${lead.id}`, formData, {
         headers: {
           Authorization: `${token}`
         }
@@ -92,7 +93,7 @@ const ConvertToLeadForm = ({ onCancel, lead, onFetchLeads }) => {
 
   return (
     <>
-      {!lead.client_email && (
+      {!lead.lead_email && (
         <FormControl>
           <FormLabel>E-mail</FormLabel>
           <Input onChange={handleEmailChange} placeholder="E-mail" />

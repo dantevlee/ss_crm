@@ -29,11 +29,7 @@ const LeadsPage = () => {
         },
       });
       if (response.status === 200) {
-          const activeLeads = response.data.filter((r) =>
-            r.is_archived !== 'Y'
-          )
-        
-        setLeads(activeLeads);
+        setLeads(response.data);
       }
     } catch (error) {
       console.error(error);
@@ -98,11 +94,9 @@ const LeadsPage = () => {
     }
   }
 
-  const archiveLead = async (archiveIndicator,clientId) => {
-    console.log(archiveIndicator)
-    console.log(clientId)
+  const archiveLead = async (formData,leadId) => {
     try{
-      await axios.patch(`http://localhost:3000/api/archive/client/${clientId}`, archiveIndicator, {
+      await axios.post(`http://localhost:3000/api/archive/lead/${leadId}`, formData, {
         headers: {
           Authorization: `${token}`
         }

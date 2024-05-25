@@ -16,7 +16,7 @@ const LeadsForm = ({
   onArchive,
   onCancel,
   onRestore,
-  leadsFormData,
+  leadsFormData
 }) => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -33,7 +33,7 @@ const LeadsForm = ({
     if (leadsFormData) {
       setFirstName(leadsFormData.firstName);
       setLastName(leadsFormData.lastName);
-      setEmail(leadsFormData.client_email ? leadsFormData.client_email : "");
+      setEmail(leadsFormData.lead_email ? leadsFormData.lead_email : "");
       setPhoneNumber(
         leadsFormData.phone_number ? leadsFormData.phone_number : ""
       );
@@ -42,14 +42,14 @@ const LeadsForm = ({
           ? leadsFormData.last_contacted_at.split("T")[0]
           : ""
       );
-      if (leadsFormData.client_email) {
+      if (leadsFormData.lead_email) {
         setContactSource("E-mail");
       } else if (leadsFormData.phone_number) {
         setContactSource("Phone Number");
       } else if (leadsFormData.social_media_source) {
         setContactSource("Social Media");
         setSocialMediaSource(leadsFormData.social_media_source);
-        setSocialMedia(leadsFormData.social_media);
+        setSocialMedia(leadsFormData.soical_media);
       }
       if (!onRestore) {
         setIsEditingEntry(true);
@@ -105,20 +105,28 @@ const LeadsForm = ({
       lastContactedAt: lastContactedAt,
       phoneNumber: phoneNumber,
       socialMediaSource: socialMediaSource,
-      soicalMedia: socialMedia,
+      socialMedia: socialMedia,
     };
     if (isEditingEntry) {
       onEdit(formData, leadsFormData.id);
       if (archive === "Y") {
-        const archiveBody = {
-          archivedIndicator: archive,
-        };
-        onArchive(archiveBody, leadsFormData.id);
+        handleArchiveSubmission()
       }
     } else {
       onSave(formData);
     }
   };
+
+  const handleArchiveSubmission = () => {
+    const formData = {
+      firstName: firstName,
+      lastName: lastName,
+      email: email,
+      lastActiveDate: lastContactedAt
+    }
+
+    onArchive(formData, leadsFormData.id)
+  }
 
   const handleCancel = () => {
     onCancel();

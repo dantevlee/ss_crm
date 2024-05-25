@@ -61,10 +61,10 @@ router.delete(`/delete/lead/:leadId`, authenticateUser, async (req, res) => {
   const db = await dbPromise;
 
   try {
-    const clientId = req.params.leadId;
-    const userId = req.userId;
-    await db.query(`DELETE FROM "Leads" WHERE "id" = $1 AND "client_id" = $2`, [
-      clientId,
+    const leadId = req.params.leadId;
+    const userId = req.id;
+    await db.query(`DELETE FROM "Leads" WHERE "id" = $1 AND "user_id" = $2`, [
+      leadId,
       userId,
     ]);
     return res.json({ message: "Lead Successfully Deleted." });
@@ -80,8 +80,8 @@ router.put("/update/lead/:leadId", authenticateUser, async (req, res) => {
   const db = await dbPromise;
 
   try {
-    const clientId = req.params.clientId;
-    const userId = req.userId;
+    const leadId = req.params.leadId;
+    const userId = req.id;
     const {
       firstName,
       lastName,
@@ -92,7 +92,7 @@ router.put("/update/lead/:leadId", authenticateUser, async (req, res) => {
       socialMedia,
     } = req.body;
     const updatedLead = await db.query(
-      'UPDATE "Leads" SET "firstName" = $1, "lastName" = $2, "lead_email" = $3, "last_contacted_at" = $4, "phone_number" = $5, "social_media_source" = $6, "social_media" = $7 WHERE "id" = $8 AND "user_id"= $9 RETURNING *',
+      'UPDATE "Leads" SET "firstName" = $1, "lastName" = $2, "lead_email" = $3, "last_contacted_at" = $4, "phone_number" = $5, "social_media_source" = $6, "soical_media" = $7 WHERE "id" = $8 AND "user_id"= $9 RETURNING *',
       [
         firstName,
         lastName,
@@ -101,7 +101,7 @@ router.put("/update/lead/:leadId", authenticateUser, async (req, res) => {
         phoneNumber,
         socialMediaSource,
         socialMedia,
-        clientId,
+        leadId,
         userId,
       ]
     );
@@ -120,7 +120,7 @@ router.post("/archive/lead/:leadId", authenticateUser, async (req, res) => {
 
   try {
     const userId = req.id;
-    const clientId = req.params.clientId;
+    const clientId = req.params.leadId;
     const {
       firstName,
       lastName,
@@ -162,6 +162,8 @@ router.post(
   "/lead/convert/client/:leadId",
   authenticateUser,
   async (req, res) => {
+    const db = await dbPromise;
+
     try {
       const userId = req.id;
       const leadId = req.params.leadId;
@@ -176,7 +178,7 @@ router.post(
         socialMedia,
       } = req.body;
       const client = await db.query(
-        'INSERT into "Clients"("user_id", "firstName", "lastName", "client_email", "start_date", "end_date", "phone_number", "social_media_source", "soical_media") VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING*',
+        'INSERT into "Clients"("user_id", "firstName", "lastName", "client_email", "start_date", "end_date", "phone_number", "social_media_source", "social_media") VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING*',
         [
           userId,
           firstName,
@@ -200,7 +202,7 @@ router.post(
     } catch (error) {
       console.error(error);
       res.status(500).json({
-        message: "Internal Servor Error. Unable to create a client.",
+        message: "Internal Servor Error. Unable to convert lead to client.",
       });
     }
   }
