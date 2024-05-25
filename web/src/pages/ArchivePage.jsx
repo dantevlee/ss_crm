@@ -53,6 +53,23 @@ const ArchivePage = () => {
     }
   };
 
+  const deleteArchive = async (clientId) => {
+    try{
+      const token = Cookies.get("SessionID");
+      await axios.delete(`http://localhost:3000/api/delete/client/${clientId}`, {
+        headers: {
+          Authorization: `${token}`,
+        },
+      }).then((res) => {
+        if(res.status === 200){
+          fetchArchives()
+        }
+      })
+    } catch(error){
+      console.error(error)
+    }
+  }
+
   return (
     <>
       <Stack direction="row" spacing={4}>
@@ -62,6 +79,7 @@ const ArchivePage = () => {
             key={a.id}
             archives={a}
             onRestore={restoreClientToActive}
+            onDelete={deleteArchive}
           />
         ))}
       </Stack>

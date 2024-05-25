@@ -22,7 +22,7 @@ import {
 import { useState } from "react";
 import ClientForm from "./ClientForm";
 
-const ClientCard = ({ client, onDelete, onEdit, onArchive, onRestore }) => {
+const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false)
@@ -82,11 +82,6 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive, onRestore }) => {
     onArchive(archiveIndicator, client.id);
     closeEditModal();
   };
-
-  const handleArchiveToActive = () => {
-    onRestore(client.id)
-    closeEditModal();
-  }
 
   return (
     <>

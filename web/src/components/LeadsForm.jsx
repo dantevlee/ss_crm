@@ -10,7 +10,14 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
-const LeadsForm = ({ onSave, onEdit, onArchive, onCancel, leadsFormData }) => {
+const LeadsForm = ({
+  onSave,
+  onEdit,
+  onArchive,
+  onCancel,
+  onRestore,
+  leadsFormData,
+}) => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -19,7 +26,7 @@ const LeadsForm = ({ onSave, onEdit, onArchive, onCancel, leadsFormData }) => {
   const [contactSource, setContactSource] = useState("");
   const [socialMediaSource, setSocialMediaSource] = useState("");
   const [socialMedia, setSocialMedia] = useState("");
-  const [archive, setArchive] = useState("N")
+  const [archive, setArchive] = useState("N");
   const [isEditingEntry, setIsEditingEntry] = useState(false);
 
   useEffect(() => {
@@ -30,7 +37,11 @@ const LeadsForm = ({ onSave, onEdit, onArchive, onCancel, leadsFormData }) => {
       setPhoneNumber(
         leadsFormData.phone_number ? leadsFormData.phone_number : ""
       );
-      setLastContactedAt(leadsFormData.last_contacted_at.split("T")[0]);
+      setLastContactedAt(
+        leadsFormData.last_contacted_at
+          ? leadsFormData.last_contacted_at.split("T")[0]
+          : ""
+      );
       if (leadsFormData.client_email) {
         setContactSource("E-mail");
       } else if (leadsFormData.phone_number) {
@@ -40,7 +51,11 @@ const LeadsForm = ({ onSave, onEdit, onArchive, onCancel, leadsFormData }) => {
         setSocialMediaSource(leadsFormData.social_media_source);
         setSocialMedia(leadsFormData.social_media);
       }
-      setIsEditingEntry(true);
+      if (!onRestore) {
+        setIsEditingEntry(true);
+      } else {
+        setIsEditingEntry(false);
+      }
     }
   }, [leadsFormData]);
 
@@ -78,8 +93,8 @@ const LeadsForm = ({ onSave, onEdit, onArchive, onCancel, leadsFormData }) => {
     setContactSource(e);
     setSocialMediaSource("");
     setSocialMedia("");
-    setPhoneNumber("")
-    setEmail("")
+    setPhoneNumber("");
+    setEmail("");
   };
 
   const handleFormSubmission = () => {
@@ -96,8 +111,8 @@ const LeadsForm = ({ onSave, onEdit, onArchive, onCancel, leadsFormData }) => {
       onEdit(formData, leadsFormData.id);
       if (archive === "Y") {
         const archiveBody = {
-          archivedIndicator: archive
-        }
+          archivedIndicator: archive,
+        };
         onArchive(archiveBody, leadsFormData.id);
       }
     } else {
@@ -224,16 +239,16 @@ const LeadsForm = ({ onSave, onEdit, onArchive, onCancel, leadsFormData }) => {
         />
       </FormControl>
       {isEditingEntry && (
-          <FormControl mt={4}>
-            <FormLabel>Archive Lead?</FormLabel>
-            <RadioGroup onChange={setArchive} value={archive}>
-              <Stack direction="column">
-                <Radio value="Y">Yes</Radio>
-                <Radio value="N">No</Radio>
-              </Stack>
-            </RadioGroup>
-          </FormControl>
-        )}
+        <FormControl mt={4}>
+          <FormLabel>Archive Lead?</FormLabel>
+          <RadioGroup onChange={setArchive} value={archive}>
+            <Stack direction="column">
+              <Radio value="Y">Yes</Radio>
+              <Radio value="N">No</Radio>
+            </Stack>
+          </RadioGroup>
+        </FormControl>
+      )}
       <Flex mt={6} justifyContent="flex-start">
         <Button onClick={handleFormSubmission} colorScheme="blue">
           {isEditingEntry ? "Update" : "Save"}

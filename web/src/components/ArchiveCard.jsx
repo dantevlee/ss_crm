@@ -22,43 +22,108 @@ import {
 import { useState } from "react";
 import ClientForm from "./ClientForm";
 import LeadsForm from "./LeadsForm";
+import ArchiveForm from "./ArchiveForm";
 
-const ArchiveCard = ({ archives, onRestore }) => {
+const ArchiveCard = ({ archives, onRestore, onDelete, onEdit }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
-  const [isRestoringAsLead, setIsRestoringAsLead] = useState(false)
-  const [isRestoringAsClient, setIsRestoringAsClient] = useState(false)
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [isRestoringAsLead, setIsRestoringAsLead] = useState(false);
+  const [isRestoringAsClient, setIsRestoringAsClient] = useState(false);
+
+  const {
+    isOpen: isDeleteOpen,
+    onOpen: onDeleteOpen,
+    onClose: onDeleteClose,
+  } = useDisclosure();
+  
+  const {
+    isOpen: isEditOpen,
+    onOpen: onEditOpen,
+    onClose: onEditClose,
+  } = useDisclosure();
+  
+  const {
+    isOpen: isRestoreOpen,
+    onOpen: onRestoreOpen,
+    onClose: onRestoreClose,
+  } = useDisclosure();
+  
+  const {
+    isOpen: isRestoreClientOpen,
+    onOpen: onRestoreClientOpen,
+    onClose: onRestoreClientClose,
+  } = useDisclosure();
+  
+  const {
+    isOpen: isRestoreLeadOpen,
+    onOpen: onRestoreLeadOpen,
+    onClose: onRestoreLeadClose,
+  } = useDisclosure();
 
   const openDeleteModal = () => {
-    onOpen();
+    onDeleteOpen();
     setIsDeleting(true);
   };
 
   const openEditModal = () => {
-    onOpen();
+    onEditOpen();
     setIsEditing(true);
+    setIsRestoring(false)
   };
 
   const openArchiveModal = () => {
-    onOpen();
+    onRestoreOpen();
     setIsRestoring(true);
   };
 
   const closeDeleteModal = () => {
-    onClose();
+    onDeleteClose();
     setIsDeleting(false);
   };
 
   const closeEditModal = () => {
-    onClose();
+    onEditClose();
     setIsEditing(false);
   };
 
   const closeArchiveModal = () => {
-    onClose();
+    onRestoreClose();
     setIsRestoring(false);
+  };
+
+  const handleDelete = () => {
+    onDelete(archives.id);
+    closeDeleteModal();
+  };
+
+  const handleEdit = (formData) => {
+    onEdit(formData, archives.id);
+    closeEditModal();
+  };
+
+  const handleArchiveToClient = () => {
+    onRestoreClientOpen();
+    setIsRestoringAsClient(true);
+    closeArchiveModal()
+  };
+
+  const handleArchiveToLead = () => {
+    onRestoreLeadOpen();
+    setIsRestoringAsLead(true);
+    closeArchiveModal()
+  };
+
+  const closeClientForm = () => {
+    onRestoreClientClose();
+    onRestoreClose()
+    setIsRestoringAsClient(false);
+  };
+
+  const closeLeadForm = () => {
+    onRestoreLeadClose();
+    onRestoreClose()
+    setIsRestoringAsLead(false);
   };
 
   const formatDate = (dateString) => {
@@ -71,36 +136,6 @@ const ArchiveCard = ({ archives, onRestore }) => {
     }
   };
 
-  const handleDelete = () => {
-    onDelete(client.id);
-    onClose();
-  };
-
-  const handleEdit = (formData) => {
-    onEdit(formData, archives.id);
-    closeEditModal();
-  };
-
-  const handleArchiveToClient = () => {
-    onOpen()
-    setIsRestoringAsClient(true)
-  };
-
-  const handleArchiveToLead = () => {
-    onOpen()
-    setIsRestoringAsLead(true)
-  }
-
-  const closeClientForm = () => {
-    onClose();
-    setIsRestoringAsClient(false)
-  }
-
-  const closeLeadForm = () => {
-    onClose();
-    setIsRestoringAsLead(false)
-  }
-
   return (
     <>
       <Card>
@@ -111,7 +146,7 @@ const ArchiveCard = ({ archives, onRestore }) => {
               variant="outline"
               colorScheme="teal"
               icon={<UnlockIcon />}
-            ></IconButton>
+            />
           </Tooltip>
           <Tooltip label="Edit">
             <IconButton
@@ -119,7 +154,7 @@ const ArchiveCard = ({ archives, onRestore }) => {
               variant="outline"
               colorScheme="teal"
               icon={<EditIcon />}
-            ></IconButton>
+            />
           </Tooltip>
           <Tooltip label="Delete">
             <IconButton
@@ -127,20 +162,19 @@ const ArchiveCard = ({ archives, onRestore }) => {
               variant="outline"
               colorScheme="teal"
               icon={<DeleteIcon />}
-            ></IconButton>
+            />
           </Tooltip>
         </CardHeader>
         <CardBody>
           <Stack divider={<StackDivider />} spacing="4">
             <Box>
               <Heading size="xs" textTransform="uppercase">
-                Client Name
+                Name
               </Heading>
               <Text pt="2" fontSize="sm">
                 {archives.firstName} {archives.lastName}
               </Text>
             </Box>
-            (
             {archives.client_email && (
               <Box>
                 <Heading size="xs" textTransform="uppercase">
@@ -151,7 +185,6 @@ const ArchiveCard = ({ archives, onRestore }) => {
                 </Text>
               </Box>
             )}
-            ) (
             {archives.start_date && (
               <Box>
                 <Heading size="xs" textTransform="uppercase">
@@ -162,7 +195,6 @@ const ArchiveCard = ({ archives, onRestore }) => {
                 </Text>
               </Box>
             )}
-            ) (
             {archives.end_date && (
               <Box>
                 <Heading size="xs" textTransform="uppercase">
@@ -173,15 +205,14 @@ const ArchiveCard = ({ archives, onRestore }) => {
                 </Text>
               </Box>
             )}
-            )
             {archives.phone_number && (
               <Box>
                 <Heading size="xs" textTransform="uppercase">
                   Phone Number
                 </Heading>
                 <Text pt="2" fontSize="sm">
-                {archives.phone_number}
-              </Text>
+                  {archives.phone_number}
+                </Text>
               </Box>
             )}
             {archives.last_contacted_at && (
@@ -190,8 +221,8 @@ const ArchiveCard = ({ archives, onRestore }) => {
                   Last Contacted
                 </Heading>
                 <Text pt="2" fontSize="sm">
-                {formatDate(archives.last_contacted_at)}
-              </Text>
+                  {formatDate(archives.last_contacted_at)}
+                </Text>
               </Box>
             )}
             {archives.social_media_source && (
@@ -200,25 +231,26 @@ const ArchiveCard = ({ archives, onRestore }) => {
                   Social Media
                 </Heading>
                 <Text pt="2" fontSize="sm">
-                {archives.social_media_source}
-              </Text>
+                  {archives.social_media_source}
+                </Text>
               </Box>
             )}
-             {archives.social_media && (
+            {archives.social_media && (
               <Box>
                 <Heading size="xs" textTransform="uppercase">
                   Social Media Handle
                 </Heading>
                 <Text pt="2" fontSize="sm">
-                {archives.social_media}
-              </Text>
+                  {archives.social_media}
+                </Text>
               </Box>
             )}
           </Stack>
         </CardBody>
       </Card>
+
       {isDeleting && (
-        <Modal isOpen={isOpen} onClose={closeDeleteModal}>
+        <Modal isOpen={isDeleteOpen} onClose={closeDeleteModal}>
           <ModalOverlay />
           <ModalContent>
             <ModalCloseButton />
@@ -236,14 +268,15 @@ const ArchiveCard = ({ archives, onRestore }) => {
           </ModalContent>
         </Modal>
       )}
+
       {isEditing && (
-        <Modal isOpen={isOpen} onClose={closeEditModal}>
+        <Modal isOpen={isEditOpen} onClose={closeEditModal}>
           <ModalOverlay />
           <ModalContent>
             <ModalCloseButton />
             <ModalBody>
-              <ClientForm
-                clientFormValue={archives}
+              <ArchiveForm
+                archiveFormValue={archives}
                 onCancel={closeEditModal}
                 onEdit={handleEdit}
               />
@@ -251,8 +284,9 @@ const ArchiveCard = ({ archives, onRestore }) => {
           </ModalContent>
         </Modal>
       )}
+
       {isRestoring && (
-        <Modal isOpen={isOpen} onClose={closeArchiveModal}>
+        <Modal isOpen={isRestoreOpen} onClose={closeArchiveModal}>
           <ModalOverlay />
           <ModalContent>
             <ModalCloseButton />
@@ -260,11 +294,7 @@ const ArchiveCard = ({ archives, onRestore }) => {
               Restore {archives.firstName} {archives.lastName} As..?
             </ModalBody>
             <ModalFooter>
-              <Button
-                colorScheme="blue"
-                mr={3}
-                onClick={handleArchiveToClient}
-              >
+              <Button colorScheme="blue" mr={3} onClick={handleArchiveToClient}>
                 Client
               </Button>
               <Button colorScheme="green" mr={3} onClick={handleArchiveToLead}>
@@ -274,30 +304,35 @@ const ArchiveCard = ({ archives, onRestore }) => {
           </ModalContent>
         </Modal>
       )}
-        {(isRestoringAsLead && 
-        <Modal isOpen={isOpen} onClose={closeLeadForm} >
-           <ModalOverlay />
+
+      {isRestoringAsLead && (
+        <Modal isOpen={isRestoreLeadOpen} onClose={closeLeadForm}>
+          <ModalOverlay />
           <ModalContent>
-          <ModalCloseButton />
-          <ModalBody>
-            <LeadsForm
-            onCancel={closeLeadForm}
-            leadsFormData={archives}/>
-          </ModalBody>
+            <ModalCloseButton />
+            <ModalBody>
+              <LeadsForm
+                onRestore={isRestoringAsLead}
+                onCancel={closeLeadForm}
+                leadsFormData={archives}
+              />
+            </ModalBody>
           </ModalContent>
         </Modal>
       )}
-          {(isRestoringAsClient && 
-        <Modal isOpen={isOpen} onClose={closeClientForm}>
-           <ModalOverlay />
+
+      {isRestoringAsClient && (
+        <Modal isOpen={isRestoreClientOpen} onClose={closeClientForm}>
+          <ModalOverlay />
           <ModalContent>
-          <ModalCloseButton />
-          <ModalBody>
-            <ClientForm
-             clientFormValue={archives}
-             onCancel={closeClientForm}
-            />
-          </ModalBody>
+            <ModalCloseButton />
+            <ModalBody>
+              <ClientForm
+                onRestore={isRestoringAsClient}
+                clientFormValue={archives}
+                onCancel={closeClientForm}
+              />
+            </ModalBody>
           </ModalContent>
         </Modal>
       )}

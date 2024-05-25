@@ -22,6 +22,7 @@ const ClientForm = ({
   onArchive,
   onCancel,
   clientFormValue,
+  onRestore
 }) => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -47,7 +48,12 @@ const ClientForm = ({
       setEndDate(
         clientFormValue.end_date ? clientFormValue.end_date.split("T")[0] : ""
       );
-      setIsEditingEntry(true);
+      if(!onRestore){
+        setIsEditingEntry(true);
+      } else {
+        setIsEditingEntry(false)
+      }
+    
     }
   }, [clientFormValue]);
 
@@ -121,6 +127,7 @@ const ClientForm = ({
   const handleCancel = () => {
     onCancel();
   };
+
 
   return (
     <>
