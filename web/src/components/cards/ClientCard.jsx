@@ -111,6 +111,36 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
                 {client.client_email}
               </Text>
             </Box>
+            {client.phone_number && (
+              <Box>
+                <Heading size="xs" textTransform="uppercase">
+                  Phone Number
+                </Heading>
+                <Text pt="2" fontSize="sm">
+                  {client.phone_number}
+                </Text>
+              </Box>
+            )}
+            {client.social_media_source && (
+              <Box>
+                <Heading size="xs" textTransform="uppercase">
+                  Social Media
+                </Heading>
+                <Text pt="2" fontSize="sm">
+                  {client.social_media_source}
+                </Text>
+              </Box>
+            )}
+            {client.social_media && (
+              <Box>
+                <Heading size="xs" textTransform="uppercase">
+                  Social Media Handle
+                </Heading>
+                <Text pt="2" fontSize="sm">
+                  {client.social_media}
+                </Text>
+              </Box>
+            )}
             <Box>
               <Heading size="xs" textTransform="uppercase">
                 Start Date
@@ -118,7 +148,7 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
               <Text pt="2" fontSize="sm">
                 {formatDate(client.start_date)}
               </Text>
-            </Box>
+              </Box>
             <Box>
               <Heading size="xs" textTransform="uppercase">
                 End Date
