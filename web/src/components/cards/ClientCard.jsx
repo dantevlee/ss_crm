@@ -20,7 +20,7 @@ import {
   Tooltip,
 } from "@chakra-ui/react";
 import { useState } from "react";
-import ClientForm from "./ClientForm";
+import ClientForm from "../forms/ClientForm";
 
 const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
   const [isDeleting, setIsDeleting] = useState(false);

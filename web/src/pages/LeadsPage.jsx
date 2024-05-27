@@ -11,8 +11,8 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import LeadsForm from "../components/LeadsForm"
-import LeadsCard from "../components/LeadsCard";
+import LeadsForm from "../components/forms/LeadsForm"
+import LeadsCard from "../components/cards/LeadsCard";
 import axios from "axios";
 import Cookies from "js-cookie";
 

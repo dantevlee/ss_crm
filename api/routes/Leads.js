@@ -16,7 +16,7 @@ router.post("/create-lead", authenticateUser, async (req, res) => {
       lastContactedAt,
       phoneNumber,
       socialMediaSource,
-      soicalMedia,
+      socialMedia,
     } = req.body;
     const lead = await db.query(
       'INSERT into "Leads"("user_id", "firstName", "lastName", "lead_email", "last_contacted_at", "phone_number", "social_media_source", "soical_media") VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING*',
@@ -28,7 +28,7 @@ router.post("/create-lead", authenticateUser, async (req, res) => {
         lastContactedAt,
         phoneNumber,
         socialMediaSource,
-        soicalMedia,
+        socialMedia,
       ]
     );
     res.json(lead[0]);

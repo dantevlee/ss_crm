@@ -51,7 +51,8 @@ const ClientForm = ({
       if(!onRestore){
         setIsEditingEntry(true);
       } else {
-        setIsEditingEntry(false)
+        setIsEditingEntry(false);
+        setEmail(clientFormValue.email);
       }
     
     }
@@ -116,7 +117,11 @@ const ClientForm = ({
       if(archive === 'Y'){
         handleArchiveSubmission()
       }
-    } else {
+    } else if (onRestore) {
+      handleArchiveToClientSubmission()
+    }
+    
+    else {
       onSave(formData);
     }
   };
@@ -127,6 +132,18 @@ const ClientForm = ({
       lastName: lastName,
       email: email,
       lastActiveDate: endDate
+    }
+
+    onArchive(formData, clientFormValue.id)
+  }
+
+  const handleArchiveToClientSubmission = () => {
+    const formData = {
+      firstName: firstName,
+      lastName: lastName,
+      clientEmail: email,
+      startDate: startDate,
+      endDate: endDate
     }
 
     onArchive(formData, clientFormValue.id)

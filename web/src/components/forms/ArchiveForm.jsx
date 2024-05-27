@@ -10,54 +10,35 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
-const LeadsForm = ({
-  onSave,
-  onEdit,
-  onArchive,
-  onCancel,
-  onRestore,
-  leadsFormData
-}) => {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [lastContactedAt, setLastContactedAt] = useState("");
+const ArchiveForm = ({ archiveFormValue, onCancel, onEdit }) => {
+  const [firstName, setFirstName] = useState(archiveFormValue.firstName || "");
+  const [lastName, setLastName] = useState(archiveFormValue.lastName || "");
+  const [email, setEmail] = useState(archiveFormValue.email || "");
+  const [phoneNumber, setPhoneNumber] = useState(
+    archiveFormValue.phone_number || ""
+  );
   const [contactSource, setContactSource] = useState("");
-  const [socialMediaSource, setSocialMediaSource] = useState("");
-  const [socialMedia, setSocialMedia] = useState("");
-  const [archive, setArchive] = useState("N");
-  const [isEditingEntry, setIsEditingEntry] = useState(false);
+  const [socialMediaSource, setSocialMediaSource] = useState(
+    archiveFormValue.social_media_source || ""
+  );
+  const [socialMedia, setSocialMedia] = useState(
+    archiveFormValue.soical_media || ""
+  );
+
+  const [lastActiveDate, setLastActiveDate] = useState(archiveFormValue.last_active_date || "")
 
   useEffect(() => {
-    if (leadsFormData) {
-      setFirstName(leadsFormData.firstName);
-      setLastName(leadsFormData.lastName);
-      setEmail(leadsFormData.lead_email ? leadsFormData.lead_email : "");
-      setPhoneNumber(
-        leadsFormData.phone_number ? leadsFormData.phone_number : ""
-      );
-      setLastContactedAt(
-        leadsFormData.last_contacted_at
-          ? leadsFormData.last_contacted_at.split("T")[0]
-          : ""
-      );
-      if (leadsFormData.lead_email) {
-        setContactSource("E-mail");
-      } else if (leadsFormData.phone_number) {
-        setContactSource("Phone Number");
-      } else if (leadsFormData.social_media_source) {
-        setContactSource("Social Media");
-        setSocialMediaSource(leadsFormData.social_media_source);
-        setSocialMedia(leadsFormData.soical_media);
-      }
-      if (!onRestore) {
-        setIsEditingEntry(true);
-      } else {
-        setIsEditingEntry(false);
-      }
+    if (archiveFormValue.email) {
+      setContactSource("E-mail");
+    } if (archiveFormValue.phone_number) {
+      setContactSource("Phone Number");
+    } if (archiveFormValue.social_media_source) {
+      setContactSource("Social Media");
+      setSocialMediaSource(archiveFormValue.social_media_source);
+      setSocialMedia(archiveFormValue.soical_media);
     }
-  }, [leadsFormData]);
+    setLastActiveDate(archiveFormValue.last_active_date.split("T")[0])
+  }, [archiveFormValue]);
 
   const handleFirstNameChange = (e) => {
     setFirstName(e.target.value);
@@ -67,6 +48,10 @@ const LeadsForm = ({
     setLastName(e.target.value);
   };
 
+  const handleLastActiveDateChange = (e) => {
+    setLastActiveDate(e.target.value)
+  }
+
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
   };
@@ -75,67 +60,41 @@ const LeadsForm = ({
     setPhoneNumber(e.target.value);
   };
 
-  const handleLastContactedAt = (e) => {
-    const newStartDate = e.target.value;
-    setLastContactedAt(newStartDate);
+  const handleCancel = () => {
+    onCancel();
+  };
+
+  const handleContactSourceChange = (e) => {
+    setContactSource(e);
+  };
+
+  const handleSocialMediaSourceChange = (e) => {
+    setSocialMediaSource(e);
+    setSocialMedia("")
   };
 
   const handleSocialMediaChange = (e) => {
     setSocialMedia(e.target.value);
   };
 
-  const handleSocialMediaSourceChange = (e) => {
-    setSocialMediaSource(e);
-    setSocialMedia("");
-  };
-
-  const handleContactSourceChange = (e) => {
-    setContactSource(e);
-    setSocialMediaSource("");
-    setSocialMedia("");
-    setPhoneNumber("");
-    setEmail("");
-  };
-
-  const handleFormSubmission = () => {
-    const formData = {
-      firstName: firstName,
-      lastName: lastName,
-      leadEmail: email,
-      lastContactedAt: lastContactedAt,
-      phoneNumber: phoneNumber,
-      socialMediaSource: socialMediaSource,
-      socialMedia: socialMedia,
-    };
-    if (isEditingEntry) {
-      onEdit(formData, leadsFormData.id);
-      if (archive === "Y") {
-        handleArchiveSubmission()
-      }
-    } else {
-      onSave(formData);
-    }
-  };
-
-  const handleArchiveSubmission = () => {
+  const handleEditSubmission = () => {
     const formData = {
       firstName: firstName,
       lastName: lastName,
       email: email,
-      lastActiveDate: lastContactedAt
+      phoneNumber: phoneNumber,
+      socialMediaSource: socialMediaSource,
+      socialMedia: socialMedia,
+      lastActiveDate: lastActiveDate,
     }
 
-    onArchive(formData, leadsFormData.id)
+    onEdit(formData, archiveFormValue.id)
   }
-
-  const handleCancel = () => {
-    onCancel();
-  };
 
   return (
     <>
       <FormControl>
-        <FormLabel>First Name:</FormLabel>
+        <FormLabel>First Name</FormLabel>
         <Input
           onChange={handleFirstNameChange}
           placeholder="First Name"
@@ -143,7 +102,7 @@ const LeadsForm = ({
         />
       </FormControl>
       <FormControl mt={4}>
-        <FormLabel>Last Name:</FormLabel>
+        <FormLabel>Last Name</FormLabel>
         <Input
           onChange={handleLastNameChange}
           placeholder="Last Name"
@@ -151,7 +110,7 @@ const LeadsForm = ({
         />
       </FormControl>
       <FormControl mt={4}>
-        <FormLabel>Contact Source?</FormLabel>
+        <FormLabel>Primary Contact Source?</FormLabel>
         <RadioGroup onChange={handleContactSourceChange} value={contactSource}>
           <Stack direction="column">
             <Radio value="Social Media">Social Media</Radio>
@@ -237,30 +196,18 @@ const LeadsForm = ({
           />
         </FormControl>
       )}
-      <FormControl mt={4}>
-        <FormLabel>Last Contacted?</FormLabel>
+      <FormControl>
+      <FormLabel>Last Active Date</FormLabel>
         <Input
-          onChange={handleLastContactedAt}
+          onChange={handleLastActiveDateChange}
+          placeholder="Last Active Date"
           size="md"
           type="date"
-          value={lastContactedAt}
+          value={lastActiveDate}
         />
       </FormControl>
-      {isEditingEntry && (
-        <FormControl mt={4}>
-          <FormLabel>Archive Lead?</FormLabel>
-          <RadioGroup onChange={setArchive} value={archive}>
-            <Stack direction="column">
-              <Radio value="Y">Yes</Radio>
-              <Radio value="N">No</Radio>
-            </Stack>
-          </RadioGroup>
-        </FormControl>
-      )}
       <Flex mt={6} justifyContent="flex-start">
-        <Button onClick={handleFormSubmission} colorScheme="blue">
-          {isEditingEntry ? "Update" : "Save"}
-        </Button>
+        <Button onClick={handleEditSubmission} colorScheme="blue">Update</Button>
         <Button onClick={handleCancel} colorScheme="gray" ml={4}>
           Cancel
         </Button>
@@ -268,4 +215,5 @@ const LeadsForm = ({
     </>
   );
 };
-export default LeadsForm;
+
+export default ArchiveForm;

@@ -21,9 +21,9 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { useState } from "react";
-import LeadsForm from "./LeadsForm";
+import LeadsForm from "../forms/LeadsForm";
 import { FaUserAlt } from "react-icons/fa";
-import ConvertToLeadForm from "./ConvertToLeadForm";
+import ConvertToLeadForm from "../forms/ConvertToLeadForm";
 
 const LeadsCard = ({ lead, onDelete, onEdit, onArchive,onFetchLeads }) => {
   const [isDeleting, setIsDeleting] = useState(false);

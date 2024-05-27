@@ -5,8 +5,8 @@ import "./App.css";
 import Cookies from "js-cookie";
 import UserLogin from "./pages/UserLogin";
 import UserRegistration from "./pages/UserRegistration";
-import PasswordResetRequestForm from "./components/PasswordResetRequestForm";
-import ResetRequestForm from "./components/ResetRequestForm";
+import PasswordResetRequestForm from "./components/forms/PasswordResetRequestForm";
+import ResetRequestForm from "./components/forms/ResetRequestForm";
 
 
 const App = () => {

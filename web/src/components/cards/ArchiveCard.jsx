@@ -20,11 +20,11 @@ import {
   Tooltip,
 } from "@chakra-ui/react";
 import { useState } from "react";
-import ClientForm from "./ClientForm";
-import LeadsForm from "./LeadsForm";
-import ArchiveForm from "./ArchiveForm";
+import ClientForm from "../forms/ClientForm";
+import LeadsForm from "../forms/LeadsForm";
+import ArchiveForm from "../forms/ArchiveForm";
 
-const ArchiveCard = ({ archives, onRestore, onDelete, onEdit }) => {
+const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
@@ -97,10 +97,21 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit }) => {
     closeDeleteModal();
   };
 
+
   const handleEdit = (formData) => {
     onEdit(formData, archives.id);
     closeEditModal();
   };
+
+  const handleArchiveToActive = (formData) => {
+    onRestore(formData, archives.id)
+    closeClientForm()
+  }
+
+  const handleArchiveToActiveLead = (formData) => {
+    onMakeLead(formData, archives.id)
+    closeLeadForm()
+  }
 
   const handleArchiveToClient = () => {
     onRestoreClientOpen();
@@ -296,6 +307,7 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit }) => {
                 onRestore={isRestoringAsLead}
                 onCancel={closeLeadForm}
                 leadsFormData={archives}
+                onArchive={handleArchiveToActiveLead}
               />
             </ModalBody>
           </ModalContent>
@@ -312,6 +324,7 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit }) => {
                 onRestore={isRestoringAsClient}
                 clientFormValue={archives}
                 onCancel={closeClientForm}
+                onArchive={handleArchiveToActive}
               />
             </ModalBody>
           </ModalContent>

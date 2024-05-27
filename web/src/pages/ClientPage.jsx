@@ -11,11 +11,11 @@ import {
   Stack,
   useDisclosure,
 } from "@chakra-ui/react";
-import ClientForm from "../components/ClientForm";
+import ClientForm from "../components/forms/ClientForm";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { AddIcon } from "@chakra-ui/icons";
-import ClientCard from "../components/ClientCard";
+import ClientCard from "../components/cards/ClientCard";
 import { useEffect, useState } from "react";
 
 const ClientPage = () => {
