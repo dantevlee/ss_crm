@@ -9,10 +9,10 @@ router.post("/create-client", authenticateUser, async (req, res) => {
 
   try {
     const userId = req.id;
-    const { firstName, lastName, clientEmail, isLead } = req.body;
+    const { firstName, lastName, clientEmail, startDate, endDate } = req.body;
     const client = await db.query(
-      'INSERT into "Clients"("user_id", "firstName", "lastName", "client_email", "is_lead") VALUES($1, $2, $3, $4, $5) RETURNING*',
-      [userId, firstName, lastName, clientEmail, isLead]
+      'INSERT into "Clients"("user_id", "firstName", "lastName", "client_email", "start_date", "end_date") VALUES($1, $2, $3, $4, $5, $6) RETURNING*',
+      [userId, firstName, lastName, clientEmail, startDate, endDate]
     );
 
     res.json(client[0]);
@@ -49,7 +49,11 @@ router.delete(
 
     try {
       const clientId = req.params.clientId;
-      await db.query(`DELETE FROM "Clients" WHERE "id" = $1`, [clientId]);
+      const userId = req.id;
+      await db.query(
+        `DELETE FROM "Clients" WHERE "id" = $1 and "user_id" = $2`,
+        [clientId, userId]
+      );
       return res.json({ message: "Client Successfully Deleted." });
     } catch (error) {
       console.error(error);
@@ -65,10 +69,31 @@ router.put("/update/client/:clientId", authenticateUser, async (req, res) => {
 
   try {
     const clientId = req.params.clientId;
-    const { firstName, lastName, clientEmail, isLead } = req.body;
+    const userId = req.id;
+    const {
+      firstName,
+      lastName,
+      clientEmail,
+      startDate,
+      endDate,
+      phoneNumber,
+      socialMediaSource,
+      socialMedia,
+    } = req.body;
     const updatedClient = await db.query(
-      'UPDATE "Clients" SET "firstName" = $1, "lastName" = $2, "client_email" = $3, "is_lead" = $4 WHERE "id" = $5 RETURNING *',
-      [firstName, lastName, clientEmail, isLead, clientId]
+      'UPDATE "Clients" SET "firstName" = $1, "lastName" = $2, "client_email" = $3, "start_date" = $4, "end_date" = $5, "phone_number" = $6, "social_media_source" = $7, "social_media" = $8 WHERE "id" = $9 AND "user_id" = $10 RETURNING *',
+      [
+        firstName,
+        lastName,
+        clientEmail,
+        startDate,
+        endDate,
+        phoneNumber,
+        socialMediaSource,
+        socialMedia,
+        clientId,
+        userId
+      ]
     );
     res.json(updatedClient[0]);
   } catch (error) {
@@ -79,27 +104,47 @@ router.put("/update/client/:clientId", authenticateUser, async (req, res) => {
   }
 });
 
-router.patch(
-  "/archive/client/:clientId",
-  authenticateUser,
-  async (req, res) => {
-    const db = await dbPromise;
+router.post("/archive/client/:clientId", authenticateUser, async (req, res) => {
+  const db = await dbPromise;
 
-    try {
-      const clientId = req.params.clientId;
-      const { archivedIndicator } = req.body;
-      const archivedClient = await db.query(
-        `UPDATE "Clients" SET "is_archived" = $1 WHERE "id" = $2 RETURNING *`,
-        [archivedIndicator, clientId]
-      );
-      res.json(archivedClient[0]);
-    } catch (error) {
-      console.error(error);
-      res
-        .status(500)
-        .json({ message: "Internal Server Error. Could not Archive Client" });
+  try {
+    const userId = req.id;
+    const clientId = req.params.clientId;
+    const {
+      firstName,
+      lastName,
+      email,
+      phoneNumber,
+      socialMediaSource,
+      socialMedia,
+      lastActiveDate,
+    } = req.body;
+    const archivedClient = await db.query(
+      'INSERT into "Archives"("user_id", "firstName", "lastName", "email", "phone_number", "social_media_source", "soical_media", "last_active_date") VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING*',
+      [
+        userId,
+        firstName,
+        lastName,
+        email,
+        phoneNumber,
+        socialMediaSource,
+        socialMedia,
+        lastActiveDate,
+      ]
+    );
+    res.json(archivedClient[0]);
+    if (archivedClient.length === 1) {
+      await db.query('DELETE FROM "Clients" WHERE "id" = $1 AND user_id = $2', [
+        clientId,
+        userId,
+      ]);
     }
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Internal Server Error. Could not Archive Client" });
   }
-);
+});
 
 module.exports = router;
