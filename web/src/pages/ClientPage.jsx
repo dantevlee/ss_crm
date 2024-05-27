@@ -1,11 +1,9 @@
 import {
   Button,
-  Icon,
   Modal,
   ModalBody,
   ModalCloseButton,
   ModalContent,
-  ModalFooter,
   ModalHeader,
   ModalOverlay,
   Stack,

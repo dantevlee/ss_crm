@@ -15,7 +15,7 @@ import { useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 
-const ConvertToLeadForm = ({ onCancel, lead, onFetchLeads }) => {
+const ConvertToClientForm = ({ onCancel, lead, onFetchLeads }) => {
   const [email, setEmail] = useState("");
   const [startDate, setStartDate] = useState("");
   const [numberOfWeeks, setNumberOfWeeks] = useState(1);
@@ -151,4 +151,4 @@ const ConvertToLeadForm = ({ onCancel, lead, onFetchLeads }) => {
   );
 };
 
-export default ConvertToLeadForm;
+export default ConvertToClientForm;

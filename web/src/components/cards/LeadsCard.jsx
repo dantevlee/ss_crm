@@ -23,7 +23,7 @@ import {
 import { useState } from "react";
 import LeadsForm from "../forms/LeadsForm";
 import { FaUserAlt } from "react-icons/fa";
-import ConvertToLeadForm from "../forms/ConvertToLeadForm";
+import ConvertToClientForm from "../forms/ConvertToLeadForm";
 
 const LeadsCard = ({ lead, onDelete, onEdit, onArchive,onFetchLeads }) => {
   const [isDeleting, setIsDeleting] = useState(false);
@@ -220,7 +220,7 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive,onFetchLeads }) => {
             <ModalHeader>Convert To Client</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
-            <ConvertToLeadForm lead={lead} onCancel={closeConvertingModal} onFetchLeads={onFetchLeads}/>
+            <ConvertToClientForm lead={lead} onCancel={closeConvertingModal} onFetchLeads={onFetchLeads}/>
             </ModalBody>
           </ModalContent>
         </Modal>

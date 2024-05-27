@@ -78,7 +78,7 @@ router.delete(
       console.error(error);
       return res
         .status(500)
-        .json({ message: "Internal Server Error. Unable To Delete Client." });
+        .json({ message: "Internal Server Error. Unable To Delete Archive." });
     }
   }
 );
@@ -107,7 +107,7 @@ router.post(
     } catch (error) {
       console.error(error);
       res.status(500).json({
-        message: "Internal Servor Error. Unable to create a client.",
+        message: "Internal Servor Error. Unable to restore as Client.",
       });
     }
   }
@@ -154,7 +154,7 @@ router.post(
     } catch (error) {
       console.error(error);
       res.status(500).json({
-        message: "Internal Servor Error. Unable to create a lead.",
+        message: "Internal Servor Error. Unable to restore as Lead.",
       });
     }
   }

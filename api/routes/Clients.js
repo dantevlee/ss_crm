@@ -69,6 +69,7 @@ router.put("/update/client/:clientId", authenticateUser, async (req, res) => {
 
   try {
     const clientId = req.params.clientId;
+    const userId = req.id;
     const {
       firstName,
       lastName,
@@ -80,7 +81,7 @@ router.put("/update/client/:clientId", authenticateUser, async (req, res) => {
       socialMedia,
     } = req.body;
     const updatedClient = await db.query(
-      'UPDATE "Clients" SET "firstName" = $1, "lastName" = $2, "client_email" = $3, "start_date" = $4, "end_date" = $5, "phone_number" = $6, "social_media_source" = $7, "social_media" = $8 WHERE "id" = $9 RETURNING *',
+      'UPDATE "Clients" SET "firstName" = $1, "lastName" = $2, "client_email" = $3, "start_date" = $4, "end_date" = $5, "phone_number" = $6, "social_media_source" = $7, "social_media" = $8 WHERE "id" = $9 AND "user_id" = $10 RETURNING *',
       [
         firstName,
         lastName,
@@ -91,6 +92,7 @@ router.put("/update/client/:clientId", authenticateUser, async (req, res) => {
         socialMediaSource,
         socialMedia,
         clientId,
+        userId
       ]
     );
     res.json(updatedClient[0]);
