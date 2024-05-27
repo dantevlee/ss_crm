@@ -42,9 +42,6 @@ const LeadsForm = ({
           ? leadsFormData.last_contacted_at.split("T")[0]
           : ""
       );
-      if (leadsFormData.lead_email) {
-        setContactSource("E-mail");
-      }
       if (leadsFormData.phone_number) {
         setContactSource("Phone Number");
       }
