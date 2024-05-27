@@ -92,10 +92,10 @@ router.post(
     try {
       const userId = req.id;
       const archiveId = req.params.archiveId;
-      const { firstName, lastName, clientEmail, startDate, endDate } = req.body;
+      const { firstName, lastName, clientEmail, startDate, endDate, phoneNumber, socialMediaSource, socialMedia } = req.body;
       const client = await db.query(
-        'INSERT into "Clients"("user_id", "firstName", "lastName", "client_email", "start_date", "end_date") VALUES($1, $2, $3, $4, $5, $6) RETURNING*',
-        [userId, firstName, lastName, clientEmail, startDate, endDate]
+        'INSERT into "Clients"("user_id", "firstName", "lastName", "client_email", "start_date", "end_date", "phone_number", "social_media_source", "social_media") VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING*',
+        [userId, firstName, lastName, clientEmail, startDate, endDate, phoneNumber, socialMediaSource, socialMedia]
       );
       res.json(client[0]);
       if (client.length === 1) {

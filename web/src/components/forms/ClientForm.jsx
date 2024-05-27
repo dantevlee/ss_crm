@@ -27,9 +27,13 @@ const ClientForm = ({
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [startDate, setStartDate] = useState("");
   const [numberOfWeeks, setNumberOfWeeks] = useState(1);
   const [endDate, setEndDate] = useState("");
+  const [contactSource, setContactSource] = useState("");
+  const [socialMediaSource, setSocialMediaSource] = useState("");
+  const [socialMedia, setSocialMedia] = useState("");
   const [endDateCalcuated, setEndDateCalculated] = useState(false);
   const [isEditingEntry, setIsEditingEntry] = useState(false);
   const [archive, setArchive] = useState("N");
@@ -48,11 +52,22 @@ const ClientForm = ({
       setEndDate(
         clientFormValue.end_date ? clientFormValue.end_date.split("T")[0] : ""
       );
+      setPhoneNumber(
+        clientFormValue.phone_number ? clientFormValue.phone_number : ""
+      );
+      if (clientFormValue.phone_number) {
+        setContactSource("Phone Number");
+      } if (clientFormValue.social_media_source) {
+        setContactSource("Social Media");
+        setSocialMediaSource(clientFormValue.social_media_source);
+        setSocialMedia(clientFormValue.social_media);
+      }
       if(!onRestore){
         setIsEditingEntry(true);
       } else {
         setIsEditingEntry(false);
         setEmail(clientFormValue.email);
+        setSocialMedia(clientFormValue.soical_media)
       }
     
     }
@@ -88,6 +103,26 @@ const ClientForm = ({
     setNumberOfWeeks(parseInt(e.target.value));
   };
 
+  const handleContactSourceChange = (e) => {
+    setContactSource(e);
+    setSocialMediaSource("");
+    setSocialMedia("");
+    setPhoneNumber("");
+  };
+
+  const handleSocialMediaSourceChange = (e) => {
+    setSocialMediaSource(e);
+    setSocialMedia("");
+  };
+
+  const handleSocialMediaChange = (e) => {
+    setSocialMedia(e.target.value);
+  };
+
+  const handlePhoneNumberChange = (e) => {
+    setPhoneNumber(e.target.value);
+  };
+
   const calculateEndDate = () => {
     const millisecondsInWeek = 7 * 24 * 60 * 60 * 1000;
     const durationInMilliseconds = numberOfWeeks * millisecondsInWeek;
@@ -111,6 +146,9 @@ const ClientForm = ({
       clientEmail: email,
       startDate: startDate,
       endDate: endDate,
+      phoneNumber: phoneNumber, 
+      socialMediaSource: socialMediaSource,
+      socialMedia: socialMedia
     };
     if (isEditingEntry) {
       onEdit(formData, clientFormValue.id);
@@ -131,7 +169,10 @@ const ClientForm = ({
       firstName: firstName,
       lastName: lastName,
       email: email,
-      lastActiveDate: endDate
+      phoneNumber: phoneNumber,
+      socialMediaSource: socialMediaSource,
+      socialMedia: socialMedia,
+      lastActiveDate: endDate,
     }
 
     onArchive(formData, clientFormValue.id)
@@ -143,7 +184,10 @@ const ClientForm = ({
       lastName: lastName,
       clientEmail: email,
       startDate: startDate,
-      endDate: endDate
+      endDate: endDate,
+      phoneNumber: phoneNumber, 
+      socialMediaSource: socialMediaSource, 
+      socialMedia: socialMedia
     }
 
     onArchive(formData, clientFormValue.id)
@@ -157,7 +201,7 @@ const ClientForm = ({
   return (
     <>
       <FormControl>
-        <FormLabel>First Name</FormLabel>
+        <FormLabel>First Name:</FormLabel>
         <Input
           onChange={handleFirstNameChange}
           placeholder="First Name"
@@ -165,7 +209,7 @@ const ClientForm = ({
         />
       </FormControl>
       <FormControl mt={4}>
-        <FormLabel>Last name</FormLabel>
+        <FormLabel>Last Name:</FormLabel>
         <Input
           onChange={handleLastNameChange}
           placeholder="Last Name"
@@ -173,13 +217,90 @@ const ClientForm = ({
         />
       </FormControl>
       <FormControl mt={4}>
-        <FormLabel>E-mail</FormLabel>
+        <FormLabel>E-mail:</FormLabel>
         <Input
           onChange={handleEmailChange}
           placeholder="E-mail"
           value={email}
         />
       </FormControl>
+      <FormControl mt={4}>
+        <FormLabel>Alternate Contact Source?</FormLabel>
+        <RadioGroup onChange={handleContactSourceChange} value={contactSource}>
+          <Stack direction="column">
+            <Radio value="Social Media">Social Media</Radio>
+            <Radio value="Phone Number">Phone Number</Radio>
+            <Radio value="None">None</Radio>
+          </Stack>
+        </RadioGroup>
+      </FormControl>
+      {contactSource === "Social Media" && (
+        <FormControl mt={4}>
+          <FormLabel>Social Media?</FormLabel>
+          <RadioGroup
+            onChange={handleSocialMediaSourceChange}
+            value={socialMediaSource}
+          >
+            <Stack direction="column">
+              <Radio value="Instagram">Instagram</Radio>
+              <Radio value="Facebook">Facebook</Radio>
+              <Radio value="LinkedIn">LinkedIn</Radio>
+              <Radio value="Tik Tok">Tik Tok</Radio>
+              <Radio value="None">None</Radio>
+            </Stack>
+          </RadioGroup>
+        </FormControl>
+      )}{" "}
+      {socialMediaSource === "Instagram" && (
+        <FormControl mt={4}>
+          <FormLabel>IG:</FormLabel>
+          <Input
+            value={socialMedia}
+            placeholder="Instagram"
+            onChange={handleSocialMediaChange}
+          />
+        </FormControl>
+      )}
+      {socialMediaSource === "Facebook" && (
+        <FormControl mt={4}>
+          <FormLabel>Facebook:</FormLabel>
+          <Input
+            value={socialMedia}
+            placeholder="Facebook"
+            onChange={handleSocialMediaChange}
+          />
+        </FormControl>
+      )}
+      {socialMediaSource === "LinkedIn" && (
+        <FormControl mt={4}>
+          <FormLabel>LinkedIn:</FormLabel>
+          <Input
+            value={socialMedia}
+            placeholder="LinkedIn"
+            onChange={handleSocialMediaChange}
+          />
+        </FormControl>
+      )}
+      {socialMediaSource === "Tik Tok" && (
+        <FormControl mt={4}>
+          <FormLabel>Tik Tok:</FormLabel>
+          <Input
+            value={socialMedia}
+            placeholder="Tik-Tok"
+            onChange={handleSocialMediaChange}
+          />
+        </FormControl>
+      )}
+         {contactSource === "Phone Number" && (
+        <FormControl mt={4}>
+          <FormLabel>Phone Number</FormLabel>
+          <Input
+            onChange={handlePhoneNumberChange}
+            placeholder="Phone Number"
+            value={phoneNumber}
+          />
+        </FormControl>
+      )}
       <FormControl mt={4}>
         <FormLabel>Start Date</FormLabel>
         <Input

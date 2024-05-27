@@ -44,9 +44,11 @@ const LeadsForm = ({
       );
       if (leadsFormData.lead_email) {
         setContactSource("E-mail");
-      } else if (leadsFormData.phone_number) {
+      }
+      if (leadsFormData.phone_number) {
         setContactSource("Phone Number");
-      } else if (leadsFormData.social_media_source) {
+      }
+      if (leadsFormData.social_media_source) {
         setContactSource("Social Media");
         setSocialMediaSource(leadsFormData.social_media_source);
         setSocialMedia(leadsFormData.soical_media);
@@ -94,7 +96,6 @@ const LeadsForm = ({
     setSocialMediaSource("");
     setSocialMedia("");
     setPhoneNumber("");
-    setEmail("");
   };
 
   const handleFormSubmission = () => {
@@ -112,11 +113,9 @@ const LeadsForm = ({
       if (archive === "Y") {
         handleArchiveSubmission();
       }
-    } else if(onRestore){
-      handleArchiveToLeadSubmission()
-    }
-    
-    else {
+    } else if (onRestore) {
+      handleArchiveToLeadSubmission();
+    } else {
       onSave(formData);
     }
   };
@@ -171,13 +170,21 @@ const LeadsForm = ({
           value={lastName}
         />
       </FormControl>
+        <FormControl mt={4}>
+          <FormLabel>E-mail</FormLabel>
+          <Input
+            onChange={handleEmailChange}
+            placeholder="E-mail"
+            value={email}
+          />
+        </FormControl>
       <FormControl mt={4}>
-        <FormLabel>Contact Source?</FormLabel>
+        <FormLabel>Alternate Contact Source?</FormLabel>
         <RadioGroup onChange={handleContactSourceChange} value={contactSource}>
           <Stack direction="column">
             <Radio value="Social Media">Social Media</Radio>
-            <Radio value="E-mail">E-mail</Radio>
             <Radio value="Phone Number">Phone Number</Radio>
+            <Radio value="None">None</Radio>
           </Stack>
         </RadioGroup>
       </FormControl>
@@ -235,16 +242,6 @@ const LeadsForm = ({
             value={socialMedia}
             placeholder="Tik-Tok"
             onChange={handleSocialMediaChange}
-          />
-        </FormControl>
-      )}
-      {contactSource === "E-mail" && (
-        <FormControl mt={4}>
-          <FormLabel>E-mail</FormLabel>
-          <Input
-            onChange={handleEmailChange}
-            placeholder="E-mail"
-            value={email}
           />
         </FormControl>
       )}
