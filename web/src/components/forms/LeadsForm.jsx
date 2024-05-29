@@ -54,6 +54,7 @@ const LeadsForm = ({
         setIsEditingEntry(true);
       } else {
         setIsEditingEntry(false);
+        setEmail(leadsFormData.email)
       }
     }
   }, [leadsFormData]);
@@ -197,7 +198,6 @@ const LeadsForm = ({
               <Radio value="Facebook">Facebook</Radio>
               <Radio value="LinkedIn">LinkedIn</Radio>
               <Radio value="Tik Tok">Tik Tok</Radio>
-              <Radio value="None">None</Radio>
             </Stack>
           </RadioGroup>
         </FormControl>

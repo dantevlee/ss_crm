@@ -14,6 +14,7 @@ import {
 import { useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { useEffect } from "react";
 
 const ConvertToClientForm = ({ onCancel, lead, onFetchLeads }) => {
   const [email, setEmail] = useState("");
@@ -21,6 +22,12 @@ const ConvertToClientForm = ({ onCancel, lead, onFetchLeads }) => {
   const [numberOfWeeks, setNumberOfWeeks] = useState(1);
   const [endDate, setEndDate] = useState("");
   const [endDateCalcuated, setEndDateCalculated] = useState(false);
+
+  useEffect(() => {
+    if (lead) {
+      setEmail(lead.lead_email);
+    }
+  }, [lead]);
 
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
@@ -64,41 +71,45 @@ const ConvertToClientForm = ({ onCancel, lead, onFetchLeads }) => {
   };
 
   const convertLeadToClient = async () => {
-    const token = Cookies.get('SessionID')
+    const token = Cookies.get("SessionID");
     const formData = {
-      firstName: lead.firstName, 
+      firstName: lead.firstName,
       lastName: lead.lastName,
       clientEmail: lead.lead_email || email,
       startDate: startDate,
       endDate: endDate,
       phoneNumber: lead.phone_number,
       socialMediaSource: lead.social_media_source,
-      socialMedia: lead.soical_media
+      socialMedia: lead.soical_media,
+    };
+    try {
+      await axios
+        .post(
+          `http://localhost:3000/api/lead/convert/client/${lead.id}`,
+          formData,
+          {
+            headers: {
+              Authorization: `${token}`,
+            },
+          }
+        )
+        .then((res) => {
+          if (res.status === 200) {
+            onFetchLeads();
+            handleCancel();
+          }
+        });
+    } catch (error) {
+      console.error(error);
     }
-    try{
-      await axios.post(`http://localhost:3000/api/lead/convert/client/${lead.id}`, formData, {
-        headers: {
-          Authorization: `${token}`
-        }
-      }).then((res) => {
-       if(res.status === 200){
-        onFetchLeads()
-        handleCancel();
-       } 
-      })
-    } catch(error){
-      console.error(error)
-    }
-  }
+  };
 
   return (
     <>
-      {!lead.lead_email && (
         <FormControl>
           <FormLabel>E-mail</FormLabel>
-          <Input onChange={handleEmailChange} placeholder="E-mail" />
+          <Input onChange={handleEmailChange} placeholder="E-mail" value={email} />
         </FormControl>
-      )}
       <FormControl mt={4}>
         <FormLabel>Start Date</FormLabel>
         <Input onChange={handleStartDateChange} size="md" type="date" />
@@ -142,7 +153,9 @@ const ConvertToClientForm = ({ onCancel, lead, onFetchLeads }) => {
         )}
       </FormControl>
       <Flex mt={6} justifyContent="flex-start">
-        <Button onClick={convertLeadToClient} colorScheme="blue">Convert</Button>
+        <Button onClick={convertLeadToClient} colorScheme="blue">
+          Convert
+        </Button>
         <Button onClick={handleCancel} colorScheme="gray" ml={4}>
           Cancel
         </Button>
