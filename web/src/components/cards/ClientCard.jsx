@@ -1,4 +1,4 @@
-import { DeleteIcon, EditIcon, UnlockIcon } from "@chakra-ui/icons";
+import { AddIcon, DeleteIcon, EditIcon, UnlockIcon } from "@chakra-ui/icons";
 import {
   Box,
   Card,
@@ -18,13 +18,17 @@ import {
   ModalFooter,
   Button,
   Tooltip,
+  CardFooter,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import ClientForm from "../forms/ClientForm";
+import ClientProgressNotes from "../notes/ClientProgressNotes";
+import ClientProgressNotesForm from "../forms/ClientProgressNotesForm";
 
 const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isAddingNotes, setIsAddingNotes] = useState(false)
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const openDeleteModal = () => {
@@ -45,6 +49,16 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
   const closeEditModal = () => {
     onClose();
     setIsEditing(false);
+  };
+
+  const openNotesModal = () => {
+    onOpen()
+    setIsAddingNotes(true)
+  }
+
+  const closeNotesModal = () => {
+    onClose();
+    setIsAddingNotes(false);
   };
 
   const formatDate = (dateString) => {
@@ -76,21 +90,21 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
     <>
       <Card>
         <CardHeader>
-            <Tooltip label='Edit'>
+          <Tooltip label="Edit">
             <IconButton
               onClick={openEditModal}
               variant="outline"
               colorScheme="teal"
               icon={<EditIcon />}
             ></IconButton>
-            </Tooltip>
-          <Tooltip label='Delete'>
-          <IconButton
-            onClick={openDeleteModal}
-            variant="outline"
-            colorScheme="teal"
-            icon={<DeleteIcon />}
-          ></IconButton>
+          </Tooltip>
+          <Tooltip label="Delete">
+            <IconButton
+              onClick={openDeleteModal}
+              variant="outline"
+              colorScheme="teal"
+              icon={<DeleteIcon />}
+            ></IconButton>
           </Tooltip>
         </CardHeader>
         <CardBody>
@@ -148,7 +162,7 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
               <Text pt="2" fontSize="sm">
                 {formatDate(client.start_date)}
               </Text>
-              </Box>
+            </Box>
             <Box>
               <Heading size="xs" textTransform="uppercase">
                 End Date
@@ -157,13 +171,20 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
                 {formatDate(client.end_date)}
               </Text>
             </Box>
+        
+            <Button onClick={openNotesModal} textColor="blue" colorScheme="transparent">
+            <AddIcon mr={2} mt={0.5} color="blue" />
+              Add Note
+            </Button>
           </Stack>
         </CardBody>
+        <CardFooter>
+          <ClientProgressNotes />
+        </CardFooter>
       </Card>
       {isDeleting && (
         <Modal isOpen={isOpen} onClose={closeDeleteModal}>
           <ModalOverlay />
-
           <ModalContent>
             <ModalCloseButton />
             <ModalBody>
@@ -195,6 +216,17 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
             </ModalBody>
           </ModalContent>
         </Modal>
+      )}
+      {isAddingNotes && (
+           <Modal isOpen={isOpen} onClose={closeNotesModal}>
+           <ModalOverlay />
+           <ModalContent>
+             <ModalCloseButton />
+             <ModalBody>
+              <ClientProgressNotesForm/>
+             </ModalBody>
+           </ModalContent>
+         </Modal>
       )}
     </>
   );
