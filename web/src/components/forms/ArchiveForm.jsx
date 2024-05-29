@@ -110,12 +110,20 @@ const ArchiveForm = ({ archiveFormValue, onCancel, onEdit }) => {
         />
       </FormControl>
       <FormControl mt={4}>
+          <FormLabel>E-mail</FormLabel>
+          <Input
+            onChange={handleEmailChange}
+            placeholder="E-mail"
+            value={email}
+          />
+        </FormControl>
+      <FormControl mt={4}>
         <FormLabel>Primary Contact Source?</FormLabel>
         <RadioGroup onChange={handleContactSourceChange} value={contactSource}>
           <Stack direction="column">
             <Radio value="Social Media">Social Media</Radio>
-            <Radio value="E-mail">E-mail</Radio>
             <Radio value="Phone Number">Phone Number</Radio>
+            <Radio value="None">None</Radio>
           </Stack>
         </RadioGroup>
       </FormControl>
@@ -131,12 +139,11 @@ const ArchiveForm = ({ archiveFormValue, onCancel, onEdit }) => {
               <Radio value="Facebook">Facebook</Radio>
               <Radio value="LinkedIn">LinkedIn</Radio>
               <Radio value="Tik Tok">Tik Tok</Radio>
-              <Radio value="None">None</Radio>
             </Stack>
           </RadioGroup>
         </FormControl>
       )}{" "}
-      {socialMediaSource === "Instagram" && (
+      {socialMediaSource === "Instagram" && contactSource === "Social Media" && (
         <FormControl mt={4}>
           <FormLabel>IG:</FormLabel>
           <Input
@@ -146,7 +153,7 @@ const ArchiveForm = ({ archiveFormValue, onCancel, onEdit }) => {
           />
         </FormControl>
       )}
-      {socialMediaSource === "Facebook" && (
+      {socialMediaSource === "Facebook" && contactSource === "Social Media" && (
         <FormControl mt={4}>
           <FormLabel>Facebook:</FormLabel>
           <Input
@@ -156,7 +163,7 @@ const ArchiveForm = ({ archiveFormValue, onCancel, onEdit }) => {
           />
         </FormControl>
       )}
-      {socialMediaSource === "LinkedIn" && (
+      {socialMediaSource === "LinkedIn" && contactSource === "Social Media" && (
         <FormControl mt={4}>
           <FormLabel>LinkedIn:</FormLabel>
           <Input
@@ -166,23 +173,13 @@ const ArchiveForm = ({ archiveFormValue, onCancel, onEdit }) => {
           />
         </FormControl>
       )}
-      {socialMediaSource === "Tik Tok" && (
+      {socialMediaSource === "Tik Tok" && contactSource === "Social Media" && (
         <FormControl mt={4}>
           <FormLabel>Tik Tok:</FormLabel>
           <Input
             value={socialMedia}
             placeholder="Tik-Tok"
             onChange={handleSocialMediaChange}
-          />
-        </FormControl>
-      )}
-      {contactSource === "E-mail" && (
-        <FormControl mt={4}>
-          <FormLabel>E-mail</FormLabel>
-          <Input
-            onChange={handleEmailChange}
-            placeholder="E-mail"
-            value={email}
           />
         </FormControl>
       )}
@@ -196,7 +193,7 @@ const ArchiveForm = ({ archiveFormValue, onCancel, onEdit }) => {
           />
         </FormControl>
       )}
-      <FormControl>
+      <FormControl mt={4}>
       <FormLabel>Last Active Date</FormLabel>
         <Input
           onChange={handleLastActiveDateChange}
