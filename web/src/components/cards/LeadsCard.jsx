@@ -23,7 +23,7 @@ import {
 import { useState } from "react";
 import LeadsForm from "../forms/LeadsForm";
 import { FaUserAlt } from "react-icons/fa";
-import ConvertToClientForm from "../forms/ConvertToLeadForm";
+import ConvertToClientForm from "../forms/ConvertToClientForm";
 
 const LeadsCard = ({ lead, onDelete, onEdit, onArchive,onFetchLeads }) => {
   const [isDeleting, setIsDeleting] = useState(false);
