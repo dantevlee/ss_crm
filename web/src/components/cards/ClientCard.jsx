@@ -223,7 +223,7 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
            <ModalContent>
              <ModalCloseButton />
              <ModalBody>
-              <ClientProgressNotesForm/>
+              <ClientProgressNotesForm onCancel={closeNotesModal}/>
              </ModalBody>
            </ModalContent>
          </Modal>
