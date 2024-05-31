@@ -18,22 +18,31 @@ router.post('/create/note', authenticateUser, async (req, res) => {
   }
 })
 
-router.get("/notes", authenticateUser, async (req, res) => {
-  const db = await dbPromise;
-  try {
-    const client_id = req.query.client_id
-    const getAllNotesByClient = await db.query(
-      'SELECT * FROM "Client_Notes" WHERE "Client_Notes"."client_id"= $1',
-      [client_id]
-    );
-    return res.json(getAllNotesByClient);
-  } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ message: "Internal Server Error. Unable To Retrieve Client Notes." });
+router.get(`/clients/:client_id/notes`, authenticateUser, async (req, res) => {
+
+  const db = await dbPromise
+
+  const clientId = req.params.client_id
+  const userId = req.id
+
+  try{
+    const client = await db.query(`SELECT "id", "firstName", "lastName", "client_email" FROM "Clients" WHERE "id" = $1 AND "user_id" = $2`, [clientId, userId])
+
+    if (client.length === 0){
+      return res.status(404).json({message: "Client not found."})
+    }
+
+    const notes = await db.query(`SELECT * FROM "Client_Notes" WHERE "client_id" = $1 `,[clientId] )
+
+    return res.json({client: client[0], notes: notes})
+
+  } catch(error){
+    console.error(error)
+    res.status(500).json({message: "Internal Server Error. Unable to fetch notes by client."})
   }
-});
+})
+
+
 router.delete(
   `/delete/note/:noteId`,
   authenticateUser,

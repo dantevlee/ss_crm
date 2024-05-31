@@ -1,4 +1,4 @@
-import { AddIcon, DeleteIcon, EditIcon, UnlockIcon } from "@chakra-ui/icons";
+import { AddIcon, DeleteIcon, EditIcon } from "@chakra-ui/icons";
 import {
   Box,
   Card,
@@ -20,16 +20,68 @@ import {
   Tooltip,
   CardFooter,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { FaFileAlt } from "react-icons/fa";
+import { useEffect, useState } from "react";
+import Cookies from "js-cookie";
 import ClientForm from "../forms/ClientForm";
 import ClientProgressNotes from "../notes/ClientProgressNotes";
 import ClientProgressNotesForm from "../forms/ClientProgressNotesForm";
+import ClientFiles from "../file_uploads/ClientFiles";
+import axios from "axios";
 
 const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [isAddingNotes, setIsAddingNotes] = useState(false)
+  const [isAddingNotes, setIsAddingNotes] = useState(false);
+  const [isFileModalOpen, setIsFileModalOpen] = useState(false);
+  const [notes, setNotes] = useState([])
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const token = Cookies.get("SessionID");
+
+  useEffect(() => {
+    fetchNotes()
+  }, [client.id])
+
+
+  const fetchNotes = async () => {
+
+    try {
+      await axios.get(`http://localhost:3000/api/clients/${client.id}/notes`, {
+        headers: {
+          Authorization: `${token}`
+        }
+      }).then((res) => {
+        if(res.status === 200){
+          setNotes(res.data.notes)
+        }
+      })
+    } catch(error){
+      console.error(error)
+    }
+  
+  }
+
+  const createNote = async (formData) => {
+    try {
+      await axios
+        .post(
+          `http://localhost:3000/api/create/note?client_id=${client.id}`,
+          formData,
+          {
+            headers: {
+              Authorization: `${token}`,
+            },
+          }
+        )
+        .then((res) => {
+          if (res.status === 200) {
+            closeNotesModal()
+          }
+        });
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const openDeleteModal = () => {
     onOpen();
@@ -52,13 +104,23 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
   };
 
   const openNotesModal = () => {
-    onOpen()
-    setIsAddingNotes(true)
-  }
+    onOpen();
+    setIsAddingNotes(true);
+  };
 
   const closeNotesModal = () => {
     onClose();
     setIsAddingNotes(false);
+  };
+
+  const openFileModal = () => {
+    onOpen();
+    setIsFileModalOpen(true);
+  };
+
+  const closeFilesModal = () => {
+    onClose();
+    setIsFileModalOpen(false);
   };
 
   const formatDate = (dateString) => {
@@ -86,6 +148,8 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
     closeEditModal();
   };
 
+
+
   return (
     <>
       <Card>
@@ -104,6 +168,14 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
               variant="outline"
               colorScheme="teal"
               icon={<DeleteIcon />}
+            ></IconButton>
+          </Tooltip>
+          <Tooltip label="Files">
+            <IconButton
+              onClick={openFileModal}
+              variant="outline"
+              colorScheme="teal"
+              icon={<FaFileAlt />}
             ></IconButton>
           </Tooltip>
         </CardHeader>
@@ -171,15 +243,21 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
                 {formatDate(client.end_date)}
               </Text>
             </Box>
-        
-            <Button onClick={openNotesModal} textColor="blue" colorScheme="transparent">
-            <AddIcon mr={2} mt={0.5} color="blue" />
+
+            <Button
+              onClick={openNotesModal}
+              textColor="blue"
+              colorScheme="transparent"
+            >
+              <AddIcon mr={2} mt={0.5} color="blue" />
               Add Note
             </Button>
           </Stack>
         </CardBody>
         <CardFooter>
-          <ClientProgressNotes />
+          {notes.map((n) => (
+             <ClientProgressNotes key={n.id} notes={n} />
+          ))}
         </CardFooter>
       </Card>
       {isDeleting && (
@@ -218,15 +296,29 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
         </Modal>
       )}
       {isAddingNotes && (
-           <Modal isOpen={isOpen} onClose={closeNotesModal}>
-           <ModalOverlay />
-           <ModalContent>
-             <ModalCloseButton />
-             <ModalBody>
-              <ClientProgressNotesForm onCancel={closeNotesModal}/>
-             </ModalBody>
-           </ModalContent>
-         </Modal>
+        <Modal isOpen={isOpen} onClose={closeNotesModal}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalCloseButton />
+            <ModalBody>
+              <ClientProgressNotesForm 
+              onCancel={closeNotesModal}
+              onSave={createNote}
+               />
+            </ModalBody>
+          </ModalContent>
+        </Modal>
+      )}
+      {isFileModalOpen && (
+        <Modal isOpen={isOpen} onClose={closeFilesModal}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalCloseButton />
+            <ModalBody>
+              <ClientFiles onCancel={closeFilesModal} />
+            </ModalBody>
+          </ModalContent>
+        </Modal>
       )}
     </>
   );
