@@ -134,7 +134,13 @@ const ClientPage = () => {
       </Button>
       <Stack direction="row" spacing={4}>
         {clients.map((client) => (
-          <ClientCard mt={12} key={client.id} client={client} onDelete={deleteClient} onEdit={editClient} onArchive={archiveClient}  />
+          <ClientCard 
+          mt={12} 
+          key={client.id} 
+          client={client} 
+          onDelete={deleteClient} 
+          onEdit={editClient} 
+          onArchive={archiveClient}  />
         ))}
       </Stack>
       <Modal isOpen={isOpen} onClose={onClose}>

@@ -1,18 +1,21 @@
-import { Button, Flex, Text, Textarea } from "@chakra-ui/react";
+import { Button, Flex, FormControl, FormLabel, Input, Text, Textarea } from "@chakra-ui/react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useState } from "react";
 
 const ClientProgressNotesForm = ({onCancel, onSave}) => {
   const [noteInput, setNoteInput] = useState("")
+  const [titleInput, setTitleInput] = useState("")
   const [charCount, setCharCount] = useState(0)
-
-  const token = Cookies.get("SessionID");
 
   const handleNoteInputChange = (e) => {
     const value = e.target.value
     setNoteInput(value)
     setCharCount(value.length)
+  }
+
+  const handleTitleInputChange = (e) => {
+    setTitleInput(e.target.value)
   }
 
   const handleCancel = () => {
@@ -21,14 +24,23 @@ const ClientProgressNotesForm = ({onCancel, onSave}) => {
 
  const handleNotesSubmission = () => {
   const formData = {
-    noteText: noteInput
+    noteText: noteInput,
+    noteTitle: titleInput
   }
   onSave(formData)
  }
 
   return (
     <>
-     <Text mb='8px'>Note:</Text>
+      <FormControl mt={4}>
+        <FormLabel>Title:</FormLabel>
+        <Input
+          onChange={handleTitleInputChange}
+          placeholder="Title"
+          value={titleInput}
+        />
+      </FormControl>
+      <FormLabel mt={4}>Note:</FormLabel>
       <Textarea
         onChange={handleNoteInputChange}
         placeholder='Add Note..'

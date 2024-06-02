@@ -8,9 +8,9 @@ router.post('/create/note', authenticateUser, async (req, res) => {
   const db = await dbPromise
 
   try{
-    const {noteText} = req.body
+    const {noteText, noteTitle} = req.body
     const client_id = req.query.client_id
-    const note = await db.query(`INSERT into "Client_Notes"(client_id, text) VALUES($1, $2) RETURNING *`, [client_id, noteText])
+    const note = await db.query(`INSERT into "Client_Notes"(client_id, text, title, version) VALUES($1, $2, $3, $4) RETURNING *`, [client_id, noteText, noteTitle, 0])
     res.json(note[0])
   } catch(error){
     console.error(error)

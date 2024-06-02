@@ -34,32 +34,31 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isAddingNotes, setIsAddingNotes] = useState(false);
   const [isFileModalOpen, setIsFileModalOpen] = useState(false);
-  const [notes, setNotes] = useState([])
+  const [notes, setNotes] = useState([]);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const token = Cookies.get("SessionID");
 
   useEffect(() => {
-    fetchNotes()
-  }, [client.id])
-
+    fetchNotes();
+  }, [client.id]);
 
   const fetchNotes = async () => {
-
     try {
-      await axios.get(`http://localhost:3000/api/clients/${client.id}/notes`, {
-        headers: {
-          Authorization: `${token}`
-        }
-      }).then((res) => {
-        if(res.status === 200){
-          setNotes(res.data.notes)
-        }
-      })
-    } catch(error){
-      console.error(error)
+      await axios
+        .get(`http://localhost:3000/api/clients/${client.id}/notes`, {
+          headers: {
+            Authorization: `${token}`,
+          },
+        })
+        .then((res) => {
+          if (res.status === 200) {
+            setNotes(res.data.notes);
+          }
+        });
+    } catch (error) {
+      console.error(error);
     }
-  
-  }
+  };
 
   const createNote = async (formData) => {
     try {
@@ -75,7 +74,27 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
         )
         .then((res) => {
           if (res.status === 200) {
-            closeNotesModal()
+            closeNotesModal();
+            fetchNotes();
+          }
+        });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const deleteNote = async (noteId) => {
+    try {
+      axios
+        .delete(`http://localhost:3000/api/delete/note/${noteId}`, {
+          headers: {
+            Authorization: `${token}`,
+          },
+        })
+        .then((res) => {
+          if (res.status === 200) {
+            fetchNotes();
+            onClose();
           }
         });
     } catch (error) {
@@ -147,8 +166,6 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
     onArchive(formData, client.id);
     closeEditModal();
   };
-
-
 
   return (
     <>
@@ -254,10 +271,16 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
             </Button>
           </Stack>
         </CardBody>
+
         <CardFooter>
-          {notes.map((n) => (
-             <ClientProgressNotes key={n.id} notes={n} />
-          ))}
+          <Stack direction="column">
+            {notes.map((n) => (
+              <ClientProgressNotes 
+              key={n.id} 
+              notes={n} 
+              onDelete={deleteNote} />
+            ))}
+          </Stack>
         </CardFooter>
       </Card>
       {isDeleting && (
@@ -301,10 +324,10 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
           <ModalContent>
             <ModalCloseButton />
             <ModalBody>
-              <ClientProgressNotesForm 
-              onCancel={closeNotesModal}
-              onSave={createNote}
-               />
+              <ClientProgressNotesForm
+                onCancel={closeNotesModal}
+                onSave={createNote}
+              />
             </ModalBody>
           </ModalContent>
         </Modal>
