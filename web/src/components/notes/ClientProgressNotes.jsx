@@ -20,10 +20,12 @@ import {
 import Cookies from "js-cookie";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { DeleteIcon } from "@chakra-ui/icons";
+import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
+import ClientProgressNotesForm from "../forms/ClientProgressNotesForm";
 
-const ClientProgressNotes = ({ notes, onDelete }) => {
-  const [isDeleting, setIsDeleting] = useState(false)
+const ClientProgressNotes = ({ notes, onDelete, onEdit }) => {
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false)
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const openDeleteModal = () => {
@@ -40,6 +42,21 @@ const ClientProgressNotes = ({ notes, onDelete }) => {
     onDelete(notes.id);
     onClose();
   };
+
+  const openEditModal = () => {
+    onOpen()
+    setIsEditing(true)
+  }
+
+  const closeEditModal = () => {
+    onClose()
+    setIsEditing(false)
+  }
+
+  const handleEdit = (formData) => {
+    onEdit(formData, notes.id)
+    closeEditModal()
+  }
 
   const formatDate = (dateString) => {
     if (dateString) {
@@ -68,6 +85,16 @@ const ClientProgressNotes = ({ notes, onDelete }) => {
           </h2>
           <AccordionPanel pb={4}>
             {notes.text}
+            <Tooltip label="Edit Note">
+              <IconButton
+                onClick={openEditModal}
+                ml={2}
+                size="xs"
+                variant="outline"
+                colorScheme="teal"
+                icon={<EditIcon/>}
+              ></IconButton>
+            </Tooltip>
             <Tooltip label="Delete Note">
               <IconButton
                 onClick={openDeleteModal}
@@ -98,6 +125,21 @@ const ClientProgressNotes = ({ notes, onDelete }) => {
               </Button>
             </ModalFooter>
           </ModalContent>
+        </Modal>
+      )}
+      {isEditing && (
+        <Modal isOpen={isOpen} onClose={closeEditModal}>
+           <ModalOverlay />
+           <ModalContent>
+            <ModalCloseButton />
+            <ModalBody>
+              <ClientProgressNotesForm
+              formValues={notes}
+              onCancel={closeEditModal}
+              onEdit={handleEdit}
+              />
+            </ModalBody>
+           </ModalContent>
         </Modal>
       )}
     </>

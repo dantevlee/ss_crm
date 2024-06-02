@@ -102,6 +102,23 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
     }
   };
 
+  const editNote = async (formData, notesId) => {
+    try{
+      axios.put(`http://localhost:3000/api/update/note/${notesId}`, formData, {
+        headers: {
+          Authorization: `${token}`
+        }
+      }).then((res) => {
+        if(res.status === 200){
+          fetchNotes()
+          onClose()
+        }
+      })
+    } catch(error){
+      console.error(error)
+    }
+  }
+
   const openDeleteModal = () => {
     onOpen();
     setIsDeleting(true);
@@ -278,7 +295,8 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
               <ClientProgressNotes 
               key={n.id} 
               notes={n} 
-              onDelete={deleteNote} />
+              onDelete={deleteNote}
+              onEdit={editNote} />
             ))}
           </Stack>
         </CardFooter>
@@ -327,6 +345,7 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
               <ClientProgressNotesForm
                 onCancel={closeNotesModal}
                 onSave={createNote}
+
               />
             </ModalBody>
           </ModalContent>

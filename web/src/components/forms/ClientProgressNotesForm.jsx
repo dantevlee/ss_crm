@@ -1,12 +1,20 @@
 import { Button, Flex, FormControl, FormLabel, Input, Text, Textarea } from "@chakra-ui/react";
-import axios from "axios";
-import Cookies from "js-cookie";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-const ClientProgressNotesForm = ({onCancel, onSave}) => {
+const ClientProgressNotesForm = ({onCancel, onSave, onEdit, formValues}) => {
   const [noteInput, setNoteInput] = useState("")
   const [titleInput, setTitleInput] = useState("")
+  const [isEditingEntry, setIsEditingEntry] = useState(false)
   const [charCount, setCharCount] = useState(0)
+
+  useEffect(()=> {
+    if (formValues){
+       setTitleInput(formValues.title)
+       setNoteInput(formValues.text)
+       setCharCount(formValues.text.length)
+       setIsEditingEntry(true)
+    }
+  }, [])
 
   const handleNoteInputChange = (e) => {
     const value = e.target.value
@@ -24,10 +32,16 @@ const ClientProgressNotesForm = ({onCancel, onSave}) => {
 
  const handleNotesSubmission = () => {
   const formData = {
-    noteText: noteInput,
-    noteTitle: titleInput
+    noteTitle: titleInput,
+    noteText: noteInput
   }
-  onSave(formData)
+
+  if(isEditingEntry){
+    onEdit(formData, formValues.id)
+  } else {
+    onSave(formData)
+  }
+ 
  }
 
   return (
@@ -46,10 +60,15 @@ const ClientProgressNotesForm = ({onCancel, onSave}) => {
         placeholder='Add Note..'
         size="lg"
         height="200px" 
+        value={noteInput}
       />
       <Text mt={2} align="right">{charCount}/500</Text>
       <Flex mt={6} justifyContent="flex-start">
-      <Button onClick={handleNotesSubmission} colorScheme="blue">Save</Button>
+      <Button 
+      onClick={handleNotesSubmission} 
+      colorScheme="blue"> 
+      {isEditingEntry ? "Update" : "Save"}
+      </Button>
       <Button ml={3} colorScheme="gray" onClick={handleCancel}>Cancel</Button>
       </Flex>
     </>

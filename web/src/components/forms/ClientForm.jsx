@@ -62,12 +62,12 @@ const ClientForm = ({
         setSocialMediaSource(clientFormValue.social_media_source);
         setSocialMedia(clientFormValue.social_media);
       }
-      if(!onRestore){
-        setIsEditingEntry(true);
-      } else {
+      if(onRestore){
         setIsEditingEntry(false);
         setEmail(clientFormValue.email);
         setSocialMedia(clientFormValue.soical_media)
+      } else {
+        setIsEditingEntry(true);
       }
     
     }
@@ -157,9 +157,7 @@ const ClientForm = ({
       }
     } else if (onRestore) {
       handleArchiveToClientSubmission()
-    }
-    
-    else {
+    } else {
       onSave(formData);
     }
   };

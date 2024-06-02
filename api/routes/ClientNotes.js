@@ -8,7 +8,7 @@ router.post('/create/note', authenticateUser, async (req, res) => {
   const db = await dbPromise
 
   try{
-    const {noteText, noteTitle} = req.body
+    const {noteTitle, noteText} = req.body
     const client_id = req.query.client_id
     const note = await db.query(`INSERT into "Client_Notes"(client_id, text, title, version) VALUES($1, $2, $3, $4) RETURNING *`, [client_id, noteText, noteTitle, 0])
     res.json(note[0])
@@ -29,7 +29,7 @@ router.get(`/clients/:client_id/notes`, authenticateUser, async (req, res) => {
     const client = await db.query(`SELECT "id", "firstName", "lastName", "client_email" FROM "Clients" WHERE "id" = $1 AND "user_id" = $2`, [clientId, userId])
 
     if (client.length === 0){
-      return res.status(404).json({message: "Client not found."})
+      return res.status(404).json({message: "Client not found, while trying to retrieve progress notes."})
     }
 
     const notes = await db.query(`SELECT * FROM "Client_Notes" WHERE "client_id" = $1 `,[clientId] )
@@ -67,11 +67,11 @@ router.put("/update/note/:noteId", authenticateUser, async (req, res) => {
 
   try {
     const noteId = req.params.noteId;
-    const { noteText } = req.body;
+    const { noteTitle, noteText } = req.body;
     const currentTime = new Date()
     const updatedNote = await db.query(
-      'UPDATE "Client_Notes" SET "text" = $1, "updated_at" = $2 WHERE "id" = $3 RETURNING *',
-      [noteText, currentTime, noteId]
+      'UPDATE "Client_Notes" SET "title"= $1, "text" = $2, "updated_at" = $3, "version" = $4 WHERE "id" = $5 RETURNING *',
+      [noteTitle, noteText, currentTime, 1, noteId ]
     );
     res.json(updatedNote);
   } catch (error) {
