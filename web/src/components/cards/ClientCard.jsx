@@ -277,7 +277,6 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
                 {formatDate(client.end_date)}
               </Text>
             </Box>
-
             <Button
               onClick={openNotesModal}
               textColor="blue"

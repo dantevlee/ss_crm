@@ -132,13 +132,19 @@ router.post("/archive/client/:clientId", authenticateUser, async (req, res) => {
         lastActiveDate,
       ]
     );
-    res.json(archivedClient[0]);
+
+    const updatedNotes = await db.query(`UPDATE "Client_Notes" SET "archive_id" = $1, "client_id"= $2 WHERE "user_id" = $3 RETURNING *`, [archivedClient[0].id, null,userId])
+
+    res.json({archive: archivedClient[0], notes: updatedNotes});
+
     if (archivedClient.length === 1) {
       await db.query('DELETE FROM "Clients" WHERE "id" = $1 AND user_id = $2', [
         clientId,
         userId,
       ]);
     }
+
+  
   } catch (error) {
     console.error(error);
     res

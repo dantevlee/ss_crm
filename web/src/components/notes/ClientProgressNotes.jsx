@@ -17,9 +17,7 @@ import {
   Tooltip,
   useDisclosure,
 } from "@chakra-ui/react";
-import Cookies from "js-cookie";
-import axios from "axios";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
 import ClientProgressNotesForm from "../forms/ClientProgressNotesForm";
 
@@ -93,7 +91,9 @@ const ClientProgressNotes = ({ notes, onDelete, onEdit }) => {
                 variant="outline"
                 colorScheme="teal"
                 icon={<EditIcon/>}
-              ></IconButton>
+              >
+
+              </IconButton>
             </Tooltip>
             <Tooltip label="Delete Note">
               <IconButton
