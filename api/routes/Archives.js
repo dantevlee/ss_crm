@@ -92,12 +92,45 @@ router.post(
     try {
       const userId = req.id;
       const archiveId = req.params.archiveId;
-      const { firstName, lastName, clientEmail, startDate, endDate, phoneNumber, socialMediaSource, socialMedia } = req.body;
+      const {
+        firstName,
+        lastName,
+        clientEmail,
+        startDate,
+        endDate,
+        phoneNumber,
+        socialMediaSource,
+        socialMedia,
+      } = req.body;
       const client = await db.query(
         'INSERT into "Clients"("user_id", "firstName", "lastName", "client_email", "start_date", "end_date", "phone_number", "social_media_source", "social_media") VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING*',
-        [userId, firstName, lastName, clientEmail, startDate, endDate, phoneNumber, socialMediaSource, socialMedia]
+        [
+          userId,
+          firstName,
+          lastName,
+          clientEmail,
+          startDate,
+          endDate,
+          phoneNumber,
+          socialMediaSource,
+          socialMedia,
+        ]
       );
-      res.json(client[0]);
+      const noteId = await db.query(
+        `SELECT "id" from "Client_Notes" WHERE archive_id = $1`,
+        [archiveId]
+      );
+
+      if (noteId.length === 1) {
+        const updatedNotes = await db.query(
+          `UPDATE "Client_Notes" SET "archive_id" = $1, "client_id"= $2 WHERE "id" = $3 RETURNING *`,
+          [null, client[0].id, noteId[0].id]
+        );
+        res.json({ client: client[0], notes: updatedNotes });
+      } else {
+        res.json(client[0]);
+      }
+
       if (client.length === 1) {
         await db.query(
           'DELETE FROM "Archives" WHERE "id" = $1 AND "user_id" = $2',

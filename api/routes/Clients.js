@@ -50,6 +50,9 @@ router.delete(
     try {
       const clientId = req.params.clientId;
       const userId = req.id;
+
+      await db.query(`DELETE FROM "Client_Notes" WHERE "client_id" = $1`, [clientId])
+
       await db.query(
         `DELETE FROM "Clients" WHERE "id" = $1 and "user_id" = $2`,
         [clientId, userId]
