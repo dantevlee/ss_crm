@@ -20,18 +20,70 @@ import {
   Tooltip,
   CardFooter,
 } from "@chakra-ui/react";
-import { useState } from "react";
 import ClientForm from "../forms/ClientForm";
 import LeadsForm from "../forms/LeadsForm";
 import ArchiveForm from "../forms/ArchiveForm";
 import ArchivesProgressNotes from "../notes/ArchivesProgressNotes";
+import { useEffect, useState } from "react";
+import Cookies from "js-cookie";
+import axios from "axios";
+import ArchivesProgressNotesForm from "../forms/ArchivesProgressNotesForm";
 
 const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isAddingNotes, setIsAddingNotes] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
   const [isRestoringAsLead, setIsRestoringAsLead] = useState(false);
   const [isRestoringAsClient, setIsRestoringAsClient] = useState(false);
+  const [notes, setNotes] = useState([]);
+  const token = Cookies.get("SessionID");
+
+  useEffect(() => {
+    fetchNotes();
+  }, [archives.id]);
+
+  const fetchNotes = async () => {
+    try {
+      await axios
+        .get(`http://localhost:3000/api/archives/${archives.id}/notes`, {
+          headers: {
+            Authorization: `${token}`,
+          },
+        })
+        .then((res) => {
+          if (res.status === 200) {
+            setNotes(res.data.notes);
+          }
+        });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const createNote = async (formData) => {
+  
+    try {
+      await axios
+        .post(
+          `http://localhost:3000/api/create/archive-note?archive_id=${archives.id}`,
+          formData,
+          {
+            headers: {
+              Authorization: `${token}`,
+            },
+          }
+        )
+        .then((res) => {
+          if (res.status === 200) {
+            closeNotesModal();
+            fetchNotes();
+          }
+        });
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const {
     isOpen: isDeleteOpen,
@@ -63,6 +115,12 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
     onClose: onRestoreLeadClose,
   } = useDisclosure();
 
+  const {
+    isOpen: isAddNotesOpen,
+    onOpen: onAddNotesOpen,
+    onClose: onAddNotesClose,
+  } = useDisclosure();
+
   const openDeleteModal = () => {
     onDeleteOpen();
     setIsDeleting(true);
@@ -77,6 +135,16 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
   const openArchiveModal = () => {
     onRestoreOpen();
     setIsRestoring(true);
+  };
+
+  const openNotesModal = () => {
+    onAddNotesOpen();
+    setIsAddingNotes(true);
+  };
+
+  const closeNotesModal = () => {
+    onAddNotesClose();
+    setIsAddingNotes(false);
   };
 
   const closeDeleteModal = () => {
@@ -238,14 +306,24 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
                 </Text>
               </Box>
             )}
-            <Button textColor="blue" colorScheme="transparent">
+            <Button
+              onClick={openNotesModal}
+              textColor="blue"
+              colorScheme="transparent"
+            >
               <AddIcon mr={2} mt={0.5} color="blue" />
               Add Note
             </Button>
           </Stack>
         </CardBody>
         <CardFooter>
-          <ArchivesProgressNotes />
+          <Stack direction="column">
+            {notes.map((n) => (
+              <ArchivesProgressNotes 
+              key={n.id} 
+              notes={n} />
+            ))}
+          </Stack>
         </CardFooter>
       </Card>
 
@@ -284,7 +362,6 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
           </ModalContent>
         </Modal>
       )}
-
       {isRestoring && (
         <Modal isOpen={isRestoreOpen} onClose={closeArchiveModal}>
           <ModalOverlay />
@@ -304,7 +381,6 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
           </ModalContent>
         </Modal>
       )}
-
       {isRestoringAsLead && (
         <Modal isOpen={isRestoreLeadOpen} onClose={closeLeadForm}>
           <ModalOverlay />
@@ -321,7 +397,6 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
           </ModalContent>
         </Modal>
       )}
-
       {isRestoringAsClient && (
         <Modal isOpen={isRestoreClientOpen} onClose={closeClientForm}>
           <ModalOverlay />
@@ -334,6 +409,19 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
                 onCancel={closeClientForm}
                 onArchive={handleArchiveToActive}
               />
+            </ModalBody>
+          </ModalContent>
+        </Modal>
+      )}
+      {isAddingNotes && (
+        <Modal isOpen={isAddNotesOpen} onClose={closeNotesModal}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalCloseButton />
+            <ModalBody>
+              <ArchivesProgressNotesForm
+               onSave={createNote}
+               onCancel={closeNotesModal} />
             </ModalBody>
           </ModalContent>
         </Modal>

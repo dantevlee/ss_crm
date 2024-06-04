@@ -64,7 +64,7 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
     try {
       await axios
         .post(
-          `http://localhost:3000/api/create/note?client_id=${client.id}`,
+          `http://localhost:3000/api/create/client-note?client_id=${client.id}`,
           formData,
           {
             headers: {

@@ -16,6 +16,7 @@ app.use('/api', require('./routes/Archives'))
 app.use('/api', require('./routes/Leads'))
 app.use('/api', require('./routes/ClientNotes'))
 app.use('/api', require('./routes/ClientFiles'))
+app.use('/api', require('./routes/ArchiveNotes'))
 
 
 server.listen(port, () =>console.log(`Server is listening on ${port}.`))

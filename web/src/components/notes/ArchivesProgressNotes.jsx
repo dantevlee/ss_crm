@@ -10,18 +10,35 @@ import {
   Tooltip,
 } from "@chakra-ui/react";
 
-const ArchivesProgressNotes = () => {
+const ArchivesProgressNotes = ({notes}) => {
+
+  const formatDate = (dateString) => {
+    if (dateString) {
+      const date = new Date(dateString);
+      const month = date.getMonth() + 1;
+      const day = date.getDate();
+      const year = date.getFullYear();
+      return `${month}/${day}/${year}`;
+    }
+  };
+
   return (
     <>
       <Accordion allowToggle>
         <AccordionItem>
           <h2>
             <AccordionButton>
-              <Box></Box>
+              <Box>
+              {notes.title}:{" "}
+                {notes.version === "0"
+                  ? formatDate(notes.created_at)
+                  : formatDate(notes.updated_at)}
+              </Box>
               <AccordionIcon />
             </AccordionButton>
           </h2>
-          <AccordionPanel>
+          <AccordionPanel pb={4}>
+          {notes.text}
             <Tooltip label="Edit Note">
               <IconButton
                 size="xs"
