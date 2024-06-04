@@ -50,6 +50,9 @@ router.delete(
     try {
       const clientId = req.params.clientId;
       const userId = req.id;
+
+      await db.query(`DELETE FROM "Client_Notes" WHERE "client_id" = $1`, [clientId])
+
       await db.query(
         `DELETE FROM "Clients" WHERE "id" = $1 and "user_id" = $2`,
         [clientId, userId]
@@ -132,13 +135,24 @@ router.post("/archive/client/:clientId", authenticateUser, async (req, res) => {
         lastActiveDate,
       ]
     );
-    res.json(archivedClient[0]);
+
+    const noteId = await db.query(`SELECT "id" from "Client_Notes" WHERE client_id = $1`,[clientId])
+
+    if (noteId.length === 1){
+      const updatedNotes = await db.query(`UPDATE "Client_Notes" SET "archive_id" = $1, "client_id"= $2 WHERE "id" = $3 RETURNING *`, [archivedClient[0].id, null, noteId[0].id])
+      res.json({archive: archivedClient[0], notes: updatedNotes});
+    } else {
+      res.json({archive: archivedClient[0]})
+    }
+
     if (archivedClient.length === 1) {
       await db.query('DELETE FROM "Clients" WHERE "id" = $1 AND user_id = $2', [
         clientId,
         userId,
       ]);
     }
+
+  
   } catch (error) {
     console.error(error);
     res

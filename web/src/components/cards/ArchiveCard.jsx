@@ -1,4 +1,4 @@
-import { DeleteIcon, EditIcon, UnlockIcon } from "@chakra-ui/icons";
+import { AddIcon, DeleteIcon, EditIcon, UnlockIcon } from "@chakra-ui/icons";
 import {
   Box,
   Card,
@@ -18,11 +18,13 @@ import {
   ModalFooter,
   Button,
   Tooltip,
+  CardFooter,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import ClientForm from "../forms/ClientForm";
 import LeadsForm from "../forms/LeadsForm";
 import ArchiveForm from "../forms/ArchiveForm";
+import ArchivesProgressNotes from "../notes/ArchivesProgressNotes";
 
 const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
   const [isDeleting, setIsDeleting] = useState(false);
@@ -36,25 +38,25 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
     onOpen: onDeleteOpen,
     onClose: onDeleteClose,
   } = useDisclosure();
-  
+
   const {
     isOpen: isEditOpen,
     onOpen: onEditOpen,
     onClose: onEditClose,
   } = useDisclosure();
-  
+
   const {
     isOpen: isRestoreOpen,
     onOpen: onRestoreOpen,
     onClose: onRestoreClose,
   } = useDisclosure();
-  
+
   const {
     isOpen: isRestoreClientOpen,
     onOpen: onRestoreClientOpen,
     onClose: onRestoreClientClose,
   } = useDisclosure();
-  
+
   const {
     isOpen: isRestoreLeadOpen,
     onOpen: onRestoreLeadOpen,
@@ -69,7 +71,7 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
   const openEditModal = () => {
     onEditOpen();
     setIsEditing(true);
-    setIsRestoring(false)
+    setIsRestoring(false);
   };
 
   const openArchiveModal = () => {
@@ -97,43 +99,42 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
     closeDeleteModal();
   };
 
-
   const handleEdit = (formData) => {
     onEdit(formData, archives.id);
     closeEditModal();
   };
 
   const handleArchiveToActive = (formData) => {
-    onRestore(formData, archives.id)
-    closeClientForm()
-  }
+    onRestore(formData, archives.id);
+    closeClientForm();
+  };
 
   const handleArchiveToActiveLead = (formData) => {
-    onMakeLead(formData, archives.id)
-    closeLeadForm()
-  }
+    onMakeLead(formData, archives.id);
+    closeLeadForm();
+  };
 
   const handleArchiveToClient = () => {
     onRestoreClientOpen();
     setIsRestoringAsClient(true);
-    closeArchiveModal()
+    closeArchiveModal();
   };
 
   const handleArchiveToLead = () => {
     onRestoreLeadOpen();
     setIsRestoringAsLead(true);
-    closeArchiveModal()
+    closeArchiveModal();
   };
 
   const closeClientForm = () => {
     onRestoreClientClose();
-    onRestoreClose()
+    onRestoreClose();
     setIsRestoringAsClient(false);
   };
 
   const closeLeadForm = () => {
     onRestoreLeadClose();
-    onRestoreClose()
+    onRestoreClose();
     setIsRestoringAsLead(false);
   };
 
@@ -216,7 +217,7 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
                 </Text>
               </Box>
             )}
-            
+
             {archives.social_media_source && (
               <Box>
                 <Heading size="xs" textTransform="uppercase">
@@ -237,8 +238,15 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
                 </Text>
               </Box>
             )}
+            <Button textColor="blue" colorScheme="transparent">
+              <AddIcon mr={2} mt={0.5} color="blue" />
+              Add Note
+            </Button>
           </Stack>
         </CardBody>
+        <CardFooter>
+          <ArchivesProgressNotes />
+        </CardFooter>
       </Card>
 
       {isDeleting && (
