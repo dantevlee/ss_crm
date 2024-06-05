@@ -105,9 +105,11 @@ const ClientForm = ({
 
   const handleContactSourceChange = (e) => {
     setContactSource(e);
-    setSocialMediaSource("");
-    setSocialMedia("");
-    setPhoneNumber("");
+    if(e === "None"){
+      setSocialMedia("")
+      setPhoneNumber("")
+      setSocialMediaSource("")
+    }
   };
 
   const handleSocialMediaSourceChange = (e) => {

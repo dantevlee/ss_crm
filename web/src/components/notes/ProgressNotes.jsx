@@ -19,9 +19,9 @@ import {
 } from "@chakra-ui/react";
 import { useState } from "react";
 import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
-import ClientProgressNotesForm from "../forms/ClientProgressNotesForm";
+import ProgressNotesForm from "../forms/ProgressNotesForm";
 
-const ClientProgressNotes = ({ notes, onDelete, onEdit }) => {
+const ProgressNotes = ({ notes, onDelete, onEdit }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false)
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -133,7 +133,7 @@ const ClientProgressNotes = ({ notes, onDelete, onEdit }) => {
            <ModalContent>
             <ModalCloseButton />
             <ModalBody>
-              <ClientProgressNotesForm
+              <ProgressNotesForm
               formValues={notes}
               onCancel={closeEditModal}
               onEdit={handleEdit}
@@ -146,4 +146,4 @@ const ClientProgressNotes = ({ notes, onDelete, onEdit }) => {
   );
 };
 
-export default ClientProgressNotes;
+export default ProgressNotes;

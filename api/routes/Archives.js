@@ -69,6 +69,9 @@ router.delete(
     try {
       const archiveId = req.params.archiveId;
       const userId = req.id;
+
+      await db.query(`DELETE FROM "Client_Notes" WHERE "archive_id" = $1`, [archiveId])
+
       await db.query(
         `DELETE FROM "Archives" WHERE "id" = $1 AND "user_id" = $2`,
         [archiveId, userId]
@@ -177,7 +180,19 @@ router.post(
           soicalMedia,
         ]
       );
-      res.json(lead[0]);
+      const noteId = await db.query(
+        `SELECT "id" from "Client_Notes" WHERE archive_id = $1`,
+        [archiveId]
+      );
+      if (noteId.length === 1) {
+        const updatedNotes = await db.query(
+          `UPDATE "Client_Notes" SET "archive_id" = $1, "lead_id"= $2 WHERE "id" = $3 RETURNING *`,
+          [null, lead[0].id, noteId[0].id]
+        );
+        res.json({ client: lead[0], notes: updatedNotes });
+      } else {
+        res.json(lead[0]);
+      }
       if (lead.length === 1) {
         await db.query(
           'DELETE FROM "Archives" WHERE "id" = $1 AND "user_id" = $2',

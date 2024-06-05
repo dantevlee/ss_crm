@@ -91,9 +91,11 @@ const LeadsForm = ({
 
   const handleContactSourceChange = (e) => {
     setContactSource(e);
-    setSocialMediaSource("");
-    setSocialMedia("");
-    setPhoneNumber("");
+    if (e === "None"){
+      setSocialMedia("")
+      setPhoneNumber("")
+      setSocialMediaSource("")
+    }
   };
 
   const handleFormSubmission = () => {

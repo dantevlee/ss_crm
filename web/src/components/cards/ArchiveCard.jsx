@@ -23,11 +23,11 @@ import {
 import ClientForm from "../forms/ClientForm";
 import LeadsForm from "../forms/LeadsForm";
 import ArchiveForm from "../forms/ArchiveForm";
-import ArchivesProgressNotes from "../notes/ArchivesProgressNotes";
+import ProgressNotes from "../notes/ProgressNotes";
 import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import axios from "axios";
-import ArchivesProgressNotesForm from "../forms/ArchivesProgressNotesForm";
+import ProgresNotesForm from '../forms/ProgressNotesForm'
 
 const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
   const [isDeleting, setIsDeleting] = useState(false);
@@ -84,6 +84,43 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
       console.error(error);
     }
   };
+
+  const deleteNote = async (noteId) => {
+    try {
+      axios
+        .delete(`http://localhost:3000/api/delete/note/${noteId}`, {
+          headers: {
+            Authorization: `${token}`,
+          },
+        })
+        .then((res) => {
+          if (res.status === 200) {
+            fetchNotes();
+            onClose();
+          }
+        });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const editNote = async (formData, notesId) => {
+    try{
+      axios.put(`http://localhost:3000/api/update/note/${notesId}`, formData, {
+        headers: {
+          Authorization: `${token}`
+        }
+      }).then((res) => {
+        if(res.status === 200){
+          fetchNotes()
+          onClose()
+        }
+      })
+    } catch(error){
+      console.error(error)
+    }
+  }
+
 
   const {
     isOpen: isDeleteOpen,
@@ -319,9 +356,11 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
         <CardFooter>
           <Stack direction="column">
             {notes.map((n) => (
-              <ArchivesProgressNotes 
+              <ProgressNotes 
               key={n.id} 
-              notes={n} />
+              notes={n}
+              onDelete={deleteNote}
+              onEdit={editNote} />
             ))}
           </Stack>
         </CardFooter>
@@ -419,7 +458,7 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
           <ModalContent>
             <ModalCloseButton />
             <ModalBody>
-              <ArchivesProgressNotesForm
+              <ProgresNotesForm
                onSave={createNote}
                onCancel={closeNotesModal} />
             </ModalBody>

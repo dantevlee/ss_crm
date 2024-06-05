@@ -66,6 +66,11 @@ const ArchiveForm = ({ archiveFormValue, onCancel, onEdit }) => {
 
   const handleContactSourceChange = (e) => {
     setContactSource(e);
+    if(e === "None"){
+      setSocialMedia("")
+      setPhoneNumber("")
+      setSocialMediaSource("")
+    }
   };
 
   const handleSocialMediaSourceChange = (e) => {

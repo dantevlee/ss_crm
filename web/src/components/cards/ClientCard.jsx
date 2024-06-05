@@ -24,8 +24,8 @@ import { FaFileAlt } from "react-icons/fa";
 import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import ClientForm from "../forms/ClientForm";
-import ClientProgressNotes from "../notes/ClientProgressNotes";
-import ClientProgressNotesForm from "../forms/ClientProgressNotesForm";
+import ProgressNotes from "../notes/ProgressNotes";
+import ProgressNotesForm from "../forms/ProgressNotesForm";
 import ClientFiles from "../file_uploads/ClientFiles";
 import axios from "axios";
 
@@ -291,7 +291,7 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
         <CardFooter>
           <Stack direction="column">
             {notes.map((n) => (
-              <ClientProgressNotes 
+              <ProgressNotes 
               key={n.id} 
               notes={n} 
               onDelete={deleteNote}
@@ -341,7 +341,7 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
           <ModalContent>
             <ModalCloseButton />
             <ModalBody>
-              <ClientProgressNotesForm
+              <ProgressNotesForm
                 onCancel={closeNotesModal}
                 onSave={createNote}
 

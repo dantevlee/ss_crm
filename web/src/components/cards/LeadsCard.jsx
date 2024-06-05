@@ -1,9 +1,10 @@
-import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
+import { AddIcon, DeleteIcon, EditIcon } from "@chakra-ui/icons";
 import {
   Box,
   Button,
   Card,
   CardBody,
+  CardFooter,
   CardHeader,
   Heading,
   IconButton,
@@ -20,16 +21,44 @@ import {
   Tooltip,
   useDisclosure,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import LeadsForm from "../forms/LeadsForm";
 import { FaUserAlt } from "react-icons/fa";
 import ConvertToClientForm from "../forms/ConvertToClientForm";
+import Cookies from "js-cookie";
+import axios from "axios";
+import ProgressNotes from "../notes/ProgressNotes";
 
 const LeadsCard = ({ lead, onDelete, onEdit, onArchive,onFetchLeads }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isConverting, setIsConverting] = useState(false)
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [notes, setNotes] = useState([]);
+
+  const token = Cookies.get("SessionID");
+
+  useEffect(() => {
+    fetchNotes();
+  }, [lead.id]);
+
+  const fetchNotes = async () => {
+    try {
+      await axios
+        .get(`http://localhost:3000/api/leads/${lead.id}/notes`, {
+          headers: {
+            Authorization: `${token}`,
+          },
+        })
+        .then((res) => {
+          if (res.status === 200) {
+            setNotes(res.data.notes);
+          }
+        });
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const openDeleteModal = () => {
     onOpen();
@@ -173,8 +202,26 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive,onFetchLeads }) => {
                 </Text>
               </Box>
             )}
+              <Button
+              textColor="blue"
+              colorScheme="transparent"
+            >
+              <AddIcon mr={2} mt={0.5} color="blue" />
+              Add Note
+            </Button>
           </Stack>
         </CardBody>
+
+        <CardFooter>
+          <Stack direction="column">
+            {notes.map((n) => (
+              <ProgressNotes 
+              key={n.id}
+              notes={n}
+              />
+            ))}
+          </Stack>
+        </CardFooter>
       </Card>
       {isDeleting && (
         <Modal isOpen={isOpen} onClose={closeDeleteModal}>
