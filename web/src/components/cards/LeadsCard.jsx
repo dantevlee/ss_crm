@@ -28,11 +28,13 @@ import ConvertToClientForm from "../forms/ConvertToClientForm";
 import Cookies from "js-cookie";
 import axios from "axios";
 import ProgressNotes from "../notes/ProgressNotes";
+import ProgressNotesForm from "../forms/ProgressNotesForm";
 
-const LeadsCard = ({ lead, onDelete, onEdit, onArchive,onFetchLeads }) => {
+const LeadsCard = ({ lead, onDelete, onEdit, onArchive, onFetchLeads }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [isConverting, setIsConverting] = useState(false)
+  const [isAddingNotes, setIsAddingNotes] = useState(false);
+  const [isConverting, setIsConverting] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [notes, setNotes] = useState([]);
 
@@ -53,6 +55,67 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive,onFetchLeads }) => {
         .then((res) => {
           if (res.status === 200) {
             setNotes(res.data.notes);
+          }
+        });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const createNote = async (formData) => {
+    try {
+      await axios
+        .post(
+          `http://localhost:3000/api/create/lead-note?lead_id=${lead.id}`,
+          formData,
+          {
+            headers: {
+              Authorization: `${token}`,
+            },
+          }
+        )
+        .then((res) => {
+          if (res.status === 200) {
+            closeNotesModal();
+            fetchNotes();
+          }
+        });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const deleteNote = async (noteId) => {
+    try {
+      axios
+        .delete(`http://localhost:3000/api/delete/note/${noteId}`, {
+          headers: {
+            Authorization: `${token}`,
+          },
+        })
+        .then((res) => {
+          if (res.status === 200) {
+            fetchNotes();
+            onClose();
+          }
+        });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const editNote = async (formData, notesId) => {
+    try {
+      axios
+        .put(`http://localhost:3000/api/update/note/${notesId}`, formData, {
+          headers: {
+            Authorization: `${token}`,
+          },
+        })
+        .then((res) => {
+          if (res.status === 200) {
+            fetchNotes();
+            onClose();
           }
         });
     } catch (error) {
@@ -91,14 +154,24 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive,onFetchLeads }) => {
   };
 
   const openLeadConversionModal = () => {
-    onOpen()
-    setIsConverting(true)
-  }
+    onOpen();
+    setIsConverting(true);
+  };
 
   const closeConvertingModal = () => {
-    onClose()
-    setIsConverting(false)
-  }
+    onClose();
+    setIsConverting(false);
+  };
+
+  const openNotesModal = () => {
+    onOpen();
+    setIsAddingNotes(true);
+  };
+
+  const closeNotesModal = () => {
+    onClose();
+    setIsAddingNotes(false);
+  };
 
   const formatDate = (dateString) => {
     if (dateString) {
@@ -111,38 +184,37 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive,onFetchLeads }) => {
   };
 
   const handleArchive = (formData) => {
-    onArchive(formData, lead.id)
+    onArchive(formData, lead.id);
     closeEditModal();
-  }
+  };
 
   return (
     <>
       <Card>
         <CardHeader>
-          <Tooltip label='Convert To Client?'>
+          <Tooltip label="Convert To Client?">
             <IconButton
-            onClick={openLeadConversionModal}
-            variant='outline'
-            colorScheme="teal"
-            icon={<FaUserAlt/>}
-            >
-            </IconButton>
+              onClick={openLeadConversionModal}
+              variant="outline"
+              colorScheme="teal"
+              icon={<FaUserAlt />}
+            ></IconButton>
           </Tooltip>
-          <Tooltip label='Edit'>
-          <IconButton
-            onClick={openEditModal}
-            variant="outline"
-            colorScheme="teal"
-            icon={<EditIcon />}
-          ></IconButton>
+          <Tooltip label="Edit">
+            <IconButton
+              onClick={openEditModal}
+              variant="outline"
+              colorScheme="teal"
+              icon={<EditIcon />}
+            ></IconButton>
           </Tooltip>
-          <Tooltip label='Delete'>
-          <IconButton
-            onClick={openDeleteModal}
-            variant="outline"
-            colorScheme="teal"
-            icon={<DeleteIcon />}
-          ></IconButton>
+          <Tooltip label="Delete">
+            <IconButton
+              onClick={openDeleteModal}
+              variant="outline"
+              colorScheme="teal"
+              icon={<DeleteIcon />}
+            ></IconButton>
           </Tooltip>
         </CardHeader>
         <CardBody>
@@ -202,10 +274,9 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive,onFetchLeads }) => {
                 </Text>
               </Box>
             )}
-              <Button
-              textColor="blue"
-              colorScheme="transparent"
-            >
+            <Button 
+            onClick={openNotesModal}
+            textColor="blue" colorScheme="transparent">
               <AddIcon mr={2} mt={0.5} color="blue" />
               Add Note
             </Button>
@@ -216,8 +287,10 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive,onFetchLeads }) => {
           <Stack direction="column">
             {notes.map((n) => (
               <ProgressNotes 
-              key={n.id}
-              notes={n}
+              key={n.id} 
+              notes={n} 
+              onDelete={deleteNote}
+              onEdit={editNote}
               />
             ))}
           </Stack>
@@ -227,7 +300,7 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive,onFetchLeads }) => {
         <Modal isOpen={isOpen} onClose={closeDeleteModal}>
           <ModalOverlay />
           <ModalContent>
-          <ModalHeader>Delete Lead?</ModalHeader>
+            <ModalHeader>Delete Lead?</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
               Delete Lead: {lead.firstName} {lead.lastName}?
@@ -247,7 +320,7 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive,onFetchLeads }) => {
         <Modal isOpen={isOpen} onClose={closeEditModal}>
           <ModalOverlay />
           <ModalContent>
-          <ModalHeader>Edit Lead</ModalHeader>
+            <ModalHeader>Edit Lead</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
               <LeadsForm
@@ -260,14 +333,32 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive,onFetchLeads }) => {
           </ModalContent>
         </Modal>
       )}
-       {isConverting && (
+      {isConverting && (
         <Modal isOpen={isOpen} onClose={closeConvertingModal}>
           <ModalOverlay />
           <ModalContent>
             <ModalHeader>Convert To Client</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
-            <ConvertToClientForm lead={lead} onCancel={closeConvertingModal} onFetchLeads={onFetchLeads}/>
+              <ConvertToClientForm
+                lead={lead}
+                onCancel={closeConvertingModal}
+                onFetchLeads={onFetchLeads}
+              />
+            </ModalBody>
+          </ModalContent>
+        </Modal>
+      )}
+      {isAddingNotes && (
+        <Modal isOpen={isOpen} onClose={closeNotesModal}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalCloseButton />
+            <ModalBody>
+              <ProgressNotesForm
+                onCancel={closeNotesModal}
+                onSave={createNote}
+              />
             </ModalBody>
           </ModalContent>
         </Modal>

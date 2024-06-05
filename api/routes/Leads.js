@@ -63,6 +63,9 @@ router.delete(`/delete/lead/:leadId`, authenticateUser, async (req, res) => {
   try {
     const leadId = req.params.leadId;
     const userId = req.id;
+
+    await db.query(`DELETE FROM "Client_Notes" WHERE "lead_id" = $1`, [leadId]);
+
     await db.query(`DELETE FROM "Leads" WHERE "id" = $1 AND "user_id" = $2`, [
       leadId,
       userId,
@@ -120,7 +123,7 @@ router.post("/archive/lead/:leadId", authenticateUser, async (req, res) => {
 
   try {
     const userId = req.id;
-    const clientId = req.params.leadId;
+    const leadId = req.params.leadId;
     const {
       firstName,
       lastName,
@@ -143,10 +146,29 @@ router.post("/archive/lead/:leadId", authenticateUser, async (req, res) => {
         lastActiveDate,
       ]
     );
-    res.json(archivedClient[0]);
+
+    const leadNoteId = await db.query(
+      `SELECT "lead_id" from "Client_Notes" WHERE lead_id = $1`,
+      [leadId]
+    );
+
+    const isAllSameLeadId = leadNoteId.every((note, _, array) =>
+      array.every((otherNote) => note.lead_id === otherNote.lead_id)
+    );
+
+    if (isAllSameLeadId) {
+      const updatedNotes = await db.query(
+        `UPDATE "Client_Notes" SET "archive_id" = $1, "lead_id"= $2 WHERE "lead_id" = $3 RETURNING *`,
+        [archivedClient[0].id, null, leadId]
+      );
+      res.json({ archive: archivedClient[0], notes: updatedNotes });
+    } else {
+      res.json(archivedClient[0]);
+    }
+
     if (archivedClient.length === 1) {
       await db.query('DELETE FROM "Leads" WHERE "id" = $1 AND user_id = $2', [
-        clientId,
+        leadId,
         userId,
       ]);
     }
@@ -192,7 +214,25 @@ router.post(
         ]
       );
 
-      res.json(client[0]);
+      const leadNoteId = await db.query(
+        `SELECT "lead_id" from "Client_Notes" WHERE lead_id = $1`,
+        [leadId]
+      );
+
+      const isAllSameLeadId = leadNoteId.every((note, _, array) =>
+        array.every((otherNote) => note.lead_id === otherNote.lead_id)
+      );
+
+      if (isAllSameLeadId) {
+        const updatedNotes = await db.query(
+          `UPDATE "Client_Notes" SET "client_id" = $1, "lead_id"= $2 WHERE "lead_id" = $3 RETURNING *`,
+          [client[0].id, null, leadId]
+        );
+        res.json({ client: client[0], notes: updatedNotes });
+      } else {
+        res.json(client[0]);
+      }
+  
       if (client.length === 1) {
         await db.query('DELETE FROM "Leads" WHERE "id" = $1 AND user_id = $2', [
           leadId,
