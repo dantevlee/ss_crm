@@ -1,7 +1,7 @@
 import { Button, Flex, FormControl, FormLabel, Input, Text, Textarea } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
-const ClientProgressNotesForm = ({onCancel, onSave, onEdit, formValues}) => {
+const ProgressNotesForm = ({onCancel, onSave, onEdit, formValues}) => {
   const [noteInput, setNoteInput] = useState("")
   const [titleInput, setTitleInput] = useState("")
   const [isEditingEntry, setIsEditingEntry] = useState(false)
@@ -75,4 +75,4 @@ const ClientProgressNotesForm = ({onCancel, onSave, onEdit, formValues}) => {
   )
 }
 
-export default ClientProgressNotesForm;
+export default ProgressNotesForm;

@@ -69,6 +69,9 @@ router.delete(
     try {
       const archiveId = req.params.archiveId;
       const userId = req.id;
+
+      await db.query(`DELETE FROM "Client_Notes" WHERE "archive_id" = $1`, [archiveId])
+
       await db.query(
         `DELETE FROM "Archives" WHERE "id" = $1 AND "user_id" = $2`,
         [archiveId, userId]
@@ -116,15 +119,19 @@ router.post(
           socialMedia,
         ]
       );
-      const noteId = await db.query(
-        `SELECT "id" from "Client_Notes" WHERE archive_id = $1`,
+      const archiveNoteId = await db.query(
+        `SELECT "archive_id" from "Client_Notes" WHERE archive_id = $1`,
         [archiveId]
       );
 
-      if (noteId.length === 1) {
+      const isAllSameArchiveId = archiveNoteId.every((note, _, array) => 
+        array.every(otherNote => note.archive_id === otherNote.archive_id)
+    );
+
+      if (isAllSameArchiveId) {
         const updatedNotes = await db.query(
-          `UPDATE "Client_Notes" SET "archive_id" = $1, "client_id"= $2 WHERE "id" = $3 RETURNING *`,
-          [null, client[0].id, noteId[0].id]
+          `UPDATE "Client_Notes" SET "archive_id" = $1, "client_id"= $2 WHERE "archive_id" = $3 RETURNING *`,
+          [null, client[0].id, archiveId]
         );
         res.json({ client: client[0], notes: updatedNotes });
       } else {
@@ -177,8 +184,25 @@ router.post(
           soicalMedia,
         ]
       );
-      res.json(lead[0]);
-      if (lead.length === 1) {
+      const archiveNoteId = await db.query(
+        `SELECT "archive_id" from "Client_Notes" WHERE archive_id = $1`,
+        [archiveId]
+      );
+
+      const isAllSameArchiveId = archiveNoteId.every((note, _, array) => 
+        array.every(otherNote => note.archive_id === otherNote.archive_id)
+    );
+
+      if (isAllSameArchiveId) {
+        const updatedNotes = await db.query(
+          `UPDATE "Client_Notes" SET "archive_id" = $1, "lead_id"= $2 WHERE "archive_id" = $3 RETURNING *`,
+          [null, lead[0].id, archiveId]
+        );
+        res.json({ client: lead[0], notes: updatedNotes });
+      } else {
+        res.json(lead[0]);
+      }
+      if (lead.length >= 1) {
         await db.query(
           'DELETE FROM "Archives" WHERE "id" = $1 AND "user_id" = $2',
           [archiveId, userId]
