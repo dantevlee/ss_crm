@@ -136,15 +136,17 @@ router.post("/archive/client/:clientId", authenticateUser, async (req, res) => {
       ]
     );
 
-    const noteId = await db.query(`SELECT "id" from "Client_Notes" WHERE client_id = $1`,[clientId])
+    const clientNoteId = await db.query(`SELECT "client_id" from "Client_Notes" WHERE client_id = $1`,[clientId])
+    const isAllSameClientId = clientNoteId.every((note, _, array) => 
+      array.every(otherNote => note.client_id === otherNote.client_id)
+  );
 
-    if (noteId.length === 1){
-      const updatedNotes = await db.query(`UPDATE "Client_Notes" SET "archive_id" = $1, "client_id"= $2 WHERE "id" = $3 RETURNING *`, [archivedClient[0].id, null, noteId[0].id])
+    if (isAllSameClientId){
+      const updatedNotes = await db.query(`UPDATE "Client_Notes" SET "archive_id" = $1, "client_id"= $2 WHERE "client_id" = $3 RETURNING *`, [archivedClient[0].id, null, clientId])
       res.json({archive: archivedClient[0], notes: updatedNotes});
     } else {
       res.json({archive: archivedClient[0]})
     }
-
     if (archivedClient.length === 1) {
       await db.query('DELETE FROM "Clients" WHERE "id" = $1 AND user_id = $2', [
         clientId,
