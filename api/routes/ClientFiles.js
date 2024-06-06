@@ -35,4 +35,55 @@ router.post('/upload/client-file', authenticateUser, upload.single('file'), asyn
   }
 })
 
+router.get(`/clients/:client_id/files`, authenticateUser, async (req, res) => {
+
+  const db = await dbPromise
+
+  const clientId = req.params.client_id
+  const userId = req.id
+
+  try{
+    const client = await db.query(`SELECT "id", "firstName", "lastName", "client_email" FROM "Clients" WHERE "id" = $1 AND "user_id" = $2`, [clientId, userId])
+
+    if (client.length === 0){
+      return res.status(404).json({message: "Client not found, while trying to retrieve files."})
+    }
+
+    const files = await db.query(`SELECT * FROM "Files" WHERE "client_id" = $1 `,[clientId] )
+
+    return res.json({client: client[0], files: files})
+
+  } catch(error){
+    console.error(error)
+    res.status(500).json({message: "Internal Server Error. Unable to fetch files by client."})
+  }
+})
+
+router.get('/clients/:client_id/files/:file_name', authenticateUser, async (req, res) => {
+  const db = await dbPromise;
+  const { client_id, file_name } = req.params;
+
+  try {
+    const file = await db.query(`SELECT * FROM "Files" WHERE "client_id" = $1 AND "file_name" = $2`, [client_id, file_name]);
+
+    if (file.length === 0) {
+      return res.status(404).json({ message: "File not found" });
+    }
+
+    const fileData = file[0].file_data;
+    const mimeType = file[0].file_type === 'pdf' ? 'application/pdf' :
+                     file[0].file_type === 'excel' ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' :
+                     file[0].file_type === 'docx' ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : 'application/octet-stream';
+
+    res.setHeader('Content-Disposition', `attachment; filename=${file_name}`);
+    res.setHeader('Content-Type', mimeType);
+    res.send(fileData);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error. Unable to fetch file for download." });
+  }
+});
+
+
+
 module.exports = router
