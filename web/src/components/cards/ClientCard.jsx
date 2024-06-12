@@ -356,7 +356,7 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
           <ModalContent>
             <ModalCloseButton />
             <ModalBody>
-              <ClientFiles onCancel={closeFilesModal} />
+              <ClientFiles client={client} onCancel={closeFilesModal} />
             </ModalBody>
           </ModalContent>
         </Modal>
