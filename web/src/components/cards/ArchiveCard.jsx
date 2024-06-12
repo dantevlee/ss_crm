@@ -28,11 +28,14 @@ import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import axios from "axios";
 import ProgresNotesForm from '../forms/ProgressNotesForm'
+import { FaFileAlt } from "react-icons/fa";
+import ArchiveFiles from "../file_uploads/ArchiveFiles";
 
 const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isAddingNotes, setIsAddingNotes] = useState(false);
+  const [isUploadingFile, setIsUploadingFile] = useState(false)
   const [isRestoring, setIsRestoring] = useState(false);
   const [isRestoringAsLead, setIsRestoringAsLead] = useState(false);
   const [isRestoringAsClient, setIsRestoringAsClient] = useState(false);
@@ -96,7 +99,7 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
         .then((res) => {
           if (res.status === 200) {
             fetchNotes();
-            onClose();
+            closeNotesModal();
           }
         });
     } catch (error) {
@@ -113,7 +116,7 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
       }).then((res) => {
         if(res.status === 200){
           fetchNotes()
-          onClose()
+          closeNotesModal()
         }
       })
     } catch(error){
@@ -157,6 +160,22 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
     onOpen: onAddNotesOpen,
     onClose: onAddNotesClose,
   } = useDisclosure();
+
+  const {
+    isOpen: isFilesModalOpen,
+    onOpen: onFileModalOpen,
+    onClose: onFileModalClose
+  } = useDisclosure()
+
+  const openFileModal = () => {
+    onFileModalOpen()
+    setIsUploadingFile(true)
+  };
+
+  const closeFilesModal = () => {
+    onFileModalClose()
+    setIsUploadingFile(false)
+  };
 
   const openDeleteModal = () => {
     onDeleteOpen();
@@ -280,6 +299,14 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
               colorScheme="teal"
               icon={<DeleteIcon />}
             />
+          </Tooltip>
+          <Tooltip label="Files">
+            <IconButton
+              onClick={openFileModal}
+              variant="outline"
+              colorScheme="teal"
+              icon={<FaFileAlt />}
+            ></IconButton>
           </Tooltip>
         </CardHeader>
         <CardBody>
@@ -461,6 +488,17 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
               <ProgresNotesForm
                onSave={createNote}
                onCancel={closeNotesModal} />
+            </ModalBody>
+          </ModalContent>
+        </Modal>
+      )}
+      {isUploadingFile && (
+        <Modal isOpen={isFilesModalOpen} onClose={closeFilesModal}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalCloseButton />
+            <ModalBody>
+              <ArchiveFiles archive={archives} onCancel={closeFilesModal} />
             </ModalBody>
           </ModalContent>
         </Modal>
