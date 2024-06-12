@@ -43,7 +43,7 @@ router.post(
     } catch (error) {
       console.error(error);
       res.status(500).json({
-        message: "Internal Server Error. Error uploading file for client.",
+        message: "Internal Server Error. Error uploading file for archive.",
       });
     }
   }
@@ -86,12 +86,12 @@ router.get(
   authenticateUser,
   async (req, res) => {
     const db = await dbPromise;
-    const { archiveId, file_name } = req.params;
+    const { archive_id, file_name } = req.params;
 
     try {
       const file = await db.query(
         `SELECT * FROM "Files" WHERE "archive_id" = $1 AND "file_name" = $2`,
-        [archiveId, file_name]
+        [archive_id, file_name]
       );
 
       if (file.length === 0) {
