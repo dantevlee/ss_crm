@@ -4,17 +4,10 @@ const multer = require("multer");
 const router = express.Router();
 const { dbPromise } = require("../resources/config");
 const { authenticateUser } = require("../middleware/authenticateUser");
+const { validateFileType } = require("../middleware/ValidateFileType")
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
-
-function getFileType(fileName) {
-  const ext = fileName.split(".").pop().toLowerCase();
-  if (ext === "pdf") return "pdf";
-  if (["xls", "xlsx"].includes(ext)) return "excel";
-  if (["doc", "docx"].includes(ext)) return "docx";
-  throw new Error("Unsupported file type. File must be in pdf, excel, or docx format.");
-}
 
 router.post(
   "/upload/client-file",
@@ -25,7 +18,7 @@ router.post(
 
     try {
       const fileName = req.file.originalname;
-      const fileType = getFileType(fileName);
+      const fileType = validateFileType(fileName);
       const fileData = req.file.buffer;
 
       const client_id = req.query.client_id;
