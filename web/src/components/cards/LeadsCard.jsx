@@ -23,17 +23,19 @@ import {
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 import LeadsForm from "../forms/LeadsForm";
-import { FaUserAlt } from "react-icons/fa";
+import { FaFileAlt, FaUserAlt } from "react-icons/fa";
 import ConvertToClientForm from "../forms/ConvertToClientForm";
 import Cookies from "js-cookie";
 import axios from "axios";
 import ProgressNotes from "../notes/ProgressNotes";
 import ProgressNotesForm from "../forms/ProgressNotesForm";
+import LeadFiles from "../file_uploads/LeadFiles";
 
 const LeadsCard = ({ lead, onDelete, onEdit, onArchive, onFetchLeads }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isAddingNotes, setIsAddingNotes] = useState(false);
+  const [isFileModalOpen, setIsFileModalOpen] = useState(false)
   const [isConverting, setIsConverting] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [notes, setNotes] = useState([]);
@@ -173,6 +175,16 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive, onFetchLeads }) => {
     setIsAddingNotes(false);
   };
 
+  const openFileModal = () => {
+    onOpen()
+    setIsFileModalOpen(true)
+  }
+
+  const closeFilesModal = () => {
+    onClose()
+    setIsFileModalOpen(false);
+  }
+
   const formatDate = (dateString) => {
     if (dateString) {
       const date = new Date(dateString);
@@ -214,6 +226,14 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive, onFetchLeads }) => {
               variant="outline"
               colorScheme="teal"
               icon={<DeleteIcon />}
+            ></IconButton>
+          </Tooltip>
+          <Tooltip label="Files">
+            <IconButton
+              onClick={openFileModal}
+              variant="outline"
+              colorScheme="teal"
+              icon={<FaFileAlt />}
             ></IconButton>
           </Tooltip>
         </CardHeader>
@@ -274,9 +294,11 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive, onFetchLeads }) => {
                 </Text>
               </Box>
             )}
-            <Button 
-            onClick={openNotesModal}
-            textColor="blue" colorScheme="transparent">
+            <Button
+              onClick={openNotesModal}
+              textColor="blue"
+              colorScheme="transparent"
+            >
               <AddIcon mr={2} mt={0.5} color="blue" />
               Add Note
             </Button>
@@ -286,11 +308,11 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive, onFetchLeads }) => {
         <CardFooter>
           <Stack direction="column">
             {notes.map((n) => (
-              <ProgressNotes 
-              key={n.id} 
-              notes={n} 
-              onDelete={deleteNote}
-              onEdit={editNote}
+              <ProgressNotes
+                key={n.id}
+                notes={n}
+                onDelete={deleteNote}
+                onEdit={editNote}
               />
             ))}
           </Stack>
@@ -359,6 +381,17 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive, onFetchLeads }) => {
                 onCancel={closeNotesModal}
                 onSave={createNote}
               />
+            </ModalBody>
+          </ModalContent>
+        </Modal>
+      )}
+      {isFileModalOpen && (
+        <Modal isOpen={isOpen} onClose={closeFilesModal}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalCloseButton />
+            <ModalBody>
+              <LeadFiles lead={lead} onCancel={closeFilesModal} />
             </ModalBody>
           </ModalContent>
         </Modal>
