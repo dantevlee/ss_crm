@@ -156,14 +156,51 @@ router.post("/archive/lead/:leadId", authenticateUser, async (req, res) => {
       array.every((otherNote) => note.lead_id === otherNote.lead_id)
     );
 
-    if (isAllSameLeadId) {
+    const leadFilesId = await db.query(
+      `SELECT "lead_id" from "Files" WHERE lead_id = $1`,
+      [leadId]
+    );
+
+    const isAllSameLeadIdFiles = leadFilesId.every((file, _, array) =>
+      array.every((otherFile) => file.lead_id === otherFile.lead_id)
+    );
+
+
+    if (
+      leadNoteId.length > 0 &&
+      isAllSameLeadId &&
+      isAllSameLeadIdFiles &&
+      leadFilesId.length > 0
+    ) {
+      const updatedNotes = await db.query(
+        `UPDATE "Client_Notes" SET "archive_id" = $1, "lead_id"= $2 WHERE "lead_id" = $3 RETURNING *`,
+        [archivedClient[0].id, null, leadId]
+      );
+
+      const updatedFiles = await db.query(
+        `UPDATE "Files" SET "archive_id" = $1, "lead_id"= $2 WHERE "lead_id" = $3 RETURNING *`,
+        [archivedClient[0].id, null, leadId]
+      );
+
+      res.json({
+        archive: archivedClient[0],
+        notes: updatedNotes,
+        files: updatedFiles,
+      });
+    } else if (leadFilesId.length > 0 && isAllSameLeadIdFiles) {
+      const updatedFiles = await db.query(
+        `UPDATE "Files" SET "archive_id" = $1, "lead_id"= $2 WHERE "lead_id" = $3 RETURNING *`,
+        [archivedClient[0].id, null, leadId]
+      );
+      res.json({ archive: archivedClient[0], files: updatedFiles });
+    } else if (leadNoteId.length > 0 && isAllSameLeadId) {
       const updatedNotes = await db.query(
         `UPDATE "Client_Notes" SET "archive_id" = $1, "lead_id"= $2 WHERE "lead_id" = $3 RETURNING *`,
         [archivedClient[0].id, null, leadId]
       );
       res.json({ archive: archivedClient[0], notes: updatedNotes });
     } else {
-      res.json(archivedClient[0]);
+      res.json({ archive: archivedClient[0] });
     }
 
     if (archivedClient.length === 1) {
@@ -223,12 +260,48 @@ router.post(
         array.every((otherNote) => note.lead_id === otherNote.lead_id)
       );
 
-      if (isAllSameLeadId) {
+      const leadFileId = await db.query(
+        `SELECT "lead_id" from "Files" WHERE lead_id = $1`,
+        [leadId]
+      );
+
+      const isAllSameLeadIdFiles = leadFileId.every((file, _, array) =>
+        array.every((otherFile) => file.lead_id === otherFile.lead_id)
+      );
+
+      if (
+        leadNoteId.length > 0 &&
+        isAllSameLeadId &&
+        leadFileId.length > 0 &&
+        isAllSameLeadIdFiles
+      ) {
         const updatedNotes = await db.query(
-          `UPDATE "Client_Notes" SET "client_id" = $1, "lead_id"= $2 WHERE "lead_id" = $3 RETURNING *`,
+          `UPDATE "Client_Notes" SET "lead_id" = $1, "client_id"= $2 WHERE "lead_id" = $3 RETURNING *`,
+          [null, client[0].id, leadId]
+        );
+
+        const updatedFiles = await db.query(
+          `UPDATE "Files" SET "client_id" = $1, "lead_id"= $2 WHERE "lead_id" = $3 RETURNING *`,
           [client[0].id, null, leadId]
         );
+
+        res.json({
+          client: client[0],
+          notes: updatedNotes,
+          files: updatedFiles,
+        });
+      } else if (leadNoteId.length > 0 && isAllSameLeadId) {
+        const updatedNotes = await db.query(
+          `UPDATE "Client_Notes" SET "lead_id" = $1, "client_id"= $2 WHERE "lead_id" = $3 RETURNING *`,
+          [null, client[0].id, leadId]
+        );
         res.json({ client: client[0], notes: updatedNotes });
+      } else if (leadFileId.length > 0 && isAllSameLeadIdFiles) {
+        const updatedFiles = await db.query(
+          `UPDATE "Files" SET "client_id" = $1, "lead_id"= $2 WHERE "lead_id" = $3 RETURNING *`,
+          [client[0].id, null, leadId]
+        );
+        res.json({ client: client[0], files: updatedFiles });
       } else {
         res.json(client[0]);
       }
