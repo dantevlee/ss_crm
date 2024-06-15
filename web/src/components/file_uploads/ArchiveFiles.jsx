@@ -1,5 +1,5 @@
 import { DeleteIcon } from "@chakra-ui/icons";
-import { Box, Button, Flex, IconButton, Input, Link, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalOverlay, Tooltip } from "@chakra-ui/react";
+import { Box, Button, Flex, IconButton, Input, Link, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalOverlay, Tooltip, useDisclosure } from "@chakra-ui/react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useEffect, useRef, useState } from "react";
@@ -7,6 +7,9 @@ import { useEffect, useRef, useState } from "react";
 const ArchiveFiles = ({archive, onCancel}) => {
   const [files, setFiles] = useState([]);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [fileToUpload, setFileToUpload] = useState(null);
+  const [fileToDelete, setFileToDelete] = useState(null);
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const fileInputRef = useRef(null);
   const token = Cookies.get("SessionID");
 
@@ -31,16 +34,20 @@ const ArchiveFiles = ({archive, onCancel}) => {
     }
   };
 
-  const handleFileChange = () => {
-
+  const handleFileChange = (e) => {
+    setFileToUpload(e.target.files[0]);
   }
 
-  const openDeleteModal = () =>{
-
+  const openDeleteModal = (file) =>{
+    setFileToDelete(file);
+    onOpen()
+    setIsDeleting(true)
   }
 
   const closeDeleteModal = () => {
-    
+    setFileToDelete(null);
+    onClose()
+    setIsDeleting(false)
   }
 
   const handleCancel = () => {
@@ -48,15 +55,76 @@ const ArchiveFiles = ({archive, onCancel}) => {
   }
 
   const uploadFile = () => {
+    const formData = new FormData();
+    formData.append("file", fileToUpload);
 
+    try {
+      axios
+        .post(
+          `http://localhost:3000/api/upload/archive-file?archive_id=${archive.id}`,
+          formData,
+          {
+            headers: {
+              Authorization: `${token}`,
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        )
+        .then((res) => {
+          if (res.status === 200) {
+            fetchFiles();
+            setFileToUpload(null);
+            if (fileInputRef.current) {
+              fileInputRef.current.value = "";
+            }
+          }
+        });
+    } catch (error) {
+      console.error(error);
+    }
   }
 
-  const downloadFile = () => {
+  const downloadFile = async (fileName) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:3000/api/archives/${archive.id}/files/${fileName}`,
+        {
+          headers: {
+            Authorization: `${token}`,
+          },
+        }
+      );
 
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", fileName);
+      document.body.appendChild(link);
+      link.click();
+    } catch (error) {
+      console.error("Error downloading the file", error);
+    }
   }
 
-  const deleteFile = () => {
-
+  const deleteFile = async () => {
+    if (fileToDelete) {
+      try {
+        await axios
+          .delete(`http://localhost:3000/api/delete/file/${fileToDelete.id}`, {
+            headers: {
+              Authorization: `${token}`,
+            },
+          })
+          .then((res) => {
+            if (res.status === 200) {
+              fetchFiles();
+              closeDeleteModal();
+            }
+          });
+      } catch (error) {
+        console.error("Error deleting the file", error);
+      }
+    }
   }
 
 
