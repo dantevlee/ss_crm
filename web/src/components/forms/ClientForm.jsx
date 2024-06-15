@@ -66,6 +66,7 @@ const ClientForm = ({
         setIsEditingEntry(false);
         setEmail(clientFormValue.email);
         setSocialMedia(clientFormValue.soical_media)
+        setEndDateCalculated(false)
       } else {
         setIsEditingEntry(true);
       }
