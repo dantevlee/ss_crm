@@ -66,6 +66,8 @@ router.delete(`/delete/lead/:leadId`, authenticateUser, async (req, res) => {
 
     await db.query(`DELETE FROM "Client_Notes" WHERE "lead_id" = $1`, [leadId]);
 
+    await db.query(`DELETE FROM "Files" WHERE "lead_id" = $1`, [leadId]);
+
     await db.query(`DELETE FROM "Leads" WHERE "id" = $1 AND "user_id" = $2`, [
       leadId,
       userId,

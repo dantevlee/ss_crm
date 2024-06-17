@@ -74,6 +74,10 @@ router.delete(
         archiveId,
       ]);
 
+      await db.query(`DELETE FROM "Files" WHERE "archive_id" = $1`, [
+        archiveId,
+      ]);
+
       await db.query(
         `DELETE FROM "Archives" WHERE "id" = $1 AND "user_id" = $2`,
         [archiveId, userId]
