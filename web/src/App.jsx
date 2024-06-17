@@ -7,6 +7,10 @@ import UserLogin from "./pages/UserLogin";
 import UserRegistration from "./pages/UserRegistration";
 import PasswordResetRequestForm from "./components/forms/PasswordResetRequestForm";
 import ResetRequestForm from "./components/forms/ResetRequestForm";
+import ClientPage from "./pages/ClientPage";
+import ArchivePage from "./pages/ArchivePage";
+import LeadsPage from "./pages/LeadsPage";
+import MainLayout from "./pages/MainLayout";
 
 
 const App = () => {
@@ -16,22 +20,12 @@ const App = () => {
     <>
       <Routes>
         <Route
-          path="/"
+          path="/*"
           element={
             isLoggedIn ? (
-              <Navigate to="/summary-dashboard" replace />
+              <MainLayout setIsLoggedIn={setIsLoggedIn}/>
             ) : (
               <UserLogin setIsLoggedIn={setIsLoggedIn} />
-            )
-          }
-        />
-        <Route
-          path="/summary-dashboard/*"
-          element={
-            isLoggedIn ? (
-              <Dashboard setIsLoggedIn={setIsLoggedIn} />
-            ) : (
-              <Navigate to="/" />
             )
           }
         />
