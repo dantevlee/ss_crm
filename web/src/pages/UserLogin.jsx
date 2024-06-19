@@ -83,7 +83,7 @@ const UserLogin = ({ setIsLoggedIn }) => {
               if(showAlert){
                 setShowAlert(false)
               }
-              history("/summary-dashboard");
+              history("/dashboard");
             }
           })
           .catch((error) => {
