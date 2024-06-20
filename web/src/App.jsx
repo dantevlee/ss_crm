@@ -1,15 +1,11 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { useState } from "react";
-import Dashboard from "./pages/Dashboard";
 import "./App.css";
 import Cookies from "js-cookie";
 import UserLogin from "./pages/UserLogin";
 import UserRegistration from "./pages/UserRegistration";
 import PasswordResetRequestForm from "./components/forms/PasswordResetRequestForm";
 import ResetRequestForm from "./components/forms/ResetRequestForm";
-import ClientPage from "./pages/ClientPage";
-import ArchivePage from "./pages/ArchivePage";
-import LeadsPage from "./pages/LeadsPage";
 import MainLayout from "./pages/MainLayout";
 
 

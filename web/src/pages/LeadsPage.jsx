@@ -1,6 +1,7 @@
 import { AddIcon } from "@chakra-ui/icons";
 import {
   Button,
+  Flex,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -114,17 +115,21 @@ const LeadsPage = () => {
   return (
     <>
       <Button
-        size="lg"
-        colorScheme="teal"
-        mt={6}
-        position="relative"
-        left="88rem"
-        onClick={onOpen}
+         marginTop="100px"
+         size="lg"
+         colorScheme="blue"
+         position='absolute'
+         right='1rem'
+         onClick={onOpen}
       >
         <AddIcon mr={2} /> Add Lead
       </Button>
       <Stack direction="row" spacing={6}>
-      {leads.map((lead) => (<LeadsCard mt={12} key={lead.id} lead={lead} onDelete={deleteLead} onEdit={editLead} onFetchLeads={fetchLeads} onArchive={archiveLead} />))}
+      {leads.map((lead) => (
+          <Flex marginTop='100px' marginStart={100}>
+        <LeadsCard key={lead.id} lead={lead} onDelete={deleteLead} onEdit={editLead} onFetchLeads={fetchLeads} onArchive={archiveLead} />
+        </Flex>
+        ))}
       </Stack>
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
