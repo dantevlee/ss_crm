@@ -5,7 +5,7 @@ import {
   MenuGroup,
   Button,
   MenuItem,
-  Box,
+  Text,
   Drawer,
   DrawerBody,
   DrawerFooter,
@@ -16,6 +16,11 @@ import {
   Link,
   useDisclosure,
   Stack,
+  Icon,
+  Flex,
+  Box,
+  Avatar,
+  Divider,
 } from "@chakra-ui/react";
 import { HamburgerIcon } from "@chakra-ui/icons";
 import Cookies from "js-cookie";
@@ -25,6 +30,20 @@ import ClientPage from "./ClientPage";
 import ArchivePage from "./ArchivePage";
 import LeadsPage from "./LeadsPage";
 import Dashboard from "./Dashboard";
+import "../App.css";
+import {
+  FaCalendarAlt,
+  FaFolderOpen,
+  FaHome,
+  FaHouseUser,
+} from "react-icons/fa";
+import { IoMdPerson } from "react-icons/io";
+import { BsFillPersonPlusFill } from "react-icons/bs";
+import { IoArchive, IoSettingsOutline } from "react-icons/io5";
+import { MdLogout } from "react-icons/md";
+import SettingsPage from "./SettingsPage";
+import CalendarPage from "./CalendarPage";
+import UserFilesPage from "./UserFilesPage";
 
 const MainLayout = ({ setIsLoggedIn }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -44,29 +63,72 @@ const MainLayout = ({ setIsLoggedIn }) => {
 
   return (
     <>
-      <Box bg="black" w="3000%" p={4}>
-        <Button ref={btnRef} onClick={onOpen} color="teal">
-          <HamburgerIcon color="teal" />
-        </Button>
-        <Menu>
-          <MenuButton
-            as={Button}
-            colorScheme="teal"
-            position="fixed"
-            right="1rem"
+      <Box
+        bg="blue.500"
+        height="75px"
+        width="100%"
+        position="fixed"
+        top="0"
+        zIndex="999"
+      >
+        <Flex align="center">
+          <HamburgerIcon
+            cursor="pointer"
+            ref={btnRef}
+            onClick={onOpen}
+            color="white"
+            boxSize={8}
+            marginLeft={8}
+            marginTop={6}
+          />
+
+          <Text
+            as="a"
+            href="/dashboard"
+            cursor="pointer"
+            _hover={{ textDecoration: "none"}}
+            fontSize='x-large' marginStart='35px' 
+            marginTop={5} 
+            color="white"
           >
-            Profile
-          </MenuButton>
-          <MenuList>
-            <MenuGroup>
-              <MenuItem color="black">My Account</MenuItem>
-              <MenuItem color="black" onClick={handleLogout}>
-                Logout
-              </MenuItem>
-            </MenuGroup>
-          </MenuList>
-        </Menu>
+            {"{Company Name}"}
+          </Text>
+        </Flex>
+        <Flex align="center">
+          <Menu>
+            <MenuButton
+              _hover={{ backgroundColor: "gray.300", shadow: "lg" }}
+              backgroundColor="blue.500"
+              marginTop="-40px"
+              as={Button}
+              position="absolute"
+              right="1rem"
+            >
+              <Avatar size="lg" bg="blue.500" />
+            </MenuButton>
+            <MenuList>
+              <MenuGroup>
+                <MenuItem
+                  color="black"
+                  onClick={() => navigateToPage("/settings")}
+                >
+                  <Flex align="center">
+                    <Icon boxSize={5} as={IoSettingsOutline} marginRight={2} />
+                    <Text fontWeight="bold">Settings</Text>
+                  </Flex>
+                </MenuItem>
+                <MenuItem color="black" onClick={handleLogout}>
+                  <Flex align="center">
+                    <Icon boxSize={5} as={MdLogout} marginRight={2} />
+                    <Text fontWeight="bold">Logout</Text>
+                  </Flex>
+                </MenuItem>
+              </MenuGroup>
+            </MenuList>
+          </Menu>
+        </Flex>
       </Box>
+
       <Drawer
         isOpen={isOpen}
         placement="left"
@@ -74,27 +136,66 @@ const MainLayout = ({ setIsLoggedIn }) => {
         finalFocusRef={btnRef}
       >
         <DrawerOverlay />
-        <DrawerContent>
+        <DrawerContent backgroundColor="gray.300">
           <DrawerCloseButton />
-          <DrawerHeader>"Company Name"</DrawerHeader>
-
-          <DrawerBody>
+          <DrawerHeader fontSize="x-large">{"{Company Name}"}</DrawerHeader>
+          <DrawerBody overflowX="hidden">
             <Stack spacing={4}>
-              <Link onClick={() => navigateToPage("/dashboard")}>Home</Link>
-              <Link onClick={() => navigateToPage("/clients")}>Clients</Link>
-              <Link onClick={() => navigateToPage("/leads")}>Leads</Link>
-              <Link onClick={() => navigateToPage("/archives")}>Archives</Link>
+              <Link onClick={() => navigateToPage("/dashboard")}>
+                <Flex align="center">
+                  <Icon boxSize={5} as={FaHouseUser} marginRight={2} />
+                  <Text fontSize={20}>Home</Text>
+                </Flex>
+              </Link>
+              <Link onClick={() => navigateToPage("/clients")}>
+                <Flex align="center">
+                  <Icon boxSize={5} as={IoMdPerson} marginRight={2} />
+                  <Text fontSize={20}>Clients</Text>
+                </Flex>
+              </Link>
+              <Link onClick={() => navigateToPage("/leads")}>
+                <Flex align="center">
+                  <Icon boxSize={5} as={BsFillPersonPlusFill} marginRight={2} />
+                  <Text fontSize={20}>Leads</Text>
+                </Flex>
+              </Link>
+              <Link onClick={() => navigateToPage("/archives")}>
+                <Flex align="center">
+                  <Icon boxSize={5} as={IoArchive} marginRight={2} />
+                  <Text fontSize={20}>Archives</Text>
+                </Flex>
+              </Link>
+              <Divider borderColor="black" marginTop="20px" />
+              <Flex align="center">
+                <Text marginTop={2} fontSize={25}>
+                  For You
+                </Text>
+              </Flex>
+              <Link onClick={() => navigateToPage("/user-files")}>
+                <Flex align="center">
+                  <Icon boxSize={5} as={FaFolderOpen} marginRight={2} />
+                  <Text fontSize={20}>My Files</Text>
+                </Flex>
+              </Link>
+              <Link onClick={() => navigateToPage("/calendar")}>
+                <Flex align="center">
+                  <Icon boxSize={5} as={FaCalendarAlt} marginRight={2} />
+                  <Text fontSize={20}>My Calerdar</Text>
+                </Flex>
+              </Link>
             </Stack>
           </DrawerBody>
-
           <DrawerFooter></DrawerFooter>
         </DrawerContent>
       </Drawer>
       <Routes>
-        <Route path="/dashboard" element={<Dashboard/>} />
+        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/clients" element={<ClientPage />} />
-        <Route path='/archives' element={<ArchivePage/>}/>
-        <Route path='/leads' element={<LeadsPage/>} />
+        <Route path="/archives" element={<ArchivePage />} />
+        <Route path="/leads" element={<LeadsPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/calendar" element={<CalendarPage />} />
+        <Route path="/user-files" element={<UserFilesPage />} />
       </Routes>
       <Outlet />
     </>

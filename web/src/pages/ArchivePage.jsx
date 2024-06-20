@@ -1,4 +1,4 @@
-import { Stack } from "@chakra-ui/react";
+import { Flex, Stack } from "@chakra-ui/react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
@@ -114,8 +114,8 @@ const ArchivePage = () => {
     <>
       <Stack direction="row" spacing={4}>
         {archives.map((a) => (
+           <Flex marginTop='100px' marginStart={100}>
           <ArchiveCard
-            mt={12}
             key={a.id}
             archives={a}
             onRestore={restoreAsClient}
@@ -123,6 +123,7 @@ const ArchivePage = () => {
             onMakeLead={restoreAsLead}
             onEdit={editArchive}
           />
+          </Flex>
         ))}
       </Stack>
     </>
