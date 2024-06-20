@@ -129,6 +129,7 @@ const ClientPage = () => {
 
   return (
     <>
+    <Flex>
       <Button
         marginTop="100px"
         size="lg"
@@ -139,9 +140,10 @@ const ClientPage = () => {
       >
         <AddIcon mr={2} /> Add Client
       </Button>
-      <Stack  direction="row" spacing={4}>
+      </Flex>
+      <Flex spacing={4}>
         {clients.map((client) => (
-          <Flex marginTop='100px' marginStart={100}>
+         
           <ClientCard
             key={client.id}
             client={client}
@@ -149,9 +151,9 @@ const ClientPage = () => {
             onEdit={editClient}
             onArchive={archiveClient} 
           />
-          </Flex>
+        
         ))}
-      </Stack>
+        </Flex>
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
