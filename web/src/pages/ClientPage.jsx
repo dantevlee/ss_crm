@@ -7,6 +7,8 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
+  SimpleGrid,
+  Spinner,
   Stack,
   useDisclosure,
 } from "@chakra-ui/react";
@@ -19,10 +21,12 @@ import { useEffect, useState } from "react";
 
 const ClientPage = () => {
   const [clients, setClients] = useState([]);
+  const [loading, setLoading] = useState(true);
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const fetchClients = async () => {
     const token = Cookies.get("SessionID");
+    setLoading(true);
     try {
       const response = await axios.get("http://localhost:3000/api/clients", {
         headers: {
@@ -34,6 +38,8 @@ const ClientPage = () => {
       }
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -129,31 +135,41 @@ const ClientPage = () => {
 
   return (
     <>
-    <Flex>
-      <Button
-        marginTop="100px"
-        size="lg"
-        colorScheme="blue"
-        position='absolute'
-        right='1rem'
-        onClick={onOpen}
-      >
-        <AddIcon mr={2} /> Add Client
-      </Button>
+      <Flex>
+        <Button
+          marginTop="100px"
+          size="lg"
+          colorScheme="blue"
+          position="absolute"
+          right="1rem"
+          onClick={onOpen}
+        >
+          <AddIcon mr={2} /> Add Client
+        </Button>
       </Flex>
-      <Flex spacing={4}>
-        {clients.map((client) => (
-         
-          <ClientCard
-            key={client.id}
-            client={client}
-            onDelete={deleteClient}
-            onEdit={editClient}
-            onArchive={archiveClient} 
+      {loading ? (
+        <Flex justifyContent="center" alignItems="center" height="80vh">
+          <Spinner
+            thickness="8px"
+            speed="0.65s"
+            emptyColor="gray.400"
+            color="blue.500"
+            size="xl"
           />
-        
-        ))}
         </Flex>
+      ) : (
+        <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={4} mt={8}>
+          {clients.map((client) => (
+            <ClientCard
+              key={client.id}
+              client={client}
+              onDelete={deleteClient}
+              onEdit={editClient}
+              onArchive={archiveClient}
+            />
+          ))}
+        </SimpleGrid>
+      )}
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
