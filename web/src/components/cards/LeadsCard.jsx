@@ -6,6 +6,7 @@ import {
   CardBody,
   CardFooter,
   CardHeader,
+  Flex,
   Heading,
   IconButton,
   Modal,
@@ -15,6 +16,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Spinner,
   Stack,
   StackDivider,
   Text,
@@ -35,10 +37,11 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive, onFetchLeads }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isAddingNotes, setIsAddingNotes] = useState(false);
-  const [isFileModalOpen, setIsFileModalOpen] = useState(false)
+  const [isFileModalOpen, setIsFileModalOpen] = useState(false);
   const [isConverting, setIsConverting] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [notes, setNotes] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const token = Cookies.get("SessionID");
 
@@ -61,10 +64,13 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive, onFetchLeads }) => {
         });
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const createNote = async (formData) => {
+    setLoading(true);
     try {
       await axios
         .post(
@@ -176,14 +182,14 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive, onFetchLeads }) => {
   };
 
   const openFileModal = () => {
-    onOpen()
-    setIsFileModalOpen(true)
-  }
+    onOpen();
+    setIsFileModalOpen(true);
+  };
 
   const closeFilesModal = () => {
-    onClose()
+    onClose();
     setIsFileModalOpen(false);
-  }
+  };
 
   const formatDate = (dateString) => {
     if (dateString) {
@@ -202,131 +208,153 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive, onFetchLeads }) => {
 
   return (
     <>
-      <Card>
+      <Card
+        shadow="lg"
+        _hover={{
+          boxShadow: "xl",
+          transform: "scale(1.05)",
+          transition: "transform 0.2s",
+        }}
+        minWidth="250px"
+        maxWidth="350px"
+        marginStart="75px"
+        marginEnd="10px"
+        marginTop="175px"
+        backgroundColor="gray.300"
+        borderRadius={15}
+      >
         <CardHeader>
-          <Tooltip label="Convert To Client?">
-            <IconButton
-              onClick={openLeadConversionModal}
-              variant="outline"
-              colorScheme="teal"
-              icon={<FaUserAlt />}
-            ></IconButton>
-          </Tooltip>
-          <Tooltip label="Edit">
-            <IconButton
-              onClick={openEditModal}
-              variant="outline"
-              colorScheme="teal"
-              icon={<EditIcon />}
-            ></IconButton>
-          </Tooltip>
-          <Tooltip label="Delete">
-            <IconButton
-              onClick={openDeleteModal}
-              variant="outline"
-              colorScheme="teal"
-              icon={<DeleteIcon />}
-            ></IconButton>
-          </Tooltip>
-          <Tooltip label="Files">
-            <IconButton
-              onClick={openFileModal}
-              variant="outline"
-              colorScheme="teal"
-              icon={<FaFileAlt />}
-            ></IconButton>
-          </Tooltip>
+          <Flex alignItems="center" width="100%">
+            <Tooltip label="Files">
+              <IconButton
+                onClick={openFileModal}
+                colorScheme="blue"
+                icon={<FaFileAlt />}
+              ></IconButton>
+            </Tooltip>
+            <Flex ml="auto">
+              <Tooltip label="Convert To Client?">
+                <IconButton
+                  onClick={openLeadConversionModal}
+                  colorScheme="green"
+                  icon={<FaUserAlt />}
+                  ml={1}
+                ></IconButton>
+              </Tooltip>
+              <Tooltip label="Edit">
+                <IconButton
+                  onClick={openEditModal}
+                  colorScheme="yellow"
+                  icon={<EditIcon />}
+                  ml={1}
+                ></IconButton>
+              </Tooltip>
+              <Tooltip label="Delete">
+                <IconButton
+                  onClick={openDeleteModal}
+                  colorScheme="red"
+                  icon={<DeleteIcon />}
+                  ml={1}
+                ></IconButton>
+              </Tooltip>
+            </Flex>
+          </Flex>
         </CardHeader>
         <CardBody>
-          <Stack divider={<StackDivider />} spacing="4">
+          <Stack
+            divider={<StackDivider borderWidth="2px" borderColor="blue.500" />}
+            spacing="4"
+          >
             <Box>
-              <Heading size="xs" textTransform="uppercase">
+            <Heading fontFamily="monospace" size="md" textTransform="uppercase">
                 Lead Name
               </Heading>
-              <Text pt="2" fontSize="sm"></Text>
+                <Text fontFamily="initial" pt="2" fontSize="md">
               {lead.firstName} {lead.lastName}
+            </Text>
             </Box>
             <Box>
-              <Heading size="xs" textTransform="uppercase">
+            <Heading fontFamily="monospace" size="md"  textTransform="uppercase">
                 Last Contacted
               </Heading>
-              <Text pt="2" fontSize="sm">
+              <Text fontFamily="initial" pt="2" fontSize="md">
                 {formatDate(lead.last_contacted_at)}
               </Text>
             </Box>
             {lead.lead_email && (
               <Box>
-                <Heading size="xs" textTransform="uppercase">
+                 <Heading fontFamily="monospace" size="md"  textTransform="uppercase">
                   Email
                 </Heading>
-                <Text pt="2" fontSize="sm">
+                <Text fontFamily="initial" pt="2" fontSize="md">
                   {lead.lead_email}
                 </Text>
               </Box>
             )}
             {lead.phone_number && (
               <Box>
-                <Heading size="xs" textTransform="uppercase">
+                   <Heading fontFamily="monospace" size="md"  textTransform="uppercase">
                   Phone Number
                 </Heading>
-                <Text pt="2" fontSize="sm">
+                <Text fontFamily="initial" pt="2" fontSize="md">
                   {lead.phone_number}
                 </Text>
               </Box>
             )}
             {lead.social_media_source && (
               <Box>
-                <Heading size="xs" textTransform="uppercase">
+               <Heading fontFamily="monospace" size="md"  textTransform="uppercase">
                   Social Media
                 </Heading>
-                <Text pt="2" fontSize="sm">
+                <Text fontFamily="initial" pt="2" fontSize="md">
                   {lead.social_media_source}
                 </Text>
               </Box>
             )}
             {lead.soical_media && (
               <Box>
-                <Heading size="xs" textTransform="uppercase">
+                    <Heading fontFamily="monospace" size="md"  textTransform="uppercase">
                   Social Media Handle
                 </Heading>
-                <Text pt="2" fontSize="sm">
+                <Text fontFamily="initial" pt="2" fontSize="md">
                   {lead.soical_media}
                 </Text>
               </Box>
             )}
             <Button
               onClick={openNotesModal}
-              textColor="blue"
+              textColor="blue.500"
               colorScheme="transparent"
             >
-              <AddIcon mr={2} mt={0.5} color="blue" />
+              <AddIcon mr={2} mt={0.5} color="blue.500" />
               Add Note
             </Button>
           </Stack>
         </CardBody>
 
         <CardFooter>
-          <Stack direction="column">
-            {notes.map((n) => (
-              <ProgressNotes
-                key={n.id}
-                notes={n}
-                onDelete={deleteNote}
-                onEdit={editNote}
-              />
-            ))}
-          </Stack>
+          {loading ? (
+            <Spinner marginStart="110px" size="md" thickness="4px" />
+          ) : (
+            <Stack direction="column">
+              {notes.map((n) => (
+                <ProgressNotes
+                  key={n.id}
+                  notes={n}
+                  onDelete={deleteNote}
+                  onEdit={editNote}
+                />
+              ))}
+            </Stack>
+          )}
         </CardFooter>
       </Card>
       {isDeleting && (
         <Modal isOpen={isOpen} onClose={closeDeleteModal}>
           <ModalOverlay />
-          <ModalContent>
-            <ModalHeader>Delete Lead?</ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
-              Delete Lead: {lead.firstName} {lead.lastName}?
-            </ModalBody>
+          <ModalContent minWidth="500px">
+            <ModalHeader> <Text>
+            Permanently Delete Lead: {lead.firstName} {lead.lastName}?</Text></ModalHeader>
             <ModalFooter>
               <Button colorScheme="blue" mr={3} onClick={handleDelete}>
                 Confirm

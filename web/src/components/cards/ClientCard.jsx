@@ -19,11 +19,9 @@ import {
   Button,
   Tooltip,
   CardFooter,
-  Grid,
-  SimpleGrid,
-  Wrap,
-  WrapItem,
   Flex,
+  Spinner,
+  ModalHeader,
 } from "@chakra-ui/react";
 import { FaFileAlt } from "react-icons/fa";
 import { useEffect, useState } from "react";
@@ -42,6 +40,7 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
   const [isFileModalOpen, setIsFileModalOpen] = useState(false);
   const [notes, setNotes] = useState([]);
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [loading, setLoading] = useState(true);
   const token = Cookies.get("SessionID");
 
   useEffect(() => {
@@ -63,6 +62,8 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
         });
     } catch (error) {
       console.error(error);
+    } finally{
+      setLoading(false)
     }
   };
 
@@ -314,6 +315,9 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
         </CardBody>
 
         <CardFooter>
+        {loading ? (
+            <Spinner marginStart="110px" size="md" thickness="4px" />
+          ) : (
           <Stack direction="column" >
             {notes.map((n) => (
               <ProgressNotes
@@ -324,15 +328,15 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
               />
             ))}
           </Stack>
+          )}
         </CardFooter>
       </Card>
       {isDeleting && (
-        <Modal isOpen={isOpen} onClose={closeDeleteModal}>
+        <Modal  isOpen={isOpen} onClose={closeDeleteModal}>
           <ModalOverlay />
-          <ModalContent>
-            <ModalBody>
-              <Text  fontWeight='bold'>Permanently Delete Client: {client.firstName} {client.lastName}?</Text>
-            </ModalBody>
+          <ModalContent minWidth="500px">
+          <ModalHeader> <Text>Permanently Delete Client: {client.firstName} {client.lastName}?</Text>
+          </ModalHeader>
             <ModalFooter>
               <Button colorScheme="blue" mr={3} onClick={handleDelete}>
                 Confirm
@@ -341,7 +345,7 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
                 Cancel
               </Button>
             </ModalFooter>
-          </ModalContent>
+            </ModalContent>
         </Modal>
       )}
       {isEditing && (
