@@ -45,6 +45,7 @@ const UserRegistration = () => {
   const [emailTouched, setEmailTouched] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
   const [confirmPasswordTouched, setConfirmPasswordTouched] = useState(false);
+  const[loading, setLoading] = useState(false);
 
   const firstNameInputError = firstName.trim() === "" && firstNameTouched;
   const lastNameInputError = lastName.trim() === "" && lastNameTouched;
@@ -110,6 +111,7 @@ const UserRegistration = () => {
       passwordTouched &&
       confirmPasswordTouched
     ) {
+      setLoading(true)
       const requestBody = {
         firstName: firstName,
         lastName: lastName,
@@ -143,6 +145,8 @@ const UserRegistration = () => {
 
       } catch (error) {
         console.error(error);
+      } finally{
+        setLoading(false)
       }
     }
   };
@@ -286,7 +290,7 @@ const UserRegistration = () => {
                   variant="solid"
                   colorScheme="blue"
                 >
-                  Create Account
+                  { loading ? <Spinner size='md' thickness= '4px'/> : 'Create Account'}
                 </Button>
               </Stack>
             </Box>
