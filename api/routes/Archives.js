@@ -38,7 +38,7 @@ router.put("/update/archive/:archiveId", authenticateUser, async (req, res) => {
       lastActiveDate,
     } = req.body;
     const updatedArchive = await db.query(
-      'UPDATE "Archives" SET "firstName" = $1, "lastName" = $2, "email" = $3, "phone_number" = $4, "social_media_source" = $5, "soical_media" = $6, "last_active_date" = $7 WHERE "id" = $8 AND "user_id" = $9 RETURNING*',
+      'UPDATE "Archives" SET "firstName" = $1, "lastName" = $2, "email" = $3, "phone_number" = $4, "social_media_source" = $5, "soical_media" = $6, "last_active_date" = $7 WHERE "id" = $8 AND "user_id" = $9 RETURNING *',
       [
         firstName,
         lastName,
