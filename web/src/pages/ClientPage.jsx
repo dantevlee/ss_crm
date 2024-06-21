@@ -194,7 +194,7 @@ const ClientPage = () => {
             ))}
           </SimpleGrid>
           {clients.length > clientsPerPage && (
-            <Flex justifyContent="center" mt={8} mb={4}>
+            <Flex justifyContent="center" mt={12} mb={4}>
               {currentPage !== 1 && (
                 <Button onClick={handlePreviousPage} mr={2}>
                   <Text color="blue.500">Previous</Text>

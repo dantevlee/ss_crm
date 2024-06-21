@@ -15,7 +15,8 @@ import {
   chakra, 
   Icon,
   Link, 
-  useToast
+  useToast,
+  Spinner
 } from "@chakra-ui/react";
 import { FaEnvelope, FaLock } from "react-icons/fa";
 import { useState } from 'react'
@@ -29,6 +30,7 @@ const PasswordResetRequestForm = () => {
   const [errorMessage, setErrorMessage] = useState("")
   const [showAlert, setShowAlert] = useState(false);
   const [emailTouched, setemailTouched] = useState(false);
+  const [loading, setLoading] = useState(false)
   const history = useNavigate();
   const toast = useToast();
 
@@ -50,6 +52,7 @@ const PasswordResetRequestForm = () => {
 
     if(!emailInputError && emailTouched){
       try {
+        setLoading(true)
         await axios.post(`http://localhost:3000/api/reset/request`, requestBody).then((res) => {
           if(res.status === 200){
             if(showAlert){
@@ -71,6 +74,8 @@ const PasswordResetRequestForm = () => {
         })
       } catch(error){
         console.error(error)
+      } finally{
+        setLoading(false)
       }
     }
   
@@ -130,7 +135,7 @@ const PasswordResetRequestForm = () => {
                   colorScheme="blue"
                   width="full"
                 >
-                  Request Password Reset
+                  { loading ? <Spinner size="md" thickness="4px"/> : 'Request Password Reset'}
                 </Button>
               </Stack>
             </Box>
