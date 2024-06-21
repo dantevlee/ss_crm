@@ -104,10 +104,10 @@ const ClientPage = () => {
         .then((res) => {
           if (res.status === 200) {
             setClients(prevClients => {
-              const updatedClients = prevClients.map(client =>
+              const updatedClient = prevClients.map(client =>
                 client.id === clientId ? res.data : client
               );
-              return updatedClients;
+              return updatedClient;
             });
             onClose();
           }
