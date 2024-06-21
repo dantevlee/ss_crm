@@ -6,7 +6,6 @@ import {
   AccordionPanel,
   Box,
   Button,
-  Flex,
   IconButton,
   Modal,
   ModalBody,
@@ -14,6 +13,7 @@ import {
   ModalContent,
   ModalFooter,
   ModalOverlay,
+  Text,
   Tooltip,
   useDisclosure,
 } from "@chakra-ui/react";
@@ -23,18 +23,18 @@ import ProgressNotesForm from "../forms/ProgressNotesForm";
 
 const ProgressNotes = ({ notes, onDelete, onEdit }) => {
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isEditing, setIsEditing] = useState(false)
+  const [isEditing, setIsEditing] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const openDeleteModal = () => {
     onOpen();
     setIsDeleting(true);
-  }
+  };
 
   const closeDeleteModal = () => {
-    onClose()
-    setIsDeleting(false)
-  }
+    onClose();
+    setIsDeleting(false);
+  };
 
   const handleDelete = () => {
     onDelete(notes.id);
@@ -42,19 +42,19 @@ const ProgressNotes = ({ notes, onDelete, onEdit }) => {
   };
 
   const openEditModal = () => {
-    onOpen()
-    setIsEditing(true)
-  }
+    onOpen();
+    setIsEditing(true);
+  };
 
   const closeEditModal = () => {
-    onClose()
-    setIsEditing(false)
-  }
+    onClose();
+    setIsEditing(false);
+  };
 
   const handleEdit = (formData) => {
-    onEdit(formData, notes.id)
-    closeEditModal()
-  }
+    onEdit(formData, notes.id);
+    closeEditModal();
+  };
 
   const formatDate = (dateString) => {
     if (dateString) {
@@ -68,54 +68,54 @@ const ProgressNotes = ({ notes, onDelete, onEdit }) => {
 
   return (
     <>
-      <Accordion allowToggle>
-        <AccordionItem>
+      <Accordion marginStart='25px' allowToggle>
+        <AccordionItem backgroundColor='#feff9c' borderWidth="2px" borderColor="white.600"  >
           <h2>
             <AccordionButton>
-              <Box>
-                {notes.title}:{" "}
+              <Box
+                display="flex"
+                alignItems="center"
+              >
+                <Box alignItems='center'  flex="1">
+                  <Text maxWidth="150px" fontWeight='bold' fontFamily="monospace" fontSize='md' textTransform="uppercase">
                 {notes.version === "0"
-                  ? formatDate(notes.created_at)
-                  : formatDate(notes.updated_at)}
+                    ? formatDate(notes.created_at)
+                    : formatDate(notes.updated_at)}:{" "}
+                  {notes.title}
+                  </Text>
+                </Box>
+                <Box>
+                  <Tooltip label="Edit Note">
+                    <IconButton
+                      onClick={openEditModal}
+                      ml={2}
+                      size="xs"
+                      colorScheme="green"
+                      icon={<EditIcon />}
+                    />
+                  </Tooltip>
+                  <Tooltip label="Delete Note">
+                    <IconButton
+                      onClick={openDeleteModal}
+                      ml={2}
+                      size="xs"
+                      colorScheme="red"
+                      icon={<DeleteIcon />}
+                    />
+                  </Tooltip>
+                </Box>
               </Box>
               <AccordionIcon />
             </AccordionButton>
           </h2>
-          <AccordionPanel pb={4}>
-            {notes.text}
-            <Tooltip label="Edit Note">
-              <IconButton
-                onClick={openEditModal}
-                ml={2}
-                size="xs"
-                variant="outline"
-                colorScheme="teal"
-                icon={<EditIcon/>}
-              >
-
-              </IconButton>
-            </Tooltip>
-            <Tooltip label="Delete Note">
-              <IconButton
-                onClick={openDeleteModal}
-                ml={2}
-                size="xs"
-                variant="outline"
-                colorScheme="teal"
-                icon={<DeleteIcon />}
-              ></IconButton>
-            </Tooltip>
-          </AccordionPanel>
+          <AccordionPanel maxWidth="275px" pb={4}><Text marginLeft="20px" fontFamily="initial">{notes.text}</Text></AccordionPanel>
         </AccordionItem>
       </Accordion>
       {isDeleting && (
         <Modal isOpen={isOpen} onClose={closeDeleteModal}>
           <ModalOverlay />
           <ModalContent>
-            <ModalCloseButton />
-            <ModalBody>
-              Delete Note Entitled: {notes.title} ?
-            </ModalBody>
+            <ModalBody>Permanently Delete Note: {notes.title}?</ModalBody>
             <ModalFooter>
               <Button colorScheme="blue" mr={3} onClick={handleDelete}>
                 Confirm
@@ -129,17 +129,17 @@ const ProgressNotes = ({ notes, onDelete, onEdit }) => {
       )}
       {isEditing && (
         <Modal isOpen={isOpen} onClose={closeEditModal}>
-           <ModalOverlay />
-           <ModalContent>
+          <ModalOverlay />
+          <ModalContent>
             <ModalCloseButton />
             <ModalBody>
               <ProgressNotesForm
-              formValues={notes}
-              onCancel={closeEditModal}
-              onEdit={handleEdit}
+                formValues={notes}
+                onCancel={closeEditModal}
+                onEdit={handleEdit}
               />
             </ModalBody>
-           </ModalContent>
+          </ModalContent>
         </Modal>
       )}
     </>
