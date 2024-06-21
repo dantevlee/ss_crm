@@ -3,6 +3,7 @@ import {
   Box,
   Card,
   CardBody,
+  Flex,
   Heading,
   Stack,
   StackDivider,
@@ -19,6 +20,8 @@ import {
   Button,
   Tooltip,
   CardFooter,
+  Spinner,
+  ModalHeader,
 } from "@chakra-ui/react";
 import ClientForm from "../forms/ClientForm";
 import LeadsForm from "../forms/LeadsForm";
@@ -40,6 +43,7 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
   const [isRestoringAsLead, setIsRestoringAsLead] = useState(false);
   const [isRestoringAsClient, setIsRestoringAsClient] = useState(false);
   const [notes, setNotes] = useState([]);
+  const [loading, setLoading] = useState(true);
   const token = Cookies.get("SessionID");
 
   useEffect(() => {
@@ -61,6 +65,8 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
         });
     } catch (error) {
       console.error(error);
+    } finally{
+      setLoading(false)
     }
   };
 
@@ -274,77 +280,94 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
 
   return (
     <>
-      <Card>
+      <Card
+       shadow="lg"
+       _hover={{
+         boxShadow: "xl",
+         transform: "scale(1.05)",
+         transition: "transform 0.2s",
+       }}
+       minWidth="250px"
+       maxWidth='350px'
+       marginStart="75px"
+       marginEnd='10px'
+       marginTop="125px"
+       backgroundColor="gray.300"
+       borderRadius={15}>
         <CardHeader>
+        <Flex alignItems="center" width="100%">
+        <Tooltip label="Files">
+            <IconButton
+              onClick={openFileModal}
+              colorScheme="blue"
+              icon={<FaFileAlt />}
+            ></IconButton>
+          </Tooltip>
+          <Flex ml="auto">
           <Tooltip label="Restore">
             <IconButton
               onClick={openArchiveModal}
-              variant="outline"
-              colorScheme="teal"
+              colorScheme="green"
               icon={<UnlockIcon />}
+              ml={1}
             />
           </Tooltip>
           <Tooltip label="Edit">
             <IconButton
               onClick={openEditModal}
-              variant="outline"
-              colorScheme="teal"
+              colorScheme="yellow"
               icon={<EditIcon />}
+              ml={1}
             />
           </Tooltip>
           <Tooltip label="Delete">
             <IconButton
               onClick={openDeleteModal}
-              variant="outline"
-              colorScheme="teal"
+              colorScheme="red"
               icon={<DeleteIcon />}
+              ml={1}
             />
           </Tooltip>
-          <Tooltip label="Files">
-            <IconButton
-              onClick={openFileModal}
-              variant="outline"
-              colorScheme="teal"
-              icon={<FaFileAlt />}
-            ></IconButton>
-          </Tooltip>
+          </Flex>
+          </Flex>
         </CardHeader>
         <CardBody>
-          <Stack divider={<StackDivider />} spacing="4">
+          <Stack  divider={<StackDivider borderWidth="2px" borderColor="blue.500" />}
+            spacing="4">
             <Box>
-              <Heading size="xs" textTransform="uppercase">
+            <Heading fontFamily="monospace" size="md" textTransform="uppercase">
                 Name
               </Heading>
-              <Text pt="2" fontSize="sm">
+              <Text fontFamily="initial" pt="2" fontSize="md">
                 {archives.firstName} {archives.lastName}
               </Text>
             </Box>
             {archives.email && (
               <Box>
-                <Heading size="xs" textTransform="uppercase">
+                 <Heading fontFamily="monospace" size="md" textTransform="uppercase">
                   Email
                 </Heading>
-                <Text pt="2" fontSize="sm">
+                <Text fontFamily="initial" pt="2" fontSize="md">
                   {archives.email}
                 </Text>
               </Box>
             )}
             {archives.last_active_date && (
               <Box>
-                <Heading size="xs" textTransform="uppercase">
+                 <Heading fontFamily="monospace" size="md" textTransform="uppercase">
                   Last Active Date
                 </Heading>
-                <Text pt="2" fontSize="sm">
+                <Text fontFamily="initial" pt="2" fontSize="md">
                   {formatDate(archives.last_active_date)}
                 </Text>
               </Box>
             )}
             {archives.phone_number && (
               <Box>
-                <Heading size="xs" textTransform="uppercase">
+                  <Heading fontFamily="monospace" size="md" textTransform="uppercase">
                   Phone Number
                 </Heading>
-                <Text pt="2" fontSize="sm">
+                <Text fontFamily="initial" pt="2" fontSize="md">
                   {archives.phone_number}
                 </Text>
               </Box>
@@ -352,37 +375,40 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
 
             {archives.social_media_source && (
               <Box>
-                <Heading size="xs" textTransform="uppercase">
+                  <Heading fontFamily="monospace" size="md" textTransform="uppercase">
                   Social Media
                 </Heading>
-                <Text pt="2" fontSize="sm">
+                <Text fontFamily="initial" pt="2" fontSize="md">
                   {archives.social_media_source}
                 </Text>
               </Box>
             )}
             {archives.soical_media && (
               <Box>
-                <Heading size="xs" textTransform="uppercase">
+                  <Heading fontFamily="monospace" size="md" textTransform="uppercase">
                   Social Media Handle
                 </Heading>
-                <Text pt="2" fontSize="sm">
+                <Text fontFamily="initial" pt="2" fontSize="md">
                   {archives.soical_media}
                 </Text>
               </Box>
             )}
             <Button
               onClick={openNotesModal}
-              textColor="blue"
+              textColor="blue.500"
               colorScheme="transparent"
             >
-              <AddIcon mr={2} mt={0.5} color="blue" />
+              <AddIcon mr={2} mt={0.5} color="blue.500" />
               Add Note
             </Button>
           </Stack>
         </CardBody>
         <CardFooter>
-          <Stack direction="column">
-            {notes.map((n) => (
+            {loading ? (
+              <Spinner marginStart="110px" size="md" thickness="4px"/>
+            ) : (
+              <Stack direction="column">
+              {notes.map((n) => (
               <ProgressNotes 
               key={n.id} 
               notes={n}
@@ -390,17 +416,19 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
               onEdit={editNote} />
             ))}
           </Stack>
+            )}
+        
         </CardFooter>
       </Card>
 
       {isDeleting && (
         <Modal isOpen={isDeleteOpen} onClose={closeDeleteModal}>
           <ModalOverlay />
-          <ModalContent>
-            <ModalCloseButton />
-            <ModalBody>
-              Delete Archive: {archives.firstName} {archives.lastName}?
-            </ModalBody>
+          <ModalContent  minWidth="500px">
+     
+            <ModalHeader>
+            Permanently Delete Archive: {archives.firstName} {archives.lastName}?
+            </ModalHeader>
             <ModalFooter>
               <Button colorScheme="blue" mr={3} onClick={handleDelete}>
                 Confirm
