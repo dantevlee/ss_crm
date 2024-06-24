@@ -351,7 +351,8 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
       {isEditing && (
         <Modal isOpen={isOpen} onClose={closeEditModal}>
           <ModalOverlay />
-          <ModalContent>
+          <ModalContent backgroundColor="gray.500">
+          <ModalHeader color="white">Edit Client</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
               <ClientForm

@@ -226,9 +226,8 @@ const ClientPage = () => {
       )}
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Add New Client</ModalHeader>
-          <ModalCloseButton />
+        <ModalContent backgroundColor="gray.500">
+          <ModalHeader color='white'>Add New Client</ModalHeader>
           <ModalBody pb={6}>
             <ClientForm onSave={createClient} onCancel={onClose} />
           </ModalBody>

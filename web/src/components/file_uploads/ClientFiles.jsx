@@ -1,14 +1,16 @@
 import { DeleteIcon } from "@chakra-ui/icons";
 import {
+  Alert,
+  AlertDescription,
+  AlertIcon,
   Box,
   Button,
   Flex,
+  FormControl,
   IconButton,
   Input,
   Link,
   Modal,
-  ModalBody,
-  ModalCloseButton,
   ModalContent,
   ModalFooter,
   ModalHeader,
@@ -27,6 +29,8 @@ const ClientFiles = ({ onCancel, client }) => {
   const [fileToDelete, setFileToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showAlert, setShowAlert] = useState(false);
   const fileInputRef = useRef(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -46,6 +50,10 @@ const ClientFiles = ({ onCancel, client }) => {
         })
         .then((res) => {
           setFiles(res.data.files);
+        })
+        .catch((error) => {
+          setErrorMessage(error.response.data.message);
+          setShowAlert(true);
         });
     } catch (error) {
       console.error(error);
@@ -57,7 +65,7 @@ const ClientFiles = ({ onCancel, client }) => {
   const uploadFile = async () => {
     const formData = new FormData();
     formData.append("file", fileToUpload);
-    setLoading(true)
+    setLoading(true);
     try {
       axios
         .post(
@@ -78,24 +86,33 @@ const ClientFiles = ({ onCancel, client }) => {
               fileInputRef.current.value = "";
             }
           }
+        })
+        .catch((error) => {
+          setErrorMessage(error.response.data.message);
+          setShowAlert(true);
         });
     } catch (error) {
       console.error(error);
-    } finally{
-      setLoading(false)
+    } finally {
+      setLoading(false);
     }
   };
 
   const downloadFile = async (fileName) => {
     try {
-      const response = await axios.get(
-        `http://localhost:3000/api/clients/${client.id}/files/${fileName}`,
-        {
-          headers: {
-            Authorization: `${token}`,
-          },
-        }
-      );
+      const response = await axios
+        .get(
+          `http://localhost:3000/api/clients/${client.id}/files/${fileName}`,
+          {
+            headers: {
+              Authorization: `${token}`,
+            },
+          }
+        )
+        .catch((error) => {
+          setErrorMessage(error.response.data.message);
+          setShowAlert(true);
+        });
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
@@ -122,6 +139,10 @@ const ClientFiles = ({ onCancel, client }) => {
               fetchFiles();
               closeDeleteModal();
             }
+          })
+          .catch((error) => {
+            setErrorMessage(error.response.data.message);
+            setShowAlert(true);
           });
       } catch (error) {
         console.error("Error deleting the file", error);
@@ -131,6 +152,7 @@ const ClientFiles = ({ onCancel, client }) => {
 
   const handleFileChange = (e) => {
     setFileToUpload(e.target.files[0]);
+    
   };
 
   const handleCancel = () => {
@@ -151,34 +173,44 @@ const ClientFiles = ({ onCancel, client }) => {
 
   return (
     <>
-<Box mt={8}>
-  <Input
-    type="file"
-    onChange={handleFileChange}
-    ref={fileInputRef}
-    borderWidth="2px"
-    _hover={{
-      borderColor: "blue.500",
-      borderWidth: "3px"
-    }}
-    color="black.700"
-    sx={{
-      "::file-selector-button": {
-        bg: "teal.600",
-        border: "none",
-        color: "white",
-        fontWeight: "bold",
-        padding: "0.5rem 1rem",
-        cursor: "pointer",
-        mr: 2,
-        _hover: {
-          bg: "blue.300",
-        },
-      }
-    }}
-  />
-</Box>
-
+      <FormControl isInvalid={fileInputError}>
+        <Box mt={8}>
+          <Input
+            type="file"
+            onChange={handleFileChange}
+            ref={fileInputRef}
+            borderWidth="2px"
+            _hover={{
+              borderColor: "blue.500",
+              borderWidth: "3px",
+            }}
+            color="black.700"
+            sx={{
+              "::file-selector-button": {
+                bg: "teal.600",
+                border: "none",
+                color: "white",
+                fontWeight: "bold",
+                padding: "0.5rem 1rem",
+                cursor: "pointer",
+                mr: 2,
+                _hover: {
+                  bg: "blue.300",
+                },
+              },
+            }}
+          />
+        </Box>
+        </FormControl>
+      {showAlert && (
+         <Alert status="error" mt={showAlert ? 4 : 0} >
+         <AlertIcon/>
+         <AlertDescription>
+           {errorMessage}
+         </AlertDescription>
+       </Alert>
+      )}
+     
       <Flex mt={6} justifyContent="flex-start">
         <Button colorScheme="blue" onClick={uploadFile}>
           Upload
@@ -187,6 +219,7 @@ const ClientFiles = ({ onCancel, client }) => {
           Cancel
         </Button>
       </Flex>
+
       <Box mt={6}>
         {loading ? (
           <Spinner marginStart="85px" />
@@ -219,8 +252,11 @@ const ClientFiles = ({ onCancel, client }) => {
       {isDeleting && (
         <Modal isOpen={isOpen} onClose={closeDeleteModal}>
           <ModalOverlay />
-          <ModalContent  minWidth="500px">
-            <ModalHeader> Permanently Delete: {fileToDelete?.file_name} ?</ModalHeader>
+          <ModalContent minWidth="500px">
+            <ModalHeader>
+              {" "}
+              Permanently Delete: {fileToDelete?.file_name} ?
+            </ModalHeader>
             <ModalFooter>
               <Button colorScheme="blue" mr={3} onClick={deleteFile}>
                 Confirm

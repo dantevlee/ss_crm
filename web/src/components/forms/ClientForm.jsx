@@ -22,7 +22,7 @@ const ClientForm = ({
   onArchive,
   onCancel,
   clientFormValue,
-  onRestore
+  onRestore,
 }) => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -57,20 +57,20 @@ const ClientForm = ({
       );
       if (clientFormValue.phone_number) {
         setContactSource("Phone Number");
-      } if (clientFormValue.social_media_source) {
+      }
+      if (clientFormValue.social_media_source) {
         setContactSource("Social Media");
         setSocialMediaSource(clientFormValue.social_media_source);
         setSocialMedia(clientFormValue.social_media);
       }
-      if(onRestore){
+      if (onRestore) {
         setIsEditingEntry(false);
         setEmail(clientFormValue.email);
-        setSocialMedia(clientFormValue.soical_media)
-        setEndDateCalculated(false)
+        setSocialMedia(clientFormValue.soical_media);
+        setEndDateCalculated(false);
       } else {
         setIsEditingEntry(true);
       }
-    
     }
   }, [clientFormValue]);
 
@@ -106,10 +106,10 @@ const ClientForm = ({
 
   const handleContactSourceChange = (e) => {
     setContactSource(e);
-    if(e === "None"){
-      setSocialMedia("")
-      setPhoneNumber("")
-      setSocialMediaSource("")
+    if (e === "None") {
+      setSocialMedia("");
+      setPhoneNumber("");
+      setSocialMediaSource("");
     }
   };
 
@@ -149,17 +149,17 @@ const ClientForm = ({
       clientEmail: email,
       startDate: startDate,
       endDate: endDate,
-      phoneNumber: phoneNumber, 
+      phoneNumber: phoneNumber,
       socialMediaSource: socialMediaSource,
-      socialMedia: socialMedia
+      socialMedia: socialMedia,
     };
     if (isEditingEntry) {
       onEdit(formData, clientFormValue.id);
-      if(archive === 'Y'){
-        handleArchiveSubmission()
+      if (archive === "Y") {
+        handleArchiveSubmission();
       }
     } else if (onRestore) {
-      handleArchiveToClientSubmission()
+      handleArchiveToClientSubmission();
     } else {
       onSave(formData);
     }
@@ -174,10 +174,10 @@ const ClientForm = ({
       socialMediaSource: socialMediaSource,
       socialMedia: socialMedia,
       lastActiveDate: endDate,
-    }
+    };
 
-    onArchive(formData, clientFormValue.id)
-  }
+    onArchive(formData, clientFormValue.id);
+  };
 
   const handleArchiveToClientSubmission = () => {
     const formData = {
@@ -186,48 +186,75 @@ const ClientForm = ({
       clientEmail: email,
       startDate: startDate,
       endDate: endDate,
-      phoneNumber: phoneNumber, 
-      socialMediaSource: socialMediaSource, 
-      socialMedia: socialMedia
-    }
+      phoneNumber: phoneNumber,
+      socialMediaSource: socialMediaSource,
+      socialMedia: socialMedia,
+    };
 
-    onArchive(formData, clientFormValue.id)
-  }
+    onArchive(formData, clientFormValue.id);
+  };
 
   const handleCancel = () => {
     onCancel();
   };
 
-
   return (
     <>
       <FormControl>
-        <FormLabel>First Name:</FormLabel>
+        <FormLabel color="white">First Name:</FormLabel>
         <Input
+            sx={{
+              _focus: {
+                borderWidth: '4px',
+                borderColor: 'blue.600',
+              },
+            }}
+          borderRadius={10}
+          backgroundColor="white"
           onChange={handleFirstNameChange}
           placeholder="First Name"
           value={firstName}
         />
       </FormControl>
       <FormControl mt={4}>
-        <FormLabel>Last Name:</FormLabel>
+        <FormLabel color="white">Last Name:</FormLabel>
         <Input
+          sx={{
+            _focus: {
+              borderWidth: '4px',
+              borderColor: 'blue.600',
+            },
+          }}
+          borderRadius={10}
+          backgroundColor="white"
           onChange={handleLastNameChange}
           placeholder="Last Name"
           value={lastName}
         />
       </FormControl>
       <FormControl mt={4}>
-        <FormLabel>E-mail:</FormLabel>
+        <FormLabel color="white">E-mail:</FormLabel>
         <Input
+          sx={{
+            _focus: {
+              borderWidth: '4px',
+              borderColor: 'blue.600',
+            },
+          }}
+          borderRadius={10}
+          backgroundColor="white"
           onChange={handleEmailChange}
           placeholder="E-mail"
           value={email}
         />
       </FormControl>
       <FormControl mt={4}>
-        <FormLabel>Alternate Contact Source?</FormLabel>
-        <RadioGroup onChange={handleContactSourceChange} value={contactSource}>
+        <FormLabel color="white">Alternate Contact Source?</FormLabel>
+        <RadioGroup
+          color="white"
+          onChange={handleContactSourceChange}
+          value={contactSource}
+        >
           <Stack direction="column">
             <Radio value="Social Media">Social Media</Radio>
             <Radio value="Phone Number">Phone Number</Radio>
@@ -237,8 +264,9 @@ const ClientForm = ({
       </FormControl>
       {contactSource === "Social Media" && (
         <FormControl mt={4}>
-          <FormLabel>Social Media?</FormLabel>
+          <FormLabel color="white">Social Media?</FormLabel>
           <RadioGroup
+            color="white"
             onChange={handleSocialMediaSourceChange}
             value={socialMediaSource}
           >
@@ -253,8 +281,16 @@ const ClientForm = ({
       )}{" "}
       {socialMediaSource === "Instagram" && (
         <FormControl mt={4}>
-          <FormLabel>IG:</FormLabel>
+          <FormLabel color="white">IG:</FormLabel>
           <Input
+            sx={{
+              _focus: {
+                borderWidth: '4px',
+                borderColor: 'blue.600',
+              },
+            }}
+            borderRadius={10}
+            backgroundColor="white"
             value={socialMedia}
             placeholder="Instagram"
             onChange={handleSocialMediaChange}
@@ -263,8 +299,16 @@ const ClientForm = ({
       )}
       {socialMediaSource === "Facebook" && (
         <FormControl mt={4}>
-          <FormLabel>Facebook:</FormLabel>
+          <FormLabel color="white">Facebook:</FormLabel>
           <Input
+            sx={{
+              _focus: {
+                borderWidth: '4px',
+                borderColor: 'blue.600',
+              },
+            }}
+            borderRadius={10}
+            backgroundColor="white"
             value={socialMedia}
             placeholder="Facebook"
             onChange={handleSocialMediaChange}
@@ -273,8 +317,16 @@ const ClientForm = ({
       )}
       {socialMediaSource === "LinkedIn" && (
         <FormControl mt={4}>
-          <FormLabel>LinkedIn:</FormLabel>
+          <FormLabel color="white">LinkedIn:</FormLabel>
           <Input
+            sx={{
+              _focus: {
+                borderWidth: '4px',
+                borderColor: 'blue.600',
+              },
+            }}
+            borderRadius={10}
+            backgroundColor="white"
             value={socialMedia}
             placeholder="LinkedIn"
             onChange={handleSocialMediaChange}
@@ -283,18 +335,34 @@ const ClientForm = ({
       )}
       {socialMediaSource === "Tik Tok" && (
         <FormControl mt={4}>
-          <FormLabel>Tik Tok:</FormLabel>
+          <FormLabel color="white">Tik Tok:</FormLabel>
           <Input
+            sx={{
+              _focus: {
+                borderWidth: '4px',
+                borderColor: 'blue.600',
+              },
+            }}
+            borderRadius={10}
+            backgroundColor="white"
             value={socialMedia}
             placeholder="Tik-Tok"
             onChange={handleSocialMediaChange}
           />
         </FormControl>
       )}
-         {contactSource === "Phone Number" && (
+      {contactSource === "Phone Number" && (
         <FormControl mt={4}>
-          <FormLabel>Phone Number</FormLabel>
+          <FormLabel color="white">Phone Number</FormLabel>
           <Input
+            sx={{
+              _focus: {
+                borderWidth: '4px',
+                borderColor: 'blue.600',
+              },
+            }}
+            borderRadius={10}
+            backgroundColor="white"
             onChange={handlePhoneNumberChange}
             placeholder="Phone Number"
             value={phoneNumber}
@@ -302,8 +370,16 @@ const ClientForm = ({
         </FormControl>
       )}
       <FormControl mt={4}>
-        <FormLabel>Start Date</FormLabel>
+        <FormLabel color="white">Start Date</FormLabel>
         <Input
+          sx={{
+            _focus: {
+              borderWidth: '4px',
+              borderColor: 'blue.600',
+            },
+          }}
+          borderRadius={10}
+          backgroundColor="white"
           onChange={handleStartDateChange}
           size="md"
           type="date"
@@ -311,11 +387,23 @@ const ClientForm = ({
         />
       </FormControl>
       <FormControl mt={4}>
-        <FormLabel>How many weeks is your program?</FormLabel>
+        <FormLabel color="white">How many weeks is your program?</FormLabel>
         <Flex justifyContent="space-between">
           <InputGroup>
-            <NumberInput defaultValue={1} min={1} max={52}>
-              <NumberInputField onChange={handlInputWeeksChange} />
+            <NumberInput
+              borderRadius={10}
+              backgroundColor="white"
+              defaultValue={1}
+              min={1}
+              max={52}
+            >
+              <NumberInputField   
+              sx={{
+                _focus: {
+                  borderWidth: '4px',
+                  borderColor: 'blue.600',
+                },
+              }} onChange={handlInputWeeksChange} />
               <NumberInputStepper>
                 <NumberIncrementStepper
                   onClick={() => handleStepperChange(numberOfWeeks + 1)}
@@ -328,7 +416,7 @@ const ClientForm = ({
           </InputGroup>
           <Button
             mr={8}
-            colorScheme="teal"
+            colorScheme="yellow"
             width="150px"
             onClick={calculateEndDate}
           >
@@ -337,8 +425,16 @@ const ClientForm = ({
         </Flex>
         {endDateCalcuated && (
           <FormControl mt={4}>
-            <FormLabel>End Date</FormLabel>
+            <FormLabel color="white">End Date</FormLabel>
             <Input
+                sx={{
+                  _focus: {
+                    borderWidth: '4px',
+                    borderColor: 'blue.600',
+                  },
+                }}
+              borderRadius={10}
+              backgroundColor="white"
               onChange={handleEndDateChange}
               value={endDate}
               placeholder="Select Date"
@@ -349,8 +445,8 @@ const ClientForm = ({
         )}
         {isEditingEntry && (
           <FormControl mt={4}>
-            <FormLabel>Archive Client?</FormLabel>
-            <RadioGroup onChange={setArchive} value={archive}>
+            <FormLabel color="white">Archive Client?</FormLabel>
+            <RadioGroup color="white" onChange={setArchive} value={archive}>
               <Stack direction="column">
                 <Radio value="Y">Yes</Radio>
                 <Radio value="N">No</Radio>
