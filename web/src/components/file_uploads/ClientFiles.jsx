@@ -7,6 +7,7 @@ import {
   Button,
   Flex,
   FormControl,
+  FormErrorMessage,
   IconButton,
   Input,
   Link,
@@ -31,6 +32,7 @@ const ClientFiles = ({ onCancel, client }) => {
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [showAlert, setShowAlert] = useState(false);
+  const [fileInputTouched, setFileInputTouched] = useState(false)
   const fileInputRef = useRef(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -50,6 +52,9 @@ const ClientFiles = ({ onCancel, client }) => {
         })
         .then((res) => {
           setFiles(res.data.files);
+          if(showAlert){
+            setShowAlert(false)
+          }
         })
         .catch((error) => {
           setErrorMessage(error.response.data.message);
@@ -82,6 +87,9 @@ const ClientFiles = ({ onCancel, client }) => {
           if (res.status === 200) {
             fetchFiles();
             setFileToUpload(null);
+            if(showAlert){
+              setShowAlert(false)
+            }
             if (fileInputRef.current) {
               fileInputRef.current.value = "";
             }
@@ -152,6 +160,9 @@ const ClientFiles = ({ onCancel, client }) => {
 
   const handleFileChange = (e) => {
     setFileToUpload(e.target.files[0]);
+    if (!fileInputTouched){
+      setFileInputTouched(true)
+    }
     
   };
 
@@ -173,7 +184,6 @@ const ClientFiles = ({ onCancel, client }) => {
 
   return (
     <>
-      <FormControl isInvalid={fileInputError}>
         <Box mt={8}>
           <Input
             type="file"
@@ -200,8 +210,10 @@ const ClientFiles = ({ onCancel, client }) => {
               },
             }}
           />
+          <FormErrorMessage>
+            Please select a file to upload.
+          </FormErrorMessage>
         </Box>
-        </FormControl>
       {showAlert && (
          <Alert status="error" mt={showAlert ? 4 : 0} >
          <AlertIcon/>
