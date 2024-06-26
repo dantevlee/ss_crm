@@ -13,6 +13,8 @@ import {
   RadioGroup,
   Radio,
   Stack,
+  FormErrorMessage,
+  Spinner,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
@@ -25,18 +27,25 @@ const ClientForm = ({
   onRestore,
 }) => {
   const [firstName, setFirstName] = useState("");
+  const [firstNameTouched, setFirstNameTouched] = useState(false);
   const [lastName, setLastName] = useState("");
+  const [lastNameTouched, setLastNameTouched] = useState(false)
   const [email, setEmail] = useState("");
+  const [emailTouched, setemailTouched] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [phoneNumberTouched, setPhoneNumberTouched] = useState(false);
   const [startDate, setStartDate] = useState("");
   const [numberOfWeeks, setNumberOfWeeks] = useState(1);
   const [endDate, setEndDate] = useState("");
-  const [contactSource, setContactSource] = useState("");
+  const [contactSource, setContactSource] = useState("None");
   const [socialMediaSource, setSocialMediaSource] = useState("");
+  const [socialMediaSourceTouched, setSocialMediaSourceTouched] = useState(false)
   const [socialMedia, setSocialMedia] = useState("");
+  const [socialMediaTouched, setSocialMediaTouched] = useState(false)
   const [endDateCalcuated, setEndDateCalculated] = useState(false);
   const [isEditingEntry, setIsEditingEntry] = useState(false);
   const [archive, setArchive] = useState("N");
+  const[loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (clientFormValue) {
@@ -74,16 +83,39 @@ const ClientForm = ({
     }
   }, [clientFormValue]);
 
+  const emailInputError =
+    (email.trim() === "" || !/^\S+@\S+\.\S+$/.test(email)) && emailTouched;
+
+  const firstNameInputError = firstName.trim() === "" && firstNameTouched;
+
+  const lastNameInputError = lastName.trim() === "" && lastNameTouched;
+
+  const phoneNumberInputError = phoneNumber.trim() === "" && phoneNumberTouched
+
+  const socialMediaSourceInputError =  socialMediaSource.trim() === "" && socialMediaSourceTouched
+
+  const socialMediaInputError = socialMedia.trim() === "" && socialMediaTouched
+
+
   const handleFirstNameChange = (e) => {
     setFirstName(e.target.value);
+    if(!firstNameTouched){
+      setFirstNameTouched(true)
+    }
   };
 
   const handleLastNameChange = (e) => {
     setLastName(e.target.value);
+    if(!lastNameTouched){
+      setLastNameTouched(true)
+    }
   };
 
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
+    if(!emailTouched){
+      setemailTouched(true)
+    }
   };
 
   const handleStartDateChange = (e) => {
@@ -110,20 +142,41 @@ const ClientForm = ({
       setSocialMedia("");
       setPhoneNumber("");
       setSocialMediaSource("");
+      setPhoneNumberTouched(false)
+      setSocialMediaTouched(false)
+    }
+    if(e === "Social Media"){
+      setPhoneNumber("");
+      setPhoneNumberTouched(false)
+    }
+
+    if(e === "Phone Number"){
+      setSocialMediaSource("");
+      setSocialMediaTouched(false)
+      setSocialMedia("");
     }
   };
 
   const handleSocialMediaSourceChange = (e) => {
     setSocialMediaSource(e);
     setSocialMedia("");
+    if(!socialMediaSourceTouched){
+      setSocialMediaSourceTouched(true)
+    }
   };
 
   const handleSocialMediaChange = (e) => {
     setSocialMedia(e.target.value);
+    if(!socialMediaTouched){
+      setSocialMediaTouched(true)
+    }
   };
 
   const handlePhoneNumberChange = (e) => {
     setPhoneNumber(e.target.value);
+    if(!phoneNumberTouched){
+      setPhoneNumberTouched(true)
+    }
   };
 
   const calculateEndDate = () => {
@@ -156,11 +209,14 @@ const ClientForm = ({
     if (isEditingEntry) {
       onEdit(formData, clientFormValue.id);
       if (archive === "Y") {
+        setLoading(true)
         handleArchiveSubmission();
       }
     } else if (onRestore) {
+      setLoading(true)
       handleArchiveToClientSubmission();
     } else {
+      setLoading(true)
       onSave(formData);
     }
   };
@@ -200,7 +256,7 @@ const ClientForm = ({
 
   return (
     <>
-      <FormControl>
+      <FormControl isInvalid={firstNameInputError}>
         <FormLabel color="white">First Name:</FormLabel>
         <Input
             sx={{
@@ -215,8 +271,13 @@ const ClientForm = ({
           placeholder="First Name"
           value={firstName}
         />
+        <FormErrorMessage fontSize="14px"
+        fontWeight='bold'
+        backgroundColor="red.300"
+        maxWidth="225px"
+        textColor="black">Please Enter First Name of Client.</FormErrorMessage>
       </FormControl>
-      <FormControl mt={4}>
+      <FormControl isInvalid={lastNameInputError} mt={4}>
         <FormLabel color="white">Last Name:</FormLabel>
         <Input
           sx={{
@@ -231,8 +292,13 @@ const ClientForm = ({
           placeholder="Last Name"
           value={lastName}
         />
+         <FormErrorMessage fontSize="14px"
+        fontWeight='bold'
+        backgroundColor="red.300"
+        maxWidth="225px"
+        textColor="black">Please Enter Last Name of Client.</FormErrorMessage>
       </FormControl>
-      <FormControl mt={4}>
+      <FormControl isInvalid={emailInputError} mt={4}>
         <FormLabel color="white">E-mail:</FormLabel>
         <Input
           sx={{
@@ -247,6 +313,11 @@ const ClientForm = ({
           placeholder="E-mail"
           value={email}
         />
+        <FormErrorMessage fontSize="14px"
+        fontWeight='bold'
+        backgroundColor="red.300"
+        maxWidth="225px"
+        textColor="black">Please Enter a Valid E-mail.</FormErrorMessage>
       </FormControl>
       <FormControl mt={4}>
         <FormLabel color="white">Alternate Contact Source?</FormLabel>
@@ -263,7 +334,7 @@ const ClientForm = ({
         </RadioGroup>
       </FormControl>
       {contactSource === "Social Media" && (
-        <FormControl mt={4}>
+        <FormControl isInvalid={socialMediaSourceInputError} mt={4}>
           <FormLabel color="white">Social Media?</FormLabel>
           <RadioGroup
             color="white"
@@ -277,10 +348,15 @@ const ClientForm = ({
               <Radio value="Tik Tok">Tik Tok</Radio>
             </Stack>
           </RadioGroup>
+          <FormErrorMessage fontSize="14px"
+        fontWeight='bold'
+        backgroundColor="red.300"
+        maxWidth="250px"
+        textColor="black">Please Select A Social Media Option.</FormErrorMessage>
         </FormControl>
       )}{" "}
-      {socialMediaSource === "Instagram" && (
-        <FormControl mt={4}>
+      {socialMediaSource === "Instagram" && contactSource === "Social Media" && (
+        <FormControl isInvalid={socialMediaInputError} mt={4}>
           <FormLabel color="white">IG:</FormLabel>
           <Input
             sx={{
@@ -295,10 +371,15 @@ const ClientForm = ({
             placeholder="Instagram"
             onChange={handleSocialMediaChange}
           />
+        <FormErrorMessage fontSize="14px"
+        fontWeight='bold'
+        backgroundColor="red.300"
+        maxWidth="160px"
+        textColor="black">Please Enter IG Handle.</FormErrorMessage>
         </FormControl>
       )}
-      {socialMediaSource === "Facebook" && (
-        <FormControl mt={4}>
+      {socialMediaSource === "Facebook" && contactSource === "Social Media" && (
+        <FormControl isInvalid={socialMediaInputError} mt={4}>
           <FormLabel color="white">Facebook:</FormLabel>
           <Input
             sx={{
@@ -313,10 +394,16 @@ const ClientForm = ({
             placeholder="Facebook"
             onChange={handleSocialMediaChange}
           />
+           <FormErrorMessage fontSize="14px"
+        fontWeight='bold'
+        backgroundColor="red.300"
+        maxWidth="200px"
+        textColor="black">Please Enter Facebook Name.</FormErrorMessage>
         </FormControl>
       )}
-      {socialMediaSource === "LinkedIn" && (
-        <FormControl mt={4}>
+      {socialMediaSource === "LinkedIn" &&
+      contactSource === "Social Media" && (
+        <FormControl mt={4} isInvalid={socialMediaInputError}>
           <FormLabel color="white">LinkedIn:</FormLabel>
           <Input
             sx={{
@@ -331,10 +418,15 @@ const ClientForm = ({
             placeholder="LinkedIn"
             onChange={handleSocialMediaChange}
           />
+           <FormErrorMessage fontSize="14px"
+        fontWeight='bold'
+        backgroundColor="red.300"
+        maxWidth="200px"
+        textColor="black">Please Enter LinkedIn Name.</FormErrorMessage>
         </FormControl>
       )}
-      {socialMediaSource === "Tik Tok" && (
-        <FormControl mt={4}>
+      {socialMediaSource === "Tik Tok" && contactSource === "Social Media" && (
+        <FormControl isInvalid={socialMediaInputError} mt={4}>
           <FormLabel color="white">Tik Tok:</FormLabel>
           <Input
             sx={{
@@ -349,10 +441,15 @@ const ClientForm = ({
             placeholder="Tik-Tok"
             onChange={handleSocialMediaChange}
           />
+           <FormErrorMessage fontSize="14px"
+        fontWeight='bold'
+        backgroundColor="red.300"
+        maxWidth="200px"
+        textColor="black">Please Enter Tik-Tok Handle.</FormErrorMessage>
         </FormControl>
       )}
       {contactSource === "Phone Number" && (
-        <FormControl mt={4}>
+        <FormControl isInvalid={phoneNumberInputError} mt={4}>
           <FormLabel color="white">Phone Number</FormLabel>
           <Input
             sx={{
@@ -367,6 +464,12 @@ const ClientForm = ({
             placeholder="Phone Number"
             value={phoneNumber}
           />
+           <FormErrorMessage fontSize="14px"
+        fontWeight='bold'
+        backgroundColor="red.300"
+        maxWidth="245px"
+        textColor="black">Please 
+        Enter A Valid Phone Number.</FormErrorMessage>
         </FormControl>
       )}
       <FormControl mt={4}>
@@ -457,7 +560,7 @@ const ClientForm = ({
       </FormControl>
       <Flex mt={6} justifyContent="flex-start">
         <Button onClick={handleFormSubmission} colorScheme="blue">
-          {isEditingEntry ? "Update" : "Save"}
+          {loading ? <Spinner size="md" thickness="4px"/> : isEditingEntry  ? "Update" : "Save"}
         </Button>
         <Button onClick={handleCancel} colorScheme="gray" ml={4}>
           Cancel

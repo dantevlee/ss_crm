@@ -135,6 +135,7 @@ const ClientFiles = ({ onCancel, client }) => {
 
   const deleteFile = async () => {
     if (fileToDelete) {
+      setLoading(true)
       try {
         await axios
           .delete(`http://localhost:3000/api/delete/file/${fileToDelete.id}`, {
@@ -154,6 +155,8 @@ const ClientFiles = ({ onCancel, client }) => {
           });
       } catch (error) {
         console.error("Error deleting the file", error);
+      } finally{
+        setLoading(false)
       }
     }
   };
@@ -225,7 +228,7 @@ const ClientFiles = ({ onCancel, client }) => {
      
       <Flex mt={6} justifyContent="flex-start">
         <Button colorScheme="blue" onClick={uploadFile}>
-          Upload
+        {loading ? <Spinner size="md" thickness="4px" /> : "Upload"}
         </Button>
         <Button ml={3} colorScheme="gray" onClick={handleCancel}>
           Cancel
@@ -271,7 +274,7 @@ const ClientFiles = ({ onCancel, client }) => {
             </ModalHeader>
             <ModalFooter>
               <Button colorScheme="blue" mr={3} onClick={deleteFile}>
-                Confirm
+              {loading ? <Spinner size="md" thickness="4px" /> : "Confirm"}
               </Button>
               <Button colorScheme="red" mr={3} onClick={closeDeleteModal}>
                 Cancel

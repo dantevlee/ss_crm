@@ -28,9 +28,6 @@ router.post(
 
       const client_id = req.query.client_id;
 
-      console.log('fileName ',fileName)
-     
-
       if (!fileType){
         return res.status(404).json({message: "Unsupported file type. File must be in pdf, excel, or docx format"})
       }
