@@ -21,7 +21,7 @@ import {
   CardFooter,
   Flex,
   Spinner,
-  ModalHeader,
+  ModalHeader
 } from "@chakra-ui/react";
 import { FaFileAlt } from "react-icons/fa";
 import { useEffect, useState } from "react";
@@ -33,7 +33,15 @@ import ClientFiles from "../file_uploads/ClientFiles";
 import axios from "axios";
 import "../../App.css";
 
-const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
+const ClientCard = ({
+  client,
+  onDelete,
+  onEdit,
+  onArchive,
+  onAlert,
+  onErrorMessage,
+  isFormOpen
+}) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isAddingNotes, setIsAddingNotes] = useState(false);
@@ -62,8 +70,8 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
         });
     } catch (error) {
       console.error(error);
-    } finally{
-      setLoading(false)
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -185,7 +193,10 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
 
   const handleEdit = (formData) => {
     onEdit(formData, client.id);
-    closeEditModal();
+    if(isFormOpen) {
+      closeEditModal()
+    }
+   
   };
 
   const handleArchive = (formData) => {
@@ -203,46 +214,53 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
           transition: "transform 0.2s",
         }}
         minWidth="250px"
-        maxWidth='350px'
+        maxWidth="350px"
         marginStart="75px"
-        marginEnd='10px'
+        marginEnd="10px"
         marginTop="175px"
         backgroundColor="gray.300"
         borderRadius={15}
       >
         <CardHeader>
-        <Flex alignItems="center" width="100%">
-          <Tooltip label="Files">
-            <IconButton
-              onClick={openFileModal}
-              colorScheme="blue"
-              icon={<FaFileAlt />}
-            />
-          </Tooltip>
-          <Flex ml="auto">
-            <Tooltip label="Edit">
+          <Flex alignItems="center" width="100%">
+            <Tooltip label="Files">
               <IconButton
-                onClick={openEditModal}
-                colorScheme="yellow"
-                icon={<EditIcon />}
-                ml={1}
+                onClick={openFileModal}
+                colorScheme="blue"
+                icon={<FaFileAlt />}
               />
             </Tooltip>
-            <Tooltip label="Delete">
-              <IconButton
-                onClick={openDeleteModal}
-                colorScheme="red"
-                icon={<DeleteIcon />}
-                ml={1}
-              />
-            </Tooltip>
+            <Flex ml="auto">
+              <Tooltip label="Edit">
+                <IconButton
+                  onClick={openEditModal}
+                  colorScheme="yellow"
+                  icon={<EditIcon />}
+                  ml={1}
+                />
+              </Tooltip>
+              <Tooltip label="Delete">
+                <IconButton
+                  onClick={openDeleteModal}
+                  colorScheme="red"
+                  icon={<DeleteIcon />}
+                  ml={1}
+                />
+              </Tooltip>
+            </Flex>
           </Flex>
-        </Flex>
         </CardHeader>
         <CardBody>
-          <Stack divider={<StackDivider borderWidth="2px" borderColor="blue.500"  />} spacing="4">
+          <Stack
+            divider={<StackDivider borderWidth="2px" borderColor="blue.500" />}
+            spacing="4"
+          >
             <Box>
-              <Heading fontFamily="monospace" size="md" textTransform="uppercase">
+              <Heading
+                fontFamily="monospace"
+                size="md"
+                textTransform="uppercase"
+              >
                 Client Name
               </Heading>
               <Text fontFamily="initial" pt="2" fontSize="md">
@@ -250,7 +268,11 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
               </Text>
             </Box>
             <Box>
-              <Heading fontFamily="monospace" size="md"  textTransform="uppercase">
+              <Heading
+                fontFamily="monospace"
+                size="md"
+                textTransform="uppercase"
+              >
                 Email
               </Heading>
               <Text fontFamily="initial" pt="2" fontSize="md">
@@ -259,7 +281,11 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
             </Box>
             {client.phone_number && (
               <Box>
-                <Heading fontFamily="monospace" size="md" textTransform="uppercase">
+                <Heading
+                  fontFamily="monospace"
+                  size="md"
+                  textTransform="uppercase"
+                >
                   Phone Number
                 </Heading>
                 <Text fontFamily="initial" pt="2" fontSize="md">
@@ -269,7 +295,11 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
             )}
             {client.social_media_source && (
               <Box>
-                <Heading fontFamily="monospace" size="md"  textTransform="uppercase">
+                <Heading
+                  fontFamily="monospace"
+                  size="md"
+                  textTransform="uppercase"
+                >
                   Social Media
                 </Heading>
                 <Text fontFamily="initial" pt="2" fontSize="md">
@@ -279,7 +309,11 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
             )}
             {client.social_media && (
               <Box>
-                <Heading fontFamily="monospace" size="md"  textTransform="uppercase">
+                <Heading
+                  fontFamily="monospace"
+                  size="md"
+                  textTransform="uppercase"
+                >
                   Social Media Handle
                 </Heading>
                 <Text fontFamily="initial" pt="2" fontSize="md">
@@ -288,7 +322,11 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
               </Box>
             )}
             <Box>
-              <Heading fontFamily="monospace" size="md"  textTransform="uppercase">
+              <Heading
+                fontFamily="monospace"
+                size="md"
+                textTransform="uppercase"
+              >
                 Start Date
               </Heading>
               <Text fontFamily="initial" pt="2" fontSize="md">
@@ -296,7 +334,11 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
               </Text>
             </Box>
             <Box>
-              <Heading fontFamily="monospace" size="md"  textTransform="uppercase">
+              <Heading
+                fontFamily="monospace"
+                size="md"
+                textTransform="uppercase"
+              >
                 End Date
               </Heading>
               <Text fontFamily="initial" pt="2" fontSize="md">
@@ -315,28 +357,32 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
         </CardBody>
 
         <CardFooter>
-        {loading ? (
+          {loading ? (
             <Spinner marginStart="110px" size="md" thickness="4px" />
           ) : (
-          <Stack direction="column" >
-            {notes.map((n) => (
-              <ProgressNotes
-                key={n.id}
-                notes={n}
-                onDelete={deleteNote}
-                onEdit={editNote}
-              />
-            ))}
-          </Stack>
+            <Stack direction="column">
+              {notes.map((n) => (
+                <ProgressNotes
+                  key={n.id}
+                  notes={n}
+                  onDelete={deleteNote}
+                  onEdit={editNote}
+                />
+              ))}
+            </Stack>
           )}
         </CardFooter>
       </Card>
       {isDeleting && (
-        <Modal  isOpen={isOpen} onClose={closeDeleteModal}>
+        <Modal isOpen={isOpen} onClose={closeDeleteModal}>
           <ModalOverlay />
           <ModalContent minWidth="500px">
-          <ModalHeader> <Text>Permanently Delete Client: {client.firstName} {client.lastName}?</Text>
-          </ModalHeader>
+            <ModalHeader>
+              {" "}
+              <Text>
+                Permanently Delete Client: {client.firstName} {client.lastName}?
+              </Text>
+            </ModalHeader>
             <ModalFooter>
               <Button colorScheme="blue" mr={3} onClick={handleDelete}>
                 Confirm
@@ -345,14 +391,14 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
                 Cancel
               </Button>
             </ModalFooter>
-            </ModalContent>
+          </ModalContent>
         </Modal>
       )}
       {isEditing && (
         <Modal isOpen={isOpen} onClose={closeEditModal}>
           <ModalOverlay />
           <ModalContent backgroundColor="gray.500">
-          <ModalHeader color="white">Edit Client</ModalHeader>
+            <ModalHeader color="white">Edit Client</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
               <ClientForm
@@ -360,6 +406,9 @@ const ClientCard = ({ client, onDelete, onEdit, onArchive }) => {
                 onCancel={closeEditModal}
                 onEdit={handleEdit}
                 onArchive={handleArchive}
+                onAlert={onAlert}
+                onErrorMessage={onErrorMessage}
+                isFormOpen={isFormOpen}
               />
             </ModalBody>
           </ModalContent>

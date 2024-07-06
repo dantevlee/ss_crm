@@ -3,7 +3,6 @@ import {
   Flex,
   Modal,
   ModalBody,
-  ModalCloseButton,
   ModalContent,
   ModalHeader,
   ModalOverlay,
@@ -22,8 +21,10 @@ import { useEffect, useState } from "react";
 const ClientPage = () => {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { isOpen, onOpen, onClose } = useDisclosure();
-
+  const[formLoading, setFormLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showAlert, setShowAlert] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const clientsPerPage = 8;
 
@@ -52,9 +53,9 @@ const ClientPage = () => {
 
   const createClient = async (formData) => {
     const token = Cookies.get("SessionID");
-
+    setFormLoading(true)
     try {
-      const response = await axios.post(
+        await axios.post(
         `http://localhost:3000/api/create-client`,
         formData,
         {
@@ -62,13 +63,18 @@ const ClientPage = () => {
             Authorization: `${token}`,
           },
         }
-      );
-      if (response.status === 200) {
-        fetchClients();
-        onClose();
-      }
+      ).then((res) => {
+        if(res.status === 200){
+          fetchClients();
+          closeAddClientModal();
+        }
+      })
     } catch (error) {
       console.error("Error saving client:", error.message);
+      setErrorMessage(error.response.data.message)
+      setShowAlert(true)
+    } finally {
+      setFormLoading(false)
     }
   };
 
@@ -86,8 +92,10 @@ const ClientPage = () => {
             fetchClients();
             onClose();
           }
-        });
+        })
     } catch (error) {
+      setErrorMessage(error.response.message)
+      setShowAlert(true)
       console.error(error);
     }
   };
@@ -107,13 +115,25 @@ const ClientPage = () => {
               const updatedClient = prevClients.map(client =>
                 client.id === clientId ? res.data : client
               );
+              if(isFormOpen){
+              setIsFormOpen(false)
+              setErrorMessage("")
+              setShowAlert(false)
+              }
+              
               return updatedClient;
             });
-            onClose();
           }
-        });
+        })
     } catch (error) {
-      console.error(error);
+      if(error.response) {
+        setIsFormOpen(true)
+        setErrorMessage(error.response.data.message)
+        setShowAlert(true)
+      }
+      
+    } finally {
+      setFormLoading(false)
     }
   };
 
@@ -135,11 +155,31 @@ const ClientPage = () => {
           if (res.status === 200) {
             fetchClients();
           }
-        });
+        }).catch((error) => {
+          setErrorMessage(error.response.data.message)
+          setShowAlert(true)
+        })
     } catch (error) {
       console.error(error);
+    } finally {
+      setFormLoading(false)
     }
   };
+
+  const {
+    isOpen: isAddClientOpen,
+    onOpen: onAddClientOpen,
+    onClose: onAddClientClose,
+  } = useDisclosure();
+
+
+  const closeAddClientModal = () => {
+    if(showAlert){
+      setShowAlert(false)
+    }
+    onAddClientClose()
+  }
+
 
   const handleNextPage = () => {
     setCurrentPage((prevPage) => prevPage + 1);
@@ -165,7 +205,7 @@ const ClientPage = () => {
           colorScheme="blue"
           position="absolute"
           right="1rem"
-          onClick={onOpen}
+          onClick={onAddClientOpen}
         >
           <AddIcon mr={2} /> Add Client
         </Button>
@@ -190,6 +230,9 @@ const ClientPage = () => {
                 onDelete={deleteClient}
                 onEdit={editClient}
                 onArchive={archiveClient}
+                onAlert={showAlert}
+                onErrorMessage={errorMessage}
+                isFormOpen={isFormOpen}
               />
             ))}
           </SimpleGrid>
@@ -224,12 +267,12 @@ const ClientPage = () => {
           )}
         </>
       )}
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal isOpen={isAddClientOpen} onClose={closeAddClientModal}>
         <ModalOverlay />
         <ModalContent backgroundColor="gray.500">
           <ModalHeader color='white'>Add New Client</ModalHeader>
           <ModalBody pb={6}>
-            <ClientForm onSave={createClient} onCancel={onClose} />
+            <ClientForm onSave={createClient} onCancel={closeAddClientModal} onLoading={formLoading} onAlert={showAlert} onErrorMessage={errorMessage} isFormOpen={isFormOpen} />
           </ModalBody>
         </ModalContent>
       </Modal>
