@@ -21,7 +21,10 @@ import {
   CardFooter,
   Flex,
   Spinner,
-  ModalHeader
+  ModalHeader,
+  Alert,
+  AlertIcon,
+  AlertDescription,
 } from "@chakra-ui/react";
 import { FaFileAlt } from "react-icons/fa";
 import { useEffect, useState } from "react";
@@ -33,15 +36,7 @@ import ClientFiles from "../file_uploads/ClientFiles";
 import axios from "axios";
 import "../../App.css";
 
-const ClientCard = ({
-  client,
-  onDelete,
-  onEdit,
-  onArchive,
-  onAlert,
-  onErrorMessage,
-  isFormOpen
-}) => {
+const ClientCard = ({ client, onEdit, onDelete, onArchive }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isAddingNotes, setIsAddingNotes] = useState(false);
@@ -49,11 +44,36 @@ const ClientCard = ({
   const [notes, setNotes] = useState([]);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showAlert, setShowAlert] = useState(false);
   const token = Cookies.get("SessionID");
 
   useEffect(() => {
     fetchNotes();
   }, [client.id]);
+
+  const deleteClient = async () => {
+    try {
+      setLoading(true);
+      await axios
+        .delete(`http://localhost:3000/api/delete/client/${client.id}`, {
+          headers: {
+            Authorization: `${token}`,
+          },
+        })
+        .then((res) => {
+          if (res.status === 200) {
+            closeDeleteModal();
+            onDelete(client.id)
+          }
+        });
+    } catch (error) {
+      setErrorMessage(error.response.data.message);
+      setShowAlert(true);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchNotes = async () => {
     try {
@@ -147,6 +167,9 @@ const ClientCard = ({
   };
 
   const closeDeleteModal = () => {
+    if(showAlert){ 
+      setShowAlert(false)
+    }
     onClose();
     setIsDeleting(false);
   };
@@ -186,17 +209,11 @@ const ClientCard = ({
     }
   };
 
-  const handleDelete = () => {
-    onDelete(client.id);
-    onClose();
-  };
-
   const handleEdit = (formData) => {
     onEdit(formData, client.id);
-    if(isFormOpen) {
-      closeEditModal()
+    if (isFormOpen) {
+      closeEditModal();
     }
-   
   };
 
   const handleArchive = (formData) => {
@@ -382,10 +399,16 @@ const ClientCard = ({
               <Text>
                 Permanently Delete Client: {client.firstName} {client.lastName}?
               </Text>
+              {showAlert && (
+                <Alert mt={showAlert ? 4 : 0} status="error">
+                  <AlertIcon />
+                  <AlertDescription>{errorMessage}</AlertDescription>
+                </Alert>
+              )}
             </ModalHeader>
             <ModalFooter>
-              <Button colorScheme="blue" mr={3} onClick={handleDelete}>
-                Confirm
+              <Button colorScheme="blue" mr={3} onClick={deleteClient}>
+                {loading ? <Spinner size="md" thickness="4px" /> : "Confirm"}
               </Button>
               <Button colorScheme="red" mr={3} onClick={closeDeleteModal}>
                 Cancel
@@ -406,9 +429,6 @@ const ClientCard = ({
                 onCancel={closeEditModal}
                 onEdit={handleEdit}
                 onArchive={handleArchive}
-                onAlert={onAlert}
-                onErrorMessage={onErrorMessage}
-                isFormOpen={isFormOpen}
               />
             </ModalBody>
           </ModalContent>

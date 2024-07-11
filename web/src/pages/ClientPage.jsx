@@ -78,27 +78,6 @@ const ClientPage = () => {
     }
   };
 
-  const deleteClient = async (clientId) => {
-    try {
-      const token = Cookies.get("SessionID");
-      await axios
-        .delete(`http://localhost:3000/api/delete/client/${clientId}`, {
-          headers: {
-            Authorization: `${token}`,
-          },
-        })
-        .then((res) => {
-          if (res.status === 200) {
-            fetchClients();
-            onClose();
-          }
-        })
-    } catch (error) {
-      setErrorMessage(error.response.message)
-      setShowAlert(true)
-      console.error(error);
-    }
-  };
 
   const editClient = async (formData, clientId) => {
     try {
@@ -166,6 +145,10 @@ const ClientPage = () => {
     }
   };
 
+  const handleDeleteClient = (clientId) => {
+    setClients((prevClients) => prevClients.filter((client) => client.id !== clientId));
+  };
+
   const {
     isOpen: isAddClientOpen,
     onOpen: onAddClientOpen,
@@ -227,12 +210,9 @@ const ClientPage = () => {
               <ClientCard
                 key={client.id}
                 client={client}
-                onDelete={deleteClient}
                 onEdit={editClient}
+                onDelete={handleDeleteClient}
                 onArchive={archiveClient}
-                onAlert={showAlert}
-                onErrorMessage={errorMessage}
-                isFormOpen={isFormOpen}
               />
             ))}
           </SimpleGrid>

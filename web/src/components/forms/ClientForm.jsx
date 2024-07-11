@@ -30,8 +30,7 @@ const ClientForm = ({
   onRestore,
   onLoading,
   onAlert,
-  onErrorMessage,
-  isFormOpen
+  onErrorMessage
 }) => {
   const [firstName, setFirstName] = useState("");
   const [firstNameTouched, setFirstNameTouched] = useState(false);
