@@ -6,12 +6,12 @@ import {
   Box,
   Button,
   Flex,
-  FormControl,
   FormErrorMessage,
   IconButton,
   Input,
   Link,
   Modal,
+  ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
@@ -31,8 +31,9 @@ const ClientFiles = ({ onCancel, client }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [deleteErrorMessage, setDeleteErrorMessage] = useState("");
   const [showAlert, setShowAlert] = useState(false);
-  const [fileInputTouched, setFileInputTouched] = useState(false)
+  const [fileInputTouched, setFileInputTouched] = useState(false);
   const fileInputRef = useRef(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -52,8 +53,8 @@ const ClientFiles = ({ onCancel, client }) => {
         })
         .then((res) => {
           setFiles(res.data.files);
-          if(showAlert){
-            setShowAlert(false)
+          if (showAlert) {
+            setShowAlert(false);
           }
         })
         .catch((error) => {
@@ -87,8 +88,8 @@ const ClientFiles = ({ onCancel, client }) => {
           if (res.status === 200) {
             fetchFiles();
             setFileToUpload(null);
-            if(showAlert){
-              setShowAlert(false)
+            if (showAlert) {
+              setShowAlert(false);
             }
             if (fileInputRef.current) {
               fileInputRef.current.value = "";
@@ -135,38 +136,34 @@ const ClientFiles = ({ onCancel, client }) => {
 
   const deleteFile = async () => {
     if (fileToDelete) {
-      setLoading(true)
+      setLoading(true);
       try {
         await axios
           .delete(`http://localhost:3000/api/delete/file/${fileToDelete.id}`, {
             headers: {
               Authorization: `${token}`,
             },
-          })
+          } )
           .then((res) => {
             if (res.status === 200) {
               fetchFiles();
               closeDeleteModal();
             }
-          })
-          .catch((error) => {
-            setErrorMessage(error.response.data.message);
-            setShowAlert(true);
           });
       } catch (error) {
+        setDeleteErrorMessage(error.response.data.message);
         console.error("Error deleting the file", error);
-      } finally{
-        setLoading(false)
+      } finally {
+        setLoading(false);
       }
     }
   };
 
   const handleFileChange = (e) => {
     setFileToUpload(e.target.files[0]);
-    if (!fileInputTouched){
-      setFileInputTouched(true)
+    if (!fileInputTouched) {
+      setFileInputTouched(true);
     }
-    
   };
 
   const handleCancel = () => {
@@ -181,54 +178,53 @@ const ClientFiles = ({ onCancel, client }) => {
 
   const closeDeleteModal = () => {
     setFileToDelete(null);
+    if(deleteErrorMessage){
+      setDeleteErrorMessage("")
+    }
     onClose();
     setIsDeleting(false);
   };
 
   return (
     <>
-        <Box mt={8}>
-          <Input
-            type="file"
-            onChange={handleFileChange}
-            ref={fileInputRef}
-            borderWidth="2px"
-            _hover={{
-              borderColor: "blue.500",
-              borderWidth: "3px",
-            }}
-            color="black.700"
-            sx={{
-              "::file-selector-button": {
-                bg: "teal.600",
-                border: "none",
-                color: "white",
-                fontWeight: "bold",
-                padding: "0.5rem 1rem",
-                cursor: "pointer",
-                mr: 2,
-                _hover: {
-                  bg: "blue.300",
-                },
+      <Box mt={8}>
+        <Input
+          type="file"
+          onChange={handleFileChange}
+          ref={fileInputRef}
+          borderWidth="2px"
+          _hover={{
+            borderColor: "blue.500",
+            borderWidth: "3px",
+          }}
+          color="black.700"
+          sx={{
+            "::file-selector-button": {
+              bg: "teal.600",
+              border: "none",
+              color: "white",
+              fontWeight: "bold",
+              padding: "0.5rem 1rem",
+              cursor: "pointer",
+              mr: 2,
+              _hover: {
+                bg: "blue.300",
               },
-            }}
-          />
-          <FormErrorMessage>
-            Please select a file to upload.
-          </FormErrorMessage>
-        </Box>
-      {showAlert && (
-         <Alert status="error" mt={showAlert ? 4 : 0} >
-         <AlertIcon/>
-         <AlertDescription>
-           {errorMessage}
-         </AlertDescription>
-       </Alert>
+            },
+          }}
+        />
+        <FormErrorMessage>Please select a file to upload.</FormErrorMessage>
+      </Box>
+      {errorMessage && (
+        <Alert status="error" mt={showAlert ? 4 : 0}>
+          <AlertIcon />
+          <AlertDescription>{errorMessage}</AlertDescription>
+        </Alert>
       )}
-     
+
       <Flex mt={6} justifyContent="flex-start">
         <Button colorScheme="blue" onClick={uploadFile}>
-        {loading ? <Spinner size="md" thickness="4px" /> : "Upload"}
+          {loading ? <Spinner size="md" thickness="4px" /> : "Upload"}
         </Button>
         <Button ml={3} colorScheme="gray" onClick={handleCancel}>
           Cancel
@@ -272,9 +268,17 @@ const ClientFiles = ({ onCancel, client }) => {
               {" "}
               Permanently Delete: {fileToDelete?.file_name} ?
             </ModalHeader>
+            {deleteErrorMessage && (
+              <ModalBody>
+                <Alert status="error" mt={showAlert ? 4 : 0}>
+                  <AlertIcon />
+                  <AlertDescription>{deleteErrorMessage}</AlertDescription>
+                </Alert>
+                </ModalBody>
+              )}
             <ModalFooter>
               <Button colorScheme="blue" mr={3} onClick={deleteFile}>
-              {loading ? <Spinner size="md" thickness="4px" /> : "Confirm"}
+                {loading ? <Spinner size="md" thickness="4px" /> : "Confirm"}
               </Button>
               <Button colorScheme="red" mr={3} onClick={closeDeleteModal}>
                 Cancel

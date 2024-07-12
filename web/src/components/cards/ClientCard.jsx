@@ -43,7 +43,7 @@ const ClientCard = ({ client, onEdit, onDelete, onArchive }) => {
   const [isFileModalOpen, setIsFileModalOpen] = useState(false);
   const [notes, setNotes] = useState([]);
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [showAlert, setShowAlert] = useState(false);
   const token = Cookies.get("SessionID");
@@ -51,6 +51,57 @@ const ClientCard = ({ client, onEdit, onDelete, onArchive }) => {
   useEffect(() => {
     fetchNotes();
   }, [client.id]);
+
+  const editClient = async (formData) => {
+    try {
+      setLoading(true)
+      await axios
+        .put(`http://localhost:3000/api/update/client/${client.id}`, formData, {
+          headers: {
+            Authorization: `${token}`,
+          },
+        })
+        .then((res) => {
+          if (res.status === 200) {
+            onEdit(res.data);
+            closeEditModal()
+          }
+        });
+    } catch (error) {
+      setErrorMessage(error.response.data.message);
+      setShowAlert(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const archiveClient = async (formData) => {
+
+    try {
+      setLoading(true)
+      await axios
+        .post(
+          `http://localhost:3000/api/archive/client/${client.id}`,formData,
+         
+          {
+            headers: {
+              Authorization: `${token}`,
+            },
+          }
+        )
+        .then((res) => {
+          if (res.status === 200) {
+            closeEditModal()
+            onArchive(client.id)
+          }
+        });
+    } catch (error) {
+      setErrorMessage(error.response.data.message);
+      setShowAlert(true);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const deleteClient = async () => {
     try {
@@ -64,7 +115,7 @@ const ClientCard = ({ client, onEdit, onDelete, onArchive }) => {
         .then((res) => {
           if (res.status === 200) {
             closeDeleteModal();
-            onDelete(client.id)
+            onDelete(client.id);
           }
         });
     } catch (error) {
@@ -118,25 +169,6 @@ const ClientCard = ({ client, onEdit, onDelete, onArchive }) => {
     }
   };
 
-  const deleteNote = async (noteId) => {
-    try {
-      axios
-        .delete(`http://localhost:3000/api/delete/note/${noteId}`, {
-          headers: {
-            Authorization: `${token}`,
-          },
-        })
-        .then((res) => {
-          if (res.status === 200) {
-            fetchNotes();
-            onClose();
-          }
-        });
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
   const editNote = async (formData, notesId) => {
     try {
       axios
@@ -156,6 +188,14 @@ const ClientCard = ({ client, onEdit, onDelete, onArchive }) => {
     }
   };
 
+  const handleClientEdit = (formData) => {
+    editClient(formData);
+  };
+
+  const handleClientArchive = (formData) => {
+    archiveClient(formData);
+  };
+
   const openDeleteModal = () => {
     onOpen();
     setIsDeleting(true);
@@ -167,15 +207,17 @@ const ClientCard = ({ client, onEdit, onDelete, onArchive }) => {
   };
 
   const closeDeleteModal = () => {
-    if(showAlert){ 
-      setShowAlert(false)
+    if (showAlert) {
+      setShowAlert(false);
     }
     onClose();
     setIsDeleting(false);
   };
 
   const closeEditModal = () => {
-    onClose();
+    if (showAlert) {
+      setShowAlert(false);
+    }
     setIsEditing(false);
   };
 
@@ -195,9 +237,16 @@ const ClientCard = ({ client, onEdit, onDelete, onArchive }) => {
   };
 
   const closeFilesModal = () => {
+    if (showAlert) {
+      setShowAlert(false);
+    }
     onClose();
     setIsFileModalOpen(false);
   };
+
+  const handleDeleteNote = (noteId) => {
+    setNotes((prevNotes) => prevNotes.filter((note) => note.id !== noteId))
+  }
 
   const formatDate = (dateString) => {
     if (dateString) {
@@ -207,18 +256,6 @@ const ClientCard = ({ client, onEdit, onDelete, onArchive }) => {
       const year = date.getFullYear();
       return `${month}/${day}/${year}`;
     }
-  };
-
-  const handleEdit = (formData) => {
-    onEdit(formData, client.id);
-    if (isFormOpen) {
-      closeEditModal();
-    }
-  };
-
-  const handleArchive = (formData) => {
-    onArchive(formData, client.id);
-    closeEditModal();
   };
 
   return (
@@ -382,7 +419,7 @@ const ClientCard = ({ client, onEdit, onDelete, onArchive }) => {
                 <ProgressNotes
                   key={n.id}
                   notes={n}
-                  onDelete={deleteNote}
+                  onDelete={handleDeleteNote}
                   onEdit={editNote}
                 />
               ))}
@@ -399,13 +436,15 @@ const ClientCard = ({ client, onEdit, onDelete, onArchive }) => {
               <Text>
                 Permanently Delete Client: {client.firstName} {client.lastName}?
               </Text>
-              {showAlert && (
+            </ModalHeader>
+            {showAlert && (
+              <ModalBody>
                 <Alert mt={showAlert ? 4 : 0} status="error">
                   <AlertIcon />
                   <AlertDescription>{errorMessage}</AlertDescription>
                 </Alert>
+                </ModalBody>
               )}
-            </ModalHeader>
             <ModalFooter>
               <Button colorScheme="blue" mr={3} onClick={deleteClient}>
                 {loading ? <Spinner size="md" thickness="4px" /> : "Confirm"}
@@ -427,8 +466,11 @@ const ClientCard = ({ client, onEdit, onDelete, onArchive }) => {
               <ClientForm
                 clientFormValue={client}
                 onCancel={closeEditModal}
-                onEdit={handleEdit}
-                onArchive={handleArchive}
+                onEdit={handleClientEdit}
+                onArchive={handleClientArchive}
+                onLoading={loading} 
+                onAlert={showAlert} 
+                onErrorMessage={errorMessage}
               />
             </ModalBody>
           </ModalContent>

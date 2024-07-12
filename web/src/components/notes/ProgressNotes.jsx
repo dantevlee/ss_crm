@@ -4,6 +4,9 @@ import {
   AccordionIcon,
   AccordionItem,
   AccordionPanel,
+  Alert,
+  AlertDescription,
+  AlertIcon,
   Box,
   Button,
   IconButton,
@@ -12,7 +15,9 @@ import {
   ModalCloseButton,
   ModalContent,
   ModalFooter,
+  ModalHeader,
   ModalOverlay,
+  Spinner,
   Text,
   Tooltip,
   useDisclosure,
@@ -20,11 +25,39 @@ import {
 import { useState } from "react";
 import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
 import ProgressNotesForm from "../forms/ProgressNotesForm";
+import Cookies from "js-cookie";
+import axios from "axios";
 
 const ProgressNotes = ({ notes, onDelete, onEdit }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [errorMessage, setErrorMessage] = useState("");
+  const [deleteErrorMessage, setDeleteErrorMessage] = useState("");
+  const [showAlert, setShowAlert] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const token = Cookies.get("SessionID");
+
+  const deleteNote = async () => {
+    try {
+      setLoading(true)
+      axios
+        .delete(`http://localhost:3000/api/delete/note/${notes.id}`)
+        .then((res) => {
+          if (res.status === 200) {
+            onDelete(notes.id)
+            onClose();
+          }
+        });
+    } catch (error) {
+      console.log("error delete",error)
+      setDeleteErrorMessage(error.response.data.message)
+      console.error(error);
+    } finally{
+      setLoading(false)
+    }
+  };
 
   const openDeleteModal = () => {
     onOpen();
@@ -32,6 +65,9 @@ const ProgressNotes = ({ notes, onDelete, onEdit }) => {
   };
 
   const closeDeleteModal = () => {
+    if(deleteErrorMessage){
+      setDeleteErrorMessage("")
+    }
     onClose();
     setIsDeleting(false);
   };
@@ -115,10 +151,18 @@ const ProgressNotes = ({ notes, onDelete, onEdit }) => {
         <Modal isOpen={isOpen} onClose={closeDeleteModal}>
           <ModalOverlay />
           <ModalContent>
-            <ModalBody>Permanently Delete Note: {notes.title}?</ModalBody>
+            <ModalHeader>Permanently Delete Note: {notes.title}?</ModalHeader>
+            {deleteErrorMessage && (
+              <ModalBody>
+                <Alert status="error" mt={showAlert ? 4 : 0}>
+                  <AlertIcon />
+                  <AlertDescription>{deleteErrorMessage}</AlertDescription>
+                </Alert>
+                </ModalBody>
+              )}
             <ModalFooter>
-              <Button colorScheme="blue" mr={3} onClick={handleDelete}>
-                Confirm
+              <Button colorScheme="blue" mr={3} onClick={deleteNote}>
+              {loading ? <Spinner size="md" thickness="4px" /> : "Confirm"}
               </Button>
               <Button colorScheme="red" mr={3} onClick={closeDeleteModal}>
                 Cancel

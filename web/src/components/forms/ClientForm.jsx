@@ -30,7 +30,7 @@ const ClientForm = ({
   onRestore,
   onLoading,
   onAlert,
-  onErrorMessage
+  onErrorMessage,
 }) => {
   const [firstName, setFirstName] = useState("");
   const [firstNameTouched, setFirstNameTouched] = useState(false);
@@ -52,8 +52,7 @@ const ClientForm = ({
   const [endDateCalcuated, setEndDateCalculated] = useState(false);
   const [isEditingEntry, setIsEditingEntry] = useState(false);
   const [archive, setArchive] = useState("N");
- 
-  
+
   useEffect(() => {
     if (clientFormValue) {
       setEndDateCalculated(true);
@@ -89,7 +88,6 @@ const ClientForm = ({
       }
     }
   }, [clientFormValue]);
-
 
   const emailInputError =
     (email.trim() === "" || !/^\S+@\S+\.\S+$/.test(email)) && emailTouched;
@@ -218,18 +216,10 @@ const ClientForm = ({
       socialMedia: socialMedia,
     };
     if (isEditingEntry) {
-      onLoading = true;
-      onEdit(formData, clientFormValue.id);
-      if (archive === "Y") {
-        onLoading = true;
-        handleArchiveSubmission();
-      }
+      onEdit(formData);
     } else if (onRestore) {
-      onLoading = true;
       handleArchiveToClientSubmission();
-    
     } else {
-      onLoading = true;
       onSave(formData);
     }
   };
@@ -245,7 +235,7 @@ const ClientForm = ({
       lastActiveDate: endDate,
     };
 
-    onArchive(formData, clientFormValue.id);
+    onArchive(formData);
   };
 
   const handleArchiveToClientSubmission = () => {
@@ -615,15 +605,22 @@ const ClientForm = ({
         </Alert>
       )}
       <Flex mt={6} justifyContent="flex-start">
-        <Button onClick={handleFormSubmission} colorScheme="blue">
-          {onLoading ? (
-            <Spinner size="md" thickness="4px" />
-          ) : isEditingEntry ? (
-            "Update"
-          ) : (
-            "Save"
-          )}
-        </Button>
+        {archive === "Y" && (
+          <Button onClick={handleArchiveSubmission} colorScheme="red">
+            Archive
+          </Button>
+        )}
+        {archive === "N" && (
+          <Button onClick={handleFormSubmission} colorScheme="blue">
+            {onLoading ? (
+              <Spinner size="md" thickness="4px" />
+            ) : isEditingEntry ? (
+              "Update"
+            ) : (
+              "Save"
+            )}
+          </Button>
+        )}
         <Button onClick={handleCancel} colorScheme="gray" ml={4}>
           Cancel
         </Button>

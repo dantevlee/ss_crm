@@ -24,7 +24,6 @@ const ClientPage = () => {
   const[formLoading, setFormLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [showAlert, setShowAlert] = useState(false);
-  const [isFormOpen, setIsFormOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const clientsPerPage = 8;
 
@@ -79,73 +78,20 @@ const ClientPage = () => {
   };
 
 
-  const editClient = async (formData, clientId) => {
-    try {
-      const token = Cookies.get("SessionID");
-      await axios
-        .put(`http://localhost:3000/api/update/client/${clientId}`, formData, {
-          headers: {
-            Authorization: `${token}`,
-          },
-        })
-        .then((res) => {
-          if (res.status === 200) {
-            setClients(prevClients => {
-              const updatedClient = prevClients.map(client =>
-                client.id === clientId ? res.data : client
-              );
-              if(isFormOpen){
-              setIsFormOpen(false)
-              setErrorMessage("")
-              setShowAlert(false)
-              }
-              
-              return updatedClient;
-            });
-          }
-        })
-    } catch (error) {
-      if(error.response) {
-        setIsFormOpen(true)
-        setErrorMessage(error.response.data.message)
-        setShowAlert(true)
-      }
-      
-    } finally {
-      setFormLoading(false)
-    }
-  };
 
-  const archiveClient = async (formData, clientId) => {
-    const token = Cookies.get("SessionID");
-
-    try {
-      await axios
-        .post(
-          `http://localhost:3000/api/archive/client/${clientId}`,
-          formData,
-          {
-            headers: {
-              Authorization: `${token}`,
-            },
-          }
-        )
-        .then((res) => {
-          if (res.status === 200) {
-            fetchClients();
-          }
-        }).catch((error) => {
-          setErrorMessage(error.response.data.message)
-          setShowAlert(true)
-        })
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setFormLoading(false)
-    }
+  const handleEditClient = (updatedClient) => {
+    setClients((prevClients) =>
+      prevClients.map((client) =>
+        client.id === updatedClient.id ? updatedClient : client
+      )
+    );
   };
 
   const handleDeleteClient = (clientId) => {
+    setClients((prevClients) => prevClients.filter((client) => client.id !== clientId));
+  };
+
+  const handleArchiveClient = (clientId) => {
     setClients((prevClients) => prevClients.filter((client) => client.id !== clientId));
   };
 
@@ -210,9 +156,9 @@ const ClientPage = () => {
               <ClientCard
                 key={client.id}
                 client={client}
-                onEdit={editClient}
+                onEdit={handleEditClient}
                 onDelete={handleDeleteClient}
-                onArchive={archiveClient}
+                onArchive={handleArchiveClient}
               />
             ))}
           </SimpleGrid>
@@ -252,7 +198,7 @@ const ClientPage = () => {
         <ModalContent backgroundColor="gray.500">
           <ModalHeader color='white'>Add New Client</ModalHeader>
           <ModalBody pb={6}>
-            <ClientForm onSave={createClient} onCancel={closeAddClientModal} onLoading={formLoading} onAlert={showAlert} onErrorMessage={errorMessage} isFormOpen={isFormOpen} />
+            <ClientForm onSave={createClient} onCancel={closeAddClientModal} onLoading={formLoading} onAlert={showAlert} onErrorMessage={errorMessage}/>
           </ModalBody>
         </ModalContent>
       </Modal>
