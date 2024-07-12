@@ -36,7 +36,7 @@ import ClientFiles from "../file_uploads/ClientFiles";
 import axios from "axios";
 import "../../App.css";
 
-const ClientCard = ({ client, onEdit, onDelete, onArchive }) => {
+const ClientCard = ({ client, onNoteEdit, onDelete, onArchive }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isAddingNotes, setIsAddingNotes] = useState(false);
@@ -50,7 +50,7 @@ const ClientCard = ({ client, onEdit, onDelete, onArchive }) => {
 
   useEffect(() => {
     fetchNotes();
-  }, [client.id]);
+  }, []);
 
   const editClient = async (formData) => {
     try {
@@ -148,6 +148,7 @@ const ClientCard = ({ client, onEdit, onDelete, onArchive }) => {
 
   const createNote = async (formData) => {
     try {
+      setLoading(true)
       await axios
         .post(
           `http://localhost:3000/api/create/client-note?client_id=${client.id}`,
@@ -165,27 +166,20 @@ const ClientCard = ({ client, onEdit, onDelete, onArchive }) => {
           }
         });
     } catch (error) {
+      setErrorMessage(error.response.data.message);
+      setShowAlert(true);
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const editNote = async (formData, notesId) => {
-    try {
-      axios
-        .put(`http://localhost:3000/api/update/note/${notesId}`, formData, {
-          headers: {
-            Authorization: `${token}`,
-          },
-        })
-        .then((res) => {
-          if (res.status === 200) {
-            fetchNotes();
-            onClose();
-          }
-        });
-    } catch (error) {
-      console.error(error);
-    }
+  const handleEditNote = (updatedNote) => {
+    setNotes((prevNotes) =>
+      prevNotes.map((note) =>
+        note.id === updatedNote.id ? updatedNote : note
+      )
+    );
   };
 
   const handleClientEdit = (formData) => {
@@ -227,6 +221,9 @@ const ClientCard = ({ client, onEdit, onDelete, onArchive }) => {
   };
 
   const closeNotesModal = () => {
+      if(showAlert){
+      setShowAlert(false)
+    }
     onClose();
     setIsAddingNotes(false);
   };
@@ -420,7 +417,7 @@ const ClientCard = ({ client, onEdit, onDelete, onArchive }) => {
                   key={n.id}
                   notes={n}
                   onDelete={handleDeleteNote}
-                  onEdit={editNote}
+                  onNoteEdit={handleEditNote}
                 />
               ))}
             </Stack>
@@ -485,6 +482,9 @@ const ClientCard = ({ client, onEdit, onDelete, onArchive }) => {
               <ProgressNotesForm
                 onCancel={closeNotesModal}
                 onSave={createNote}
+                onLoading={loading} 
+                onAlert={showAlert} 
+                onErrorMessage={errorMessage}
               />
             </ModalBody>
           </ModalContent>

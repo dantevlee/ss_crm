@@ -28,7 +28,7 @@ import ProgressNotesForm from "../forms/ProgressNotesForm";
 import Cookies from "js-cookie";
 import axios from "axios";
 
-const ProgressNotes = ({ notes, onDelete, onEdit }) => {
+const ProgressNotes = ({ notes, onDelete, onNoteEdit }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -39,19 +39,47 @@ const ProgressNotes = ({ notes, onDelete, onEdit }) => {
 
   const token = Cookies.get("SessionID");
 
+  const editNote = async (formData) => {
+    try {
+    setLoading(true)
+     await axios
+        .put(`http://localhost:3000/api/update/note/${notes.id}`, formData, {
+          headers: {
+            Authorization: `${token}`,
+          },
+        })
+        .then((res) => {
+          if (res.status === 200) { console.log(res.data)
+            onNoteEdit(res.data)
+            closeEditModal()
+          }
+        });
+    } catch (error) {
+      setErrorMessage(error.response.data.message)
+      setShowAlert(true)
+      console.error(error);
+    } finally{
+      setLoading(false)
+    }
+  };
+
   const deleteNote = async () => {
     try {
       setLoading(true)
-      axios
-        .delete(`http://localhost:3000/api/delete/note/${notes.id}`)
+      await axios
+        .delete(`http://localhost:3000/api/delete/note/${notes.id}`,  {
+          headers: {
+            Authorization: `${token}`,
+          },
+        } )
         .then((res) => {
           if (res.status === 200) {
             onDelete(notes.id)
             onClose();
+            setDeleteErrorMessage("")
           }
         });
     } catch (error) {
-      console.log("error delete",error)
       setDeleteErrorMessage(error.response.data.message)
       console.error(error);
     } finally{
@@ -72,11 +100,6 @@ const ProgressNotes = ({ notes, onDelete, onEdit }) => {
     setIsDeleting(false);
   };
 
-  const handleDelete = () => {
-    onDelete(notes.id);
-    onClose();
-  };
-
   const openEditModal = () => {
     onOpen();
     setIsEditing(true);
@@ -84,12 +107,14 @@ const ProgressNotes = ({ notes, onDelete, onEdit }) => {
 
   const closeEditModal = () => {
     onClose();
+    if(showAlert){
+      setShowAlert(false)
+    }
     setIsEditing(false);
   };
 
   const handleEdit = (formData) => {
-    onEdit(formData, notes.id);
-    closeEditModal();
+    editNote(formData);
   };
 
   const formatDate = (dateString) => {
@@ -181,6 +206,9 @@ const ProgressNotes = ({ notes, onDelete, onEdit }) => {
                 formValues={notes}
                 onCancel={closeEditModal}
                 onEdit={handleEdit}
+                onLoading={loading} 
+                onAlert={showAlert} 
+                onErrorMessage={errorMessage}
               />
             </ModalBody>
           </ModalContent>
