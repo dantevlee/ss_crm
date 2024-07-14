@@ -1,11 +1,16 @@
 import {
+  Alert,
+  AlertDescription,
+  AlertIcon,
   Button,
   Flex,
   FormControl,
+  FormErrorMessage,
   FormLabel,
   Input,
   Radio,
   RadioGroup,
+  Spinner,
   Stack,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
@@ -17,15 +22,25 @@ const LeadsForm = ({
   onCancel,
   onRestore,
   leadsFormData,
+  onLoading,
+  onError,
+  onErrorMessage
 }) => {
   const [firstName, setFirstName] = useState("");
+  const [firstNameTouched, setFirstNameTouched] = useState(false);
   const [lastName, setLastName] = useState("");
+  const [lastNameTouched, setLastNameTouched] = useState(false);
   const [email, setEmail] = useState("");
+  const [emailTouched, setemailTouched] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [phoneNumberTouched, setPhoneNumberTouched] = useState(false);
   const [lastContactedAt, setLastContactedAt] = useState("");
-  const [contactSource, setContactSource] = useState("");
+  const [contactSource, setContactSource] = useState("None");
   const [socialMediaSource, setSocialMediaSource] = useState("");
+  const [socialMediaSourceTouched, setSocialMediaSourceTouched] =
+  useState(false);
   const [socialMedia, setSocialMedia] = useState("");
+  const [socialMediaTouched, setSocialMediaTouched] = useState(false);
   const [archive, setArchive] = useState("N");
   const [isEditingEntry, setIsEditingEntry] = useState(false);
 
@@ -59,20 +74,48 @@ const LeadsForm = ({
     }
   }, [leadsFormData]);
 
+  const emailInputError =
+  (email.trim() === "" || !/^\S+@\S+\.\S+$/.test(email)) && emailTouched;
+
+const firstNameInputError = firstName.trim() === "" && firstNameTouched;
+
+const lastNameInputError = lastName.trim() === "" && lastNameTouched;
+
+const phoneNumberInputError =
+  !/^[0-9\b()-]*$/.test(phoneNumber) ||
+  (phoneNumber.trim() === "" && phoneNumberTouched);
+
+const socialMediaSourceInputError =
+  socialMediaSource.trim() === "" && socialMediaSourceTouched;
+
+const socialMediaInputError = socialMedia.trim() === "" && socialMediaTouched;
+
   const handleFirstNameChange = (e) => {
     setFirstName(e.target.value);
+    if (!firstNameTouched) {
+      setFirstNameTouched(true);
+    }
   };
 
   const handleLastNameChange = (e) => {
     setLastName(e.target.value);
+    if (!lastNameTouched) {
+      setLastNameTouched(true);
+    }
   };
 
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
+    if (!emailTouched) {
+      setemailTouched(true);
+    }
   };
 
   const handlePhoneNumberChange = (e) => {
     setPhoneNumber(e.target.value);
+    if (!phoneNumberTouched) {
+      setPhoneNumberTouched(true);
+    }
   };
 
   const handleLastContactedAt = (e) => {
@@ -82,11 +125,17 @@ const LeadsForm = ({
 
   const handleSocialMediaChange = (e) => {
     setSocialMedia(e.target.value);
+    if (!socialMediaTouched) {
+      setSocialMediaTouched(true);
+    }
   };
 
   const handleSocialMediaSourceChange = (e) => {
     setSocialMediaSource(e);
     setSocialMedia("");
+    if (!socialMediaSourceTouched) {
+      setSocialMediaSourceTouched(true);
+    }
   };
 
   const handleContactSourceChange = (e) => {
@@ -154,33 +203,84 @@ const LeadsForm = ({
 
   return (
     <>
-      <FormControl>
-        <FormLabel>First Name:</FormLabel>
+      <FormControl isInvalid={firstNameInputError} >
+        <FormLabel color="white">First Name:</FormLabel>
         <Input
+        sx={{
+          _focus: {
+            borderWidth: "4px",
+            borderColor: "blue.600",
+          },
+        }}
+        borderRadius={10}
+        backgroundColor="white"
           onChange={handleFirstNameChange}
           placeholder="First Name"
           value={firstName}
         />
+         <FormErrorMessage
+          fontSize="14px"
+          fontWeight="bold"
+          backgroundColor="red.300"
+          maxWidth="225px"
+          textColor="black"
+        >
+          Please Enter First Name of Lead.
+        </FormErrorMessage>
       </FormControl>
-      <FormControl mt={4}>
-        <FormLabel>Last Name:</FormLabel>
+      <FormControl mt={4} isInvalid={lastNameInputError}>
+        <FormLabel color="white">Last Name:</FormLabel>
         <Input
+        sx={{
+          _focus: {
+            borderWidth: "4px",
+            borderColor: "blue.600",
+          },
+        }}
+        borderRadius={10}
+        backgroundColor="white"
           onChange={handleLastNameChange}
           placeholder="Last Name"
           value={lastName}
         />
+         <FormErrorMessage
+          fontSize="14px"
+          fontWeight="bold"
+          backgroundColor="red.300"
+          maxWidth="225px"
+          textColor="black"
+        >
+          Please Enter Last Name of Lead.
+          </FormErrorMessage>
       </FormControl>
-        <FormControl mt={4}>
-          <FormLabel>E-mail</FormLabel>
+        <FormControl isInvalid={emailInputError} mt={4}>
+          <FormLabel color="white">E-mail</FormLabel>
           <Input
+          sx={{
+            _focus: {
+              borderWidth: "4px",
+              borderColor: "blue.600",
+            },
+          }}
+          borderRadius={10}
+          backgroundColor="white"
             onChange={handleEmailChange}
             placeholder="E-mail"
             value={email}
           />
+           <FormErrorMessage
+          fontSize="14px"
+          fontWeight="bold"
+          backgroundColor="red.300"
+          maxWidth="225px"
+          textColor="black"
+        >
+          Please Enter a Valid E-mail.
+        </FormErrorMessage>
         </FormControl>
       <FormControl mt={4}>
-        <FormLabel>Alternate Contact Source?</FormLabel>
-        <RadioGroup onChange={handleContactSourceChange} value={contactSource}>
+        <FormLabel color="white" >Alternate Contact Source?</FormLabel>
+        <RadioGroup  color="white" onChange={handleContactSourceChange} value={contactSource}>
           <Stack direction="column">
             <Radio value="Social Media">Social Media</Radio>
             <Radio value="Phone Number">Phone Number</Radio>
@@ -189,9 +289,10 @@ const LeadsForm = ({
         </RadioGroup>
       </FormControl>
       {contactSource === "Social Media" && (
-        <FormControl mt={4}>
-          <FormLabel>Social Media?</FormLabel>
+        <FormControl isInvalid={socialMediaSourceInputError} mt={4}>
+          <FormLabel color="white">Social Media?</FormLabel>
           <RadioGroup
+            color="white"
             onChange={handleSocialMediaSourceChange}
             value={socialMediaSource}
           >
@@ -202,12 +303,29 @@ const LeadsForm = ({
               <Radio value="Tik Tok">Tik Tok</Radio>
             </Stack>
           </RadioGroup>
+          <FormErrorMessage
+            fontSize="14px"
+            fontWeight="bold"
+            backgroundColor="red.300"
+            maxWidth="250px"
+            textColor="black"
+          >
+            Please Select A Social Media Option.
+          </FormErrorMessage>
         </FormControl>
       )}{" "}
       {socialMediaSource === "Instagram" && (
         <FormControl mt={4}>
-          <FormLabel>IG:</FormLabel>
+          <FormLabel color="white" >IG:</FormLabel>
           <Input
+          sx={{
+            _focus: {
+              borderWidth: "4px",
+              borderColor: "blue.600",
+            },
+          }}
+            borderRadius={10}
+            backgroundColor="white"
             value={socialMedia}
             placeholder="Instagram"
             onChange={handleSocialMediaChange}
@@ -216,8 +334,16 @@ const LeadsForm = ({
       )}
       {socialMediaSource === "Facebook" && (
         <FormControl mt={4}>
-          <FormLabel>Facebook:</FormLabel>
+          <FormLabel color="white" >Facebook:</FormLabel>
           <Input
+            sx={{
+              _focus: {
+                borderWidth: "4px",
+                borderColor: "blue.600",
+              },
+            }}
+            borderRadius={10}
+            backgroundColor="white"
             value={socialMedia}
             placeholder="Facebook"
             onChange={handleSocialMediaChange}
@@ -226,8 +352,16 @@ const LeadsForm = ({
       )}
       {socialMediaSource === "LinkedIn" && (
         <FormControl mt={4}>
-          <FormLabel>LinkedIn:</FormLabel>
+          <FormLabel color="white" >LinkedIn:</FormLabel>
           <Input
+              sx={{
+                _focus: {
+                  borderWidth: "4px",
+                  borderColor: "blue.600",
+                },
+              }}
+              borderRadius={10}
+              backgroundColor="white"
             value={socialMedia}
             placeholder="LinkedIn"
             onChange={handleSocialMediaChange}
@@ -236,8 +370,16 @@ const LeadsForm = ({
       )}
       {socialMediaSource === "Tik Tok" && (
         <FormControl mt={4}>
-          <FormLabel>Tik Tok:</FormLabel>
+          <FormLabel color="white">Tik Tok:</FormLabel>
           <Input
+            sx={{
+              _focus: {
+                borderWidth: "4px",
+                borderColor: "blue.600",
+              },
+            }}
+            borderRadius={10}
+            backgroundColor="white"
             value={socialMedia}
             placeholder="Tik-Tok"
             onChange={handleSocialMediaChange}
@@ -246,8 +388,16 @@ const LeadsForm = ({
       )}
       {contactSource === "Phone Number" && (
         <FormControl mt={4}>
-          <FormLabel>Phone Number</FormLabel>
+          <FormLabel color="white">Phone Number</FormLabel>
           <Input
+            sx={{
+              _focus: {
+                borderWidth: "4px",
+                borderColor: "blue.600",
+              },
+            }}
+            borderRadius={10}
+            backgroundColor="white"
             onChange={handlePhoneNumberChange}
             placeholder="Phone Number"
             value={phoneNumber}
@@ -255,8 +405,16 @@ const LeadsForm = ({
         </FormControl>
       )}
       <FormControl mt={4}>
-        <FormLabel>Last Contacted?</FormLabel>
+        <FormLabel color="white">Last Contacted?</FormLabel>
         <Input
+           sx={{
+            _focus: {
+              borderWidth: "4px",
+              borderColor: "blue.600",
+            },
+          }}
+          borderRadius={10}
+          backgroundColor="white"
           onChange={handleLastContactedAt}
           size="md"
           type="date"
@@ -265,7 +423,7 @@ const LeadsForm = ({
       </FormControl>
       {isEditingEntry && (
         <FormControl mt={4}>
-          <FormLabel>Archive Lead?</FormLabel>
+          <FormLabel color="white">Archive Lead?</FormLabel>
           <RadioGroup onChange={setArchive} value={archive}>
             <Stack direction="column">
               <Radio value="Y">Yes</Radio>
@@ -274,9 +432,21 @@ const LeadsForm = ({
           </RadioGroup>
         </FormControl>
       )}
+       {onError && (
+        <Alert mt={onError ? 4 : 0} status="error">
+          <AlertIcon />
+          <AlertDescription>{onErrorMessage}</AlertDescription>
+        </Alert>
+      )}
       <Flex mt={6} justifyContent="flex-start">
         <Button onClick={handleFormSubmission} colorScheme="blue">
-          {isEditingEntry ? "Update" : "Save"}
+        {onLoading ? (
+              <Spinner size="md" thickness="4px" />
+            ) : isEditingEntry ? (
+              "Update"
+            ) : (
+              "Save"
+            )}
         </Button>
         <Button onClick={handleCancel} colorScheme="gray" ml={4}>
           Cancel

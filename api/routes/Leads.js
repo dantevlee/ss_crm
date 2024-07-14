@@ -18,20 +18,44 @@ router.post("/create-lead", authenticateUser, async (req, res) => {
       socialMediaSource,
       socialMedia,
     } = req.body;
-    const lead = await db.query(
-      'INSERT into "Leads"("user_id", "firstName", "lastName", "lead_email", "last_contacted_at", "phone_number", "social_media_source", "soical_media") VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING*',
-      [
-        userId,
-        firstName,
-        lastName,
-        leadEmail,
-        lastContactedAt,
-        phoneNumber,
-        socialMediaSource,
-        socialMedia,
-      ]
-    );
-    res.json(lead[0]);
+
+    if (!firstName || !lastName || !leadEmail) {
+      return res
+        .status(409)
+        .json({
+          message:
+            "Please ensure client first, last name and e-mail is entered.",
+        });
+    }
+
+    if (!lastContactedAt) {
+      return res.status(409).json({ message: "Error: Missing date last contacted." });
+    }
+
+    if (socialMediaSource) {
+      if (!socialMedia) {
+        return res
+          .status(409)
+          .json({ message: "Error: Missing Social Media Handle." });
+      }
+    }
+    else {
+      const lead = await db.query(
+        'INSERT into "Leads"("user_id", "firstName", "lastName", "lead_email", "last_contacted_at", "phone_number", "social_media_source", "soical_media") VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING*',
+        [
+          userId,
+          firstName,
+          lastName,
+          leadEmail,
+          lastContactedAt,
+          phoneNumber,
+          socialMediaSource,
+          socialMedia,
+        ]
+      );
+      return res.json(lead[0]);
+    }
+  
   } catch (error) {
     console.error(error);
     res.status(500).json({

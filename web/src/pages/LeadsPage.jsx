@@ -4,7 +4,6 @@ import {
   Flex,
   Modal,
   ModalBody,
-  ModalCloseButton,
   ModalContent,
   ModalHeader,
   ModalOverlay,
@@ -24,6 +23,9 @@ const LeadsPage = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const[formLoading, setFormLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showAlert, setShowAlert] = useState(false);
 
   const token = Cookies.get("SessionID");
   const leadsPerPage = 8;
@@ -51,6 +53,7 @@ const LeadsPage = () => {
   }, []);
 
   const createLead = async (formData) => {
+    setFormLoading(true)
     try {
       const response = await axios.post(
         `http://localhost:3000/api/create-lead`,
@@ -66,7 +69,10 @@ const LeadsPage = () => {
         onClose();
       }
     } catch (error) {
-      console.error(error);
+      setErrorMessage(error.response.data.message)
+      setShowAlert(true)
+    } finally {
+      setFormLoading(false)
     }
   };
 
@@ -132,6 +138,19 @@ const LeadsPage = () => {
     }
   };
 
+  const {
+    isOpen: isAddLeadOpen,
+    onOpen: onAddLeadOpen,
+    onClose: onAddLeadClose,
+  } = useDisclosure();
+
+  const closeAddLeadModal =  () =>{
+    if(showAlert){
+      setShowAlert(false)
+    }
+    onAddLeadClose()
+  }
+
   const handleNextPage = () => {
     setCurrentPage((prevPage) => prevPage + 1);
   };
@@ -156,7 +175,7 @@ const LeadsPage = () => {
           colorScheme="blue"
           position="absolute"
           right="1rem"
-          onClick={onOpen}
+          onClick={onAddLeadOpen}
         >
           <AddIcon mr={2} /> Add Lead
         </Button>
@@ -215,13 +234,12 @@ const LeadsPage = () => {
           )}
         </>
       )}
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal isOpen={isAddLeadOpen} onClose={closeAddLeadModal}>
         <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Add New Lead</ModalHeader>
-          <ModalCloseButton />
+        <ModalContent backgroundColor="gray.500">
+          <ModalHeader color="white">Add New Lead</ModalHeader>
           <ModalBody pb={6}>
-            <LeadsForm onSave={createLead} onCancel={onClose} />
+            <LeadsForm onSave={createLead} onCancel={closeAddLeadModal} onLoading={formLoading} onError={showAlert} onErrorMessage={errorMessage} />
           </ModalBody>
         </ModalContent>
       </Modal>
