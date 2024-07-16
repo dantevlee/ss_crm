@@ -1,5 +1,8 @@
 import { AddIcon, DeleteIcon, EditIcon } from "@chakra-ui/icons";
 import {
+  Alert,
+  AlertDescription,
+  AlertIcon,
   Box,
   Button,
   Card,
@@ -42,12 +45,83 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive, onFetchLeads }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showAlert, setShowAlert] = useState(false);
 
   const token = Cookies.get("SessionID");
 
   useEffect(() => {
     fetchNotes();
   }, [lead.id]);
+
+  const editLead = async (formData) => {
+    try {
+      setLoading(true)
+      await axios
+        .put(`http://localhost:3000/api/update/lead/${lead.id}`, formData, {
+          headers: {
+            Authorization: `${token}`,
+          },
+        })
+        .then((res) => {
+          if (res.status === 200) {
+           onEdit(res.data)
+           closeEditModal()
+          }
+        });
+    } catch (error) {
+      setErrorMessage(error.response.data.message)
+      setShowAlert(true)
+    } finally{
+      setLoading(false)
+    }
+  };
+
+  const archiveLead = async (formData) => {
+    try {
+      setLoading(true)
+      await axios
+        .post(`http://localhost:3000/api/archive/lead/${lead.id}`, formData, {
+          headers: {
+            Authorization: `${token}`,
+          },
+        })
+        .then((res) => {
+          if (res.status === 200) {
+            closeEditModal()
+            onArchive(lead.id)
+          }
+        });
+    } catch (error) {
+      setErrorMessage(error.response.data.message)
+      setShowAlert(true)
+    } finally{
+      setLoading(false)
+    }
+  };
+
+  const deleteLead = async () => {
+    try {
+      setLoading(true)
+      await axios
+        .delete(`http://localhost:3000/api/delete/lead/${lead.id}`, {
+          headers: {
+            Authorization: `${token}`,
+          },
+        })
+        .then((res) => {
+          if (res.status === 200) {
+            onDelete(lead.id)
+            closeDeleteModal()
+          }
+        });
+    } catch (error) {
+      setErrorMessage(error.response.data.message)
+      setShowAlert(true)
+    } finally{
+      setLoading(false)
+    }
+  };
 
   const fetchNotes = async () => {
     try {
@@ -90,6 +164,8 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive, onFetchLeads }) => {
         });
     } catch (error) {
       console.error(error);
+    } finally{
+      setLoading(false)
     }
   };
 
@@ -137,18 +213,11 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive, onFetchLeads }) => {
   };
 
   const closeDeleteModal = () => {
+    if(showAlert){
+      setShowAlert(false)
+    }
     onClose();
     setIsDeleting(false);
-  };
-
-  const handleDelete = () => {
-    onDelete(lead.id);
-    onClose();
-  };
-
-  const handleEdit = (formData) => {
-    onEdit(formData, lead.id);
-    closeEditModal();
   };
 
   const openEditModal = () => {
@@ -157,6 +226,9 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive, onFetchLeads }) => {
   };
 
   const closeEditModal = () => {
+    if(showAlert){
+      setShowAlert(false)
+    }
     onClose();
     setIsEditing(false);
   };
@@ -201,10 +273,6 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive, onFetchLeads }) => {
     }
   };
 
-  const handleArchive = (formData) => {
-    onArchive(formData, lead.id);
-    closeEditModal();
-  };
 
   return (
     <>
@@ -355,9 +423,17 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive, onFetchLeads }) => {
           <ModalContent minWidth="500px">
             <ModalHeader> <Text>
             Permanently Delete Lead: {lead.firstName} {lead.lastName}?</Text></ModalHeader>
+            {showAlert && (
+              <ModalBody>
+                <Alert mt={showAlert ? 4 : 0} status="error">
+                  <AlertIcon />
+                  <AlertDescription>{errorMessage}</AlertDescription>
+                </Alert>
+                </ModalBody>
+              )}
             <ModalFooter>
-              <Button colorScheme="blue" mr={3} onClick={handleDelete}>
-                Confirm
+              <Button colorScheme="blue" mr={3} onClick={deleteLead}>
+              {loading ? <Spinner size="md" thickness="4px" /> : "Confirm"}
               </Button>
               <Button colorScheme="red" mr={3} onClick={closeDeleteModal}>
                 Cancel
@@ -369,15 +445,17 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive, onFetchLeads }) => {
       {isEditing && (
         <Modal isOpen={isOpen} onClose={closeEditModal}>
           <ModalOverlay />
-          <ModalContent>
-            <ModalHeader>Edit Lead</ModalHeader>
+          <ModalContent backgroundColor="gray.500">
+            <ModalHeader color="white">Edit Lead</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
               <LeadsForm
-                onEdit={handleEdit}
+                onEdit={editLead}
                 onCancel={closeEditModal}
                 leadsFormData={lead}
-                onArchive={handleArchive}
+                onArchive={archiveLead}
+                onErrorMessage={errorMessage}
+                onError={showAlert}
               />
             </ModalBody>
           </ModalContent>
@@ -386,8 +464,8 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive, onFetchLeads }) => {
       {isConverting && (
         <Modal isOpen={isOpen} onClose={closeConvertingModal}>
           <ModalOverlay />
-          <ModalContent>
-            <ModalHeader>Convert To Client</ModalHeader>
+          <ModalContent backgroundColor="gray.500">
+            <ModalHeader color="white">Convert To Client</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
               <ConvertToClientForm

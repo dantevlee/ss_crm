@@ -1,10 +1,26 @@
 import { DeleteIcon } from "@chakra-ui/icons";
-import { Box, Button, Flex, IconButton, Input, Link, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalOverlay, Tooltip, useDisclosure } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Flex,
+  FormErrorMessage,
+  IconButton,
+  Input,
+  Link,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalOverlay,
+  Tooltip,
+  useDisclosure,
+} from "@chakra-ui/react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useEffect, useRef, useState } from "react";
 
-const LeadFiles = ({lead, onCancel}) => {
+const LeadFiles = ({ lead, onCancel }) => {
   const [files, setFiles] = useState([]);
   const [fileToUpload, setFileToUpload] = useState(null);
   const [fileToDelete, setFileToDelete] = useState(null);
@@ -17,7 +33,6 @@ const LeadFiles = ({lead, onCancel}) => {
   useEffect(() => {
     fetchFiles();
   }, [lead.id]);
-
 
   const fetchFiles = () => {
     try {
@@ -107,7 +122,6 @@ const LeadFiles = ({lead, onCancel}) => {
     setFileToUpload(e.target.files[0]);
   };
 
-
   const deleteFile = async () => {
     if (fileToDelete) {
       try {
@@ -129,30 +143,57 @@ const LeadFiles = ({lead, onCancel}) => {
     }
   };
 
-
-  return(
+  return (
     <>
-     <Input
-        mt={8}
-        type="file"
-        onChange={handleFileChange}
-        ref={fileInputRef}
-      />
+      <Box mt={8}>
+        <Input
+          mt={8}
+          type="file"
+          onChange={handleFileChange}
+          ref={fileInputRef}
+          borderWidth="2px"
+          _hover={{
+            borderColor: "blue.500",
+            borderWidth: "3px",
+          }}
+          color="black.700"
+          sx={{
+            "::file-selector-button": {
+              bg: "teal.600",
+              border: "none",
+              color: "white",
+              fontWeight: "bold",
+              padding: "0.5rem 1rem",
+              cursor: "pointer",
+              mr: 2,
+              _hover: {
+                bg: "blue.300",
+              },
+            },
+          }}
+        />
+        <FormErrorMessage>Please select a file to upload.</FormErrorMessage>
+      </Box>
       <Flex mt={6} justifyContent="flex-start">
-        <Button colorScheme="blue" onClick={uploadFile}>
-          Upload
-        </Button>
-        <Button ml={3} colorScheme="gray" onClick={handleCancel}>
-          Cancel
-        </Button>
+        <div>
+          <Button colorScheme="blue" onClick={uploadFile}>
+            Upload
+          </Button>
+        </div>
+        <div>
+          <Button ml={3} colorScheme="gray" onClick={handleCancel}>
+            Cancel
+          </Button>
+        </div>
       </Flex>
-    <Box mt={6}>
+      <Box mt={6}>
         {files.length > 0 ? (
           files.map((file) => (
             <Flex key={file.id} alignItems="center" mt={2}>
               <Link
                 onClick={() => downloadFile(file.file_name)}
-                color="teal.500"
+                color="blue.500"
+                fontWeight="bold"
                 cursor="pointer"
               >
                 {file.file_name}
@@ -162,8 +203,7 @@ const LeadFiles = ({lead, onCancel}) => {
                   onClick={() => openDeleteModal(file)}
                   ml={2}
                   size="xs"
-                  variant="outline"
-                  colorScheme="teal"
+                  colorScheme="red"
                   icon={<DeleteIcon />}
                 ></IconButton>
               </Tooltip>
@@ -177,7 +217,7 @@ const LeadFiles = ({lead, onCancel}) => {
         <Modal isOpen={isOpen} onClose={closeDeleteModal}>
           <ModalOverlay />
           <ModalContent>
-            <ModalCloseButton/>
+            <ModalCloseButton />
             <ModalBody>Delete File: {fileToDelete?.file_name}? ?</ModalBody>
             <ModalFooter>
               <Button colorScheme="blue" mr={3} onClick={deleteFile}>
@@ -191,7 +231,7 @@ const LeadFiles = ({lead, onCancel}) => {
         </Modal>
       )}
     </>
-  )
-}
+  );
+};
 
-export default LeadFiles
+export default LeadFiles;

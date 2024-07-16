@@ -24,7 +24,7 @@ const LeadsForm = ({
   leadsFormData,
   onLoading,
   onError,
-  onErrorMessage
+  onErrorMessage,
 }) => {
   const [firstName, setFirstName] = useState("");
   const [firstNameTouched, setFirstNameTouched] = useState(false);
@@ -38,7 +38,7 @@ const LeadsForm = ({
   const [contactSource, setContactSource] = useState("None");
   const [socialMediaSource, setSocialMediaSource] = useState("");
   const [socialMediaSourceTouched, setSocialMediaSourceTouched] =
-  useState(false);
+    useState(false);
   const [socialMedia, setSocialMedia] = useState("");
   const [socialMediaTouched, setSocialMediaTouched] = useState(false);
   const [archive, setArchive] = useState("N");
@@ -69,26 +69,26 @@ const LeadsForm = ({
         setIsEditingEntry(true);
       } else {
         setIsEditingEntry(false);
-        setEmail(leadsFormData.email)
+        setEmail(leadsFormData.email);
       }
     }
   }, [leadsFormData]);
 
   const emailInputError =
-  (email.trim() === "" || !/^\S+@\S+\.\S+$/.test(email)) && emailTouched;
+    (email.trim() === "" || !/^\S+@\S+\.\S+$/.test(email)) && emailTouched;
 
-const firstNameInputError = firstName.trim() === "" && firstNameTouched;
+  const firstNameInputError = firstName.trim() === "" && firstNameTouched;
 
-const lastNameInputError = lastName.trim() === "" && lastNameTouched;
+  const lastNameInputError = lastName.trim() === "" && lastNameTouched;
 
-const phoneNumberInputError =
-  !/^[0-9\b()-]*$/.test(phoneNumber) ||
-  (phoneNumber.trim() === "" && phoneNumberTouched);
+  const phoneNumberInputError =
+    !/^[0-9\b()-]*$/.test(phoneNumber) ||
+    (phoneNumber.trim() === "" && phoneNumberTouched);
 
-const socialMediaSourceInputError =
-  socialMediaSource.trim() === "" && socialMediaSourceTouched;
+  const socialMediaSourceInputError =
+    socialMediaSource.trim() === "" && socialMediaSourceTouched;
 
-const socialMediaInputError = socialMedia.trim() === "" && socialMediaTouched;
+  const socialMediaInputError = socialMedia.trim() === "" && socialMediaTouched;
 
   const handleFirstNameChange = (e) => {
     setFirstName(e.target.value);
@@ -140,10 +140,25 @@ const socialMediaInputError = socialMedia.trim() === "" && socialMediaTouched;
 
   const handleContactSourceChange = (e) => {
     setContactSource(e);
-    if (e === "None"){
-      setSocialMedia("")
-      setPhoneNumber("")
-      setSocialMediaSource("")
+    if (e === "None") {
+      setSocialMedia("");
+      setPhoneNumber("");
+      setSocialMediaSource("");
+      setPhoneNumberTouched(false);
+      setSocialMediaTouched(false);
+    }
+    if (e === "Social Media") {
+      setPhoneNumber("");
+      setPhoneNumberTouched(false);
+      setSocialMediaTouched(true);
+      setSocialMediaSourceTouched(true)
+    }
+
+    if (e === "Phone Number") {
+      setSocialMediaSource("");
+      setPhoneNumberTouched(true);
+      setSocialMediaTouched(false);
+      setSocialMedia("");
     }
   };
 
@@ -158,10 +173,7 @@ const socialMediaInputError = socialMedia.trim() === "" && socialMediaTouched;
       socialMedia: socialMedia,
     };
     if (isEditingEntry) {
-      onEdit(formData, leadsFormData.id);
-      if (archive === "Y") {
-        handleArchiveSubmission();
-      }
+      onEdit(formData);
     } else if (onRestore) {
       handleArchiveToLeadSubmission();
     } else {
@@ -180,7 +192,7 @@ const socialMediaInputError = socialMedia.trim() === "" && socialMediaTouched;
       lastActiveDate: lastContactedAt,
     };
 
-    onArchive(formData, leadsFormData.id);
+    onArchive(formData);
   };
 
   const handleArchiveToLeadSubmission = () => {
@@ -203,22 +215,22 @@ const socialMediaInputError = socialMedia.trim() === "" && socialMediaTouched;
 
   return (
     <>
-      <FormControl isInvalid={firstNameInputError} >
+      <FormControl isInvalid={firstNameInputError}>
         <FormLabel color="white">First Name:</FormLabel>
         <Input
-        sx={{
-          _focus: {
-            borderWidth: "4px",
-            borderColor: "blue.600",
-          },
-        }}
-        borderRadius={10}
-        backgroundColor="white"
+          sx={{
+            _focus: {
+              borderWidth: "4px",
+              borderColor: "blue.600",
+            },
+          }}
+          borderRadius={10}
+          backgroundColor="white"
           onChange={handleFirstNameChange}
           placeholder="First Name"
           value={firstName}
         />
-         <FormErrorMessage
+        <FormErrorMessage
           fontSize="14px"
           fontWeight="bold"
           backgroundColor="red.300"
@@ -231,31 +243,6 @@ const socialMediaInputError = socialMedia.trim() === "" && socialMediaTouched;
       <FormControl mt={4} isInvalid={lastNameInputError}>
         <FormLabel color="white">Last Name:</FormLabel>
         <Input
-        sx={{
-          _focus: {
-            borderWidth: "4px",
-            borderColor: "blue.600",
-          },
-        }}
-        borderRadius={10}
-        backgroundColor="white"
-          onChange={handleLastNameChange}
-          placeholder="Last Name"
-          value={lastName}
-        />
-         <FormErrorMessage
-          fontSize="14px"
-          fontWeight="bold"
-          backgroundColor="red.300"
-          maxWidth="225px"
-          textColor="black"
-        >
-          Please Enter Last Name of Lead.
-          </FormErrorMessage>
-      </FormControl>
-        <FormControl isInvalid={emailInputError} mt={4}>
-          <FormLabel color="white">E-mail</FormLabel>
-          <Input
           sx={{
             _focus: {
               borderWidth: "4px",
@@ -264,11 +251,36 @@ const socialMediaInputError = socialMedia.trim() === "" && socialMediaTouched;
           }}
           borderRadius={10}
           backgroundColor="white"
-            onChange={handleEmailChange}
-            placeholder="E-mail"
-            value={email}
-          />
-           <FormErrorMessage
+          onChange={handleLastNameChange}
+          placeholder="Last Name"
+          value={lastName}
+        />
+        <FormErrorMessage
+          fontSize="14px"
+          fontWeight="bold"
+          backgroundColor="red.300"
+          maxWidth="225px"
+          textColor="black"
+        >
+          Please Enter Last Name of Lead.
+        </FormErrorMessage>
+      </FormControl>
+      <FormControl isInvalid={emailInputError} mt={4}>
+        <FormLabel color="white">E-mail</FormLabel>
+        <Input
+          sx={{
+            _focus: {
+              borderWidth: "4px",
+              borderColor: "blue.600",
+            },
+          }}
+          borderRadius={10}
+          backgroundColor="white"
+          onChange={handleEmailChange}
+          placeholder="E-mail"
+          value={email}
+        />
+        <FormErrorMessage
           fontSize="14px"
           fontWeight="bold"
           backgroundColor="red.300"
@@ -277,10 +289,14 @@ const socialMediaInputError = socialMedia.trim() === "" && socialMediaTouched;
         >
           Please Enter a Valid E-mail.
         </FormErrorMessage>
-        </FormControl>
+      </FormControl>
       <FormControl mt={4}>
-        <FormLabel color="white" >Alternate Contact Source?</FormLabel>
-        <RadioGroup  color="white" onChange={handleContactSourceChange} value={contactSource}>
+        <FormLabel color="white">Alternate Contact Source?</FormLabel>
+        <RadioGroup
+          color="white"
+          onChange={handleContactSourceChange}
+          value={contactSource}
+        >
           <Stack direction="column">
             <Radio value="Social Media">Social Media</Radio>
             <Radio value="Phone Number">Phone Number</Radio>
@@ -315,26 +331,35 @@ const socialMediaInputError = socialMedia.trim() === "" && socialMediaTouched;
         </FormControl>
       )}{" "}
       {socialMediaSource === "Instagram" && (
-        <FormControl mt={4}>
-          <FormLabel color="white" >IG:</FormLabel>
+        <FormControl isInvalid={socialMediaInputError} mt={4}>
+          <FormLabel color="white">IG:</FormLabel>
           <Input
-          sx={{
-            _focus: {
-              borderWidth: "4px",
-              borderColor: "blue.600",
-            },
-          }}
+            sx={{
+              _focus: {
+                borderWidth: "4px",
+                borderColor: "blue.600",
+              },
+            }}
             borderRadius={10}
             backgroundColor="white"
             value={socialMedia}
             placeholder="Instagram"
             onChange={handleSocialMediaChange}
           />
+          <FormErrorMessage
+            fontSize="14px"
+            fontWeight="bold"
+            backgroundColor="red.300"
+            maxWidth="160px"
+            textColor="black"
+          >
+            Please Enter IG Handle.
+          </FormErrorMessage>
         </FormControl>
       )}
       {socialMediaSource === "Facebook" && (
-        <FormControl mt={4}>
-          <FormLabel color="white" >Facebook:</FormLabel>
+        <FormControl isInvalid={socialMediaInputError} mt={4}>
+          <FormLabel color="white">Facebook:</FormLabel>
           <Input
             sx={{
               _focus: {
@@ -348,28 +373,46 @@ const socialMediaInputError = socialMedia.trim() === "" && socialMediaTouched;
             placeholder="Facebook"
             onChange={handleSocialMediaChange}
           />
+          <FormErrorMessage
+            fontSize="14px"
+            fontWeight="bold"
+            backgroundColor="red.300"
+            maxWidth="200px"
+            textColor="black"
+          >
+            Please Enter Facebook Name.
+          </FormErrorMessage>
         </FormControl>
       )}
       {socialMediaSource === "LinkedIn" && (
-        <FormControl mt={4}>
-          <FormLabel color="white" >LinkedIn:</FormLabel>
+        <FormControl isInvalid={socialMediaInputError} mt={4}>
+          <FormLabel color="white">LinkedIn:</FormLabel>
           <Input
-              sx={{
-                _focus: {
-                  borderWidth: "4px",
-                  borderColor: "blue.600",
-                },
-              }}
-              borderRadius={10}
-              backgroundColor="white"
+            sx={{
+              _focus: {
+                borderWidth: "4px",
+                borderColor: "blue.600",
+              },
+            }}
+            borderRadius={10}
+            backgroundColor="white"
             value={socialMedia}
             placeholder="LinkedIn"
             onChange={handleSocialMediaChange}
           />
+          <FormErrorMessage
+            fontSize="14px"
+            fontWeight="bold"
+            backgroundColor="red.300"
+            maxWidth="200px"
+            textColor="black"
+          >
+            Please Enter LinkedIn Name.
+          </FormErrorMessage>
         </FormControl>
       )}
       {socialMediaSource === "Tik Tok" && (
-        <FormControl mt={4}>
+        <FormControl isInvalid={socialMediaInputError} mt={4}>
           <FormLabel color="white">Tik Tok:</FormLabel>
           <Input
             sx={{
@@ -384,10 +427,19 @@ const socialMediaInputError = socialMedia.trim() === "" && socialMediaTouched;
             placeholder="Tik-Tok"
             onChange={handleSocialMediaChange}
           />
+          <FormErrorMessage
+            fontSize="14px"
+            fontWeight="bold"
+            backgroundColor="red.300"
+            maxWidth="200px"
+            textColor="black"
+          >
+            Please Enter Tik-Tok Handle.
+          </FormErrorMessage>
         </FormControl>
       )}
       {contactSource === "Phone Number" && (
-        <FormControl mt={4}>
+        <FormControl isInvalid={phoneNumberInputError} mt={4}>
           <FormLabel color="white">Phone Number</FormLabel>
           <Input
             sx={{
@@ -402,12 +454,21 @@ const socialMediaInputError = socialMedia.trim() === "" && socialMediaTouched;
             placeholder="Phone Number"
             value={phoneNumber}
           />
+          <FormErrorMessage
+            fontSize="14px"
+            fontWeight="bold"
+            backgroundColor="red.300"
+            maxWidth="245px"
+            textColor="black"
+          >
+            Please Enter A Valid Phone Number.
+          </FormErrorMessage>
         </FormControl>
       )}
       <FormControl mt={4}>
         <FormLabel color="white">Last Contacted?</FormLabel>
         <Input
-           sx={{
+          sx={{
             _focus: {
               borderWidth: "4px",
               borderColor: "blue.600",
@@ -424,7 +485,7 @@ const socialMediaInputError = socialMedia.trim() === "" && socialMediaTouched;
       {isEditingEntry && (
         <FormControl mt={4}>
           <FormLabel color="white">Archive Lead?</FormLabel>
-          <RadioGroup onChange={setArchive} value={archive}>
+          <RadioGroup color="white" onChange={setArchive} value={archive}>
             <Stack direction="column">
               <Radio value="Y">Yes</Radio>
               <Radio value="N">No</Radio>
@@ -432,22 +493,28 @@ const socialMediaInputError = socialMedia.trim() === "" && socialMediaTouched;
           </RadioGroup>
         </FormControl>
       )}
-       {onError && (
+      {onError && (
         <Alert mt={onError ? 4 : 0} status="error">
           <AlertIcon />
           <AlertDescription>{onErrorMessage}</AlertDescription>
         </Alert>
       )}
       <Flex mt={6} justifyContent="flex-start">
-        <Button onClick={handleFormSubmission} colorScheme="blue">
-        {onLoading ? (
-              <Spinner size="md" thickness="4px" />
-            ) : isEditingEntry ? (
-              "Update"
-            ) : (
-              "Save"
-            )}
+      {archive === "Y" && (
+          <Button onClick={handleArchiveSubmission} colorScheme="red">
+             {onLoading ? <Spinner size="md" thickness="4px" /> : "Archive"}
+          </Button>
+        )}
+        {archive === "N" && (<Button onClick={handleFormSubmission} colorScheme="blue">
+          {onLoading ? (
+            <Spinner size="md" thickness="4px" />
+          ) : isEditingEntry ? (
+            "Update"
+          ) : (
+            "Save"
+          )}
         </Button>
+        )}
         <Button onClick={handleCancel} colorScheme="gray" ml={4}>
           Cancel
         </Button>

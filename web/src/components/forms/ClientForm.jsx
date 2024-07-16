@@ -157,12 +157,14 @@ const ClientForm = ({
       setPhoneNumber("");
       setPhoneNumberTouched(false);
       setSocialMediaTouched(true);
+      setSocialMediaSourceTouched(true)
     }
 
     if (e === "Phone Number") {
       setSocialMediaSource("");
       setSocialMediaTouched(false);
       setSocialMedia("");
+      setPhoneNumberTouched(true)
     }
   };
 
@@ -607,7 +609,7 @@ const ClientForm = ({
       <Flex mt={6} justifyContent="flex-start">
         {archive === "Y" && (
           <Button onClick={handleArchiveSubmission} colorScheme="red">
-            Archive
+            {onLoading ? <Spinner size="md" thickness="4px" /> : "Archive"}
           </Button>
         )}
         {archive === "N" && (

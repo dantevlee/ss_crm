@@ -20,10 +20,9 @@ import Cookies from "js-cookie";
 
 const LeadsPage = () => {
   const [leads, setLeads] = useState([]);
-  const { isOpen, onOpen, onClose } = useDisclosure();
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const[formLoading, setFormLoading] = useState(false);
+  const [formLoading, setFormLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [showAlert, setShowAlert] = useState(false);
 
@@ -53,7 +52,7 @@ const LeadsPage = () => {
   }, []);
 
   const createLead = async (formData) => {
-    setFormLoading(true)
+    setFormLoading(true);
     try {
       const response = await axios.post(
         `http://localhost:3000/api/create-lead`,
@@ -66,77 +65,30 @@ const LeadsPage = () => {
       );
       if (response.status === 200) {
         fetchLeads();
-        onClose();
+        closeAddLeadModal();
       }
     } catch (error) {
-      setErrorMessage(error.response.data.message)
-      setShowAlert(true)
+      setErrorMessage(error.response.data.message);
+      setShowAlert(true);
     } finally {
-      setFormLoading(false)
+      setFormLoading(false);
     }
   };
 
-  const deleteLead = async (leadId) => {
-    try {
-      await axios
-        .delete(`http://localhost:3000/api/delete/lead/${leadId}`, {
-          headers: {
-            Authorization: `${token}`,
-          },
-        })
-        .then((res) => {
-          if (res.status === 200) {
-            fetchLeads();
-            onClose();
-          }
-        });
-    } catch (error) {
-      console.error(error);
-    }
+  const handleDeleteLead = (leadId) => {
+    setLeads((prevLeads) => prevLeads.filter((lead) => lead.id !== leadId));
+  }
+
+  const handleArchiveLead = (leadId) => {
+    setLeads((prevLeads) => prevLeads.filter((lead) => lead.id !== leadId));
   };
 
-  const editLead = async (formData, leadId) => {
-    try {
-      await axios
-        .put(`http://localhost:3000/api/update/lead/${leadId}`, formData, {
-          headers: {
-            Authorization: `${token}`,
-          },
-        })
-        .then((res) => {
-          if (res.status === 200) {
-            setLeads((prevLeads) => {
-              const updatedLead = prevLeads.map((lead) =>
-                lead.id === leadId ? res.data : lead
-              );
-              return updatedLead;
-            });
-            onClose();
-          }
-        });
-    } catch (error) {
-      console.error(error);
-    }
+  const handleLeadEdit = (updatedLead) => {
+    setLeads((prevLeads) =>
+      prevLeads.map((lead) => (lead.id === updatedLead.id ? updatedLead : lead))
+    );
   };
 
-  const archiveLead = async (formData, leadId) => {
-    try {
-      await axios
-        .post(`http://localhost:3000/api/archive/lead/${leadId}`, formData, {
-          headers: {
-            Authorization: `${token}`,
-          },
-        })
-        .then((res) => {
-          console.log(res);
-          if (res.status === 200) {
-            fetchLeads();
-          }
-        });
-    } catch (error) {
-      console.error(error);
-    }
-  };
 
   const {
     isOpen: isAddLeadOpen,
@@ -144,12 +96,15 @@ const LeadsPage = () => {
     onClose: onAddLeadClose,
   } = useDisclosure();
 
-  const closeAddLeadModal =  () =>{
-    if(showAlert){
-      setShowAlert(false)
+  const closeAddLeadModal = () => {
+    if (showAlert) {
+      setShowAlert(false);
     }
-    onAddLeadClose()
-  }
+    if (loading) {
+      setLoading(false);
+    }
+    onAddLeadClose();
+  };
 
   const handleNextPage = () => {
     setCurrentPage((prevPage) => prevPage + 1);
@@ -161,10 +116,10 @@ const LeadsPage = () => {
 
   const paginateLeads = () => {
     const startIndex = (currentPage - 1) * leadsPerPage;
-    return leads.slice(startIndex, startIndex + leadsPerPage)
+    return leads.slice(startIndex, startIndex + leadsPerPage);
   };
 
-  const totalPages = Math.ceil(leads.length / leadsPerPage)
+  const totalPages = Math.ceil(leads.length / leadsPerPage);
 
   return (
     <>
@@ -194,24 +149,24 @@ const LeadsPage = () => {
         <>
           <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={4} mt={8}>
             {...paginateLeads().map((lead) => (
-                <LeadsCard
-                  key={lead.id}
-                  lead={lead}
-                  onDelete={deleteLead}
-                  onEdit={editLead}
-                  onFetchLeads={fetchLeads}
-                  onArchive={archiveLead}
-                />
+              <LeadsCard
+                key={lead.id}
+                lead={lead}
+                onDelete={handleDeleteLead}
+                onEdit={handleLeadEdit}
+                onFetchLeads={fetchLeads}
+                onArchive={handleArchiveLead}
+              />
             ))}
           </SimpleGrid>
           {leads.length > leadsPerPage && (
-             <Flex justifyContent="center" mt={12} mb={4}>
-                {currentPage !== 1 && (
+            <Flex justifyContent="center" mt={12} mb={4}>
+              {currentPage !== 1 && (
                 <Button onClick={handlePreviousPage} mr={2}>
                   <Text color="blue.500">Previous</Text>
                 </Button>
               )}
-                {Array.from({ length: totalPages }, (_, index) => (
+              {Array.from({ length: totalPages }, (_, index) => (
                 <Button
                   key={index}
                   onClick={() => setCurrentPage(index + 1)}
@@ -222,7 +177,7 @@ const LeadsPage = () => {
                   {index + 1}
                 </Button>
               ))}
-                {!(
+              {!(
                 currentPage * leadsPerPage >= leads.length ||
                 currentPage === totalPages
               ) && (
@@ -239,7 +194,13 @@ const LeadsPage = () => {
         <ModalContent backgroundColor="gray.500">
           <ModalHeader color="white">Add New Lead</ModalHeader>
           <ModalBody pb={6}>
-            <LeadsForm onSave={createLead} onCancel={closeAddLeadModal} onLoading={formLoading} onError={showAlert} onErrorMessage={errorMessage} />
+            <LeadsForm
+              onSave={createLead}
+              onCancel={closeAddLeadModal}
+              onLoading={formLoading}
+              onError={showAlert}
+              onErrorMessage={errorMessage}
+            />
           </ModalBody>
         </ModalContent>
       </Modal>

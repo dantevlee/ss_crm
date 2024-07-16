@@ -125,6 +125,7 @@ const ProgressNotesForm = ({
           </Alert>
         )}
       <Flex mt={6} justifyContent="flex-start">
+        <div>
         <Button onClick={handleNotesSubmission} colorScheme="blue">
           {onLoading ? (
             <Spinner size="md" thickness="4px" />
@@ -134,9 +135,12 @@ const ProgressNotesForm = ({
             "Save"
           )}
         </Button>
+        </div>
+        <div>
         <Button ml={3} colorScheme="gray" onClick={handleCancel}>
           Cancel
         </Button>
+        </div>
       </Flex>
     </>
   );

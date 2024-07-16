@@ -52,8 +52,8 @@ const ClientPage = () => {
 
   const createClient = async (formData) => {
     const token = Cookies.get("SessionID");
-    setFormLoading(true)
     try {
+        setFormLoading(true)
         await axios.post(
         `http://localhost:3000/api/create-client`,
         formData,
@@ -69,7 +69,6 @@ const ClientPage = () => {
         }
       })
     } catch (error) {
-      console.error("Error saving client:", error.message);
       setErrorMessage(error.response.data.message)
       setShowAlert(true)
     } finally {
@@ -105,6 +104,9 @@ const ClientPage = () => {
   const closeAddClientModal = () => {
     if(showAlert){
       setShowAlert(false)
+    } 
+    if(loading){
+      setLoading(false)
     }
     onAddClientClose()
   }
