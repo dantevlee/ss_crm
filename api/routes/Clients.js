@@ -134,13 +134,14 @@ router.put("/update/client/:clientId", authenticateUser, async (req, res) => {
     } = req.body;
 
     if (
-      firstName.trim() == "" ||
-      lastName.trim() == "" ||
-      clientEmail.trim() == ""
+      !firstName ||
+      !lastName ||
+      !clientEmail
     ) {
       return res
         .status(409)
         .json({
+          status: "failed",
           message:
             "Please ensure client first, last name and e-mail is entered.",
         });
@@ -154,11 +155,11 @@ router.put("/update/client/:clientId", authenticateUser, async (req, res) => {
       }
     } 
 
-    if (startDate.trim() === "") {
+    if (!startDate) {
       return res.status(409).json({ message: "Error: Missing Start Date." });
     }
 
-    if (endDate.trim() === "") {
+    if (!endDate) {
       return res.status(409).json({ message: "Error: Missing End Date." });
     } else {
       const updatedClient = await db.query(
@@ -176,12 +177,12 @@ router.put("/update/client/:clientId", authenticateUser, async (req, res) => {
           userId,
         ]
       );
-      res.json(updatedClient[0]);
+      return res.json(updatedClient[0]);
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({
-      message: "Internal Servor Error. Unable to update client details.",
+    return res.status(500).json({
+      message: error.message,
     });
   }
 });
