@@ -36,7 +36,7 @@ import ClientFiles from "../file_uploads/ClientFiles";
 import axios from "axios";
 import "../../App.css";
 
-const ClientCard = ({ client, onNoteEdit, onDelete, onArchive }) => {
+const ClientCard = ({ client, onEdit, onDelete, onArchive }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isAddingNotes, setIsAddingNotes] = useState(false);
@@ -68,8 +68,8 @@ const ClientCard = ({ client, onNoteEdit, onDelete, onArchive }) => {
           }
         });
     } catch (error) {
-      setErrorMessage(error.response.data.message);
-      setShowAlert(true);
+        setErrorMessage(error.response.data.message);
+        setShowAlert(true)
     } finally {
       setLoading(false);
     }
