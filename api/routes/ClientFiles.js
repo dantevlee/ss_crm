@@ -134,14 +134,17 @@ router.delete(`/delete/file/:fileId`, authenticateUser, async (req, res) => {
 
   try {
     const fileId = req.params.fileId;
+    if(!fileId){
+      return res.status(404).json({message: "Unable to find file to be deleted."})
+    }
     await db.query(`DELETE FROM "Files" WHERE "id" = $1`, [fileId]);
-    return res.json({ message: "Client File Successfully Deleted." });
+    return res.json({ message: "File Successfully Deleted." });
   } catch (error) {
     console.error(error);
     return res
       .status(500)
       .json({
-        message: "Internal Server Error. Unable To Delete Client File.",
+        message: "Internal Server Error. Unable To Delete File.",
       });
   }
 });

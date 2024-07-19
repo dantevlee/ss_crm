@@ -28,7 +28,7 @@ import ProgressNotesForm from "../forms/ProgressNotesForm";
 import Cookies from "js-cookie";
 import axios from "axios";
 
-const ProgressNotes = ({ notes, onDelete, onNoteEdit }) => {
+const LeadProgressNotes = ({ notes, onDelete, onNoteEdit }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -218,4 +218,4 @@ const ProgressNotes = ({ notes, onDelete, onNoteEdit }) => {
   );
 };
 
-export default ProgressNotes;
+export default LeadProgressNotes;

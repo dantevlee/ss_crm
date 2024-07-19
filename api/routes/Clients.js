@@ -19,7 +19,7 @@ router.post("/create-client", authenticateUser, async (req, res) => {
       socialMediaSource,
       socialMedia,
     } = req.body;
-
+    console.log("body", req.body)
     if (!firstName || !lastName || !clientEmail) {
       return res
         .status(409)
@@ -43,7 +43,7 @@ router.post("/create-client", authenticateUser, async (req, res) => {
           .status(409)
           .json({ message: "Error: Missing Social Media Handle." });
       }
-    } else {
+    } 
       const client = await db.query(
         'INSERT into "Clients"("user_id", "firstName", "lastName", "client_email", "start_date", "end_date", "phone_number", "social_media_source", "social_media") VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING*',
         [
@@ -59,11 +59,10 @@ router.post("/create-client", authenticateUser, async (req, res) => {
         ]
       );
 
-      res.json(client[0]);
-    }
-  } catch (error) {
+      return res.json(client[0]);
+    } catch (error) {
     console.error(error);
-    res.status(500).json({
+    return res.status(500).json({
       message: "Internal Servor Error. Unable to create a client.",
     });
   }
@@ -141,19 +140,10 @@ router.put("/update/client/:clientId", authenticateUser, async (req, res) => {
       return res
         .status(409)
         .json({
-          status: "failed",
           message:
             "Please ensure client first, last name and e-mail is entered.",
         });
     }
-
-    if (socialMediaSource) {
-      if (!socialMedia) {
-        return res
-          .status(409)
-          .json({ message: "Error: Missing Social Media Handle." });
-      }
-    } 
 
     if (!startDate) {
       return res.status(409).json({ message: "Error: Missing Start Date." });
@@ -161,7 +151,15 @@ router.put("/update/client/:clientId", authenticateUser, async (req, res) => {
 
     if (!endDate) {
       return res.status(409).json({ message: "Error: Missing End Date." });
-    } else {
+    } 
+    
+    if (socialMediaSource) {
+      if (!socialMedia) {
+        return res
+          .status(409)
+          .json({ message: "Error: Missing Social Media Handle." });
+      }
+    } 
       const updatedClient = await db.query(
         'UPDATE "Clients" SET "firstName" = $1, "lastName" = $2, "client_email" = $3, "start_date" = $4, "end_date" = $5, "phone_number" = $6, "social_media_source" = $7, "social_media" = $8 WHERE "id" = $9 AND "user_id" = $10 RETURNING*',
         [
@@ -178,11 +176,11 @@ router.put("/update/client/:clientId", authenticateUser, async (req, res) => {
         ]
       );
       return res.json(updatedClient[0]);
-    }
+    
   } catch (error) {
     console.error(error);
     return res.status(500).json({
-      message: error.message,
+      message: "Internal Servor Error. Unable to edit client."
     });
   }
 });

@@ -1,14 +1,39 @@
 import { DeleteIcon } from "@chakra-ui/icons";
-import { Box, Button, Flex, IconButton, Input, Link, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalOverlay, Tooltip, useDisclosure } from "@chakra-ui/react";
+import {
+  Alert,
+  AlertDescription,
+  AlertIcon,
+  Box,
+  Button,
+  Flex,
+  FormErrorMessage,
+  IconButton,
+  Input,
+  Link,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  Spinner,
+  Tooltip,
+  useDisclosure,
+} from "@chakra-ui/react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useEffect, useRef, useState } from "react";
 
-const LeadFiles = ({lead, onCancel}) => {
+const LeadFiles = ({ lead, onCancel }) => {
   const [files, setFiles] = useState([]);
   const [fileToUpload, setFileToUpload] = useState(null);
   const [fileToDelete, setFileToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [deleteErrorMessage, setDeleteErrorMessage] = useState("");
+  const [showAlert, setShowAlert] = useState(false);
+  const [fileInputTouched, setFileInputTouched] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const fileInputRef = useRef(null);
 
@@ -17,7 +42,6 @@ const LeadFiles = ({lead, onCancel}) => {
   useEffect(() => {
     fetchFiles();
   }, [lead.id]);
-
 
   const fetchFiles = () => {
     try {
@@ -28,17 +52,25 @@ const LeadFiles = ({lead, onCancel}) => {
           },
         })
         .then((res) => {
+          if (showAlert) {
+            setShowAlert(false);
+          }
           setFiles(res.data.files);
+        }) .catch((error) => {
+          setErrorMessage(error.response.data.message);
+          setShowAlert(true);
         });
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const uploadFile = async () => {
     const formData = new FormData();
     formData.append("file", fileToUpload);
-
+    setLoading(true);
     try {
       axios
         .post(
@@ -55,13 +87,21 @@ const LeadFiles = ({lead, onCancel}) => {
           if (res.status === 200) {
             fetchFiles();
             setFileToUpload(null);
+            if (showAlert) {
+              setShowAlert(false);
+            }
             if (fileInputRef.current) {
               fileInputRef.current.value = "";
             }
           }
+        }).catch((error) => {
+          setErrorMessage(error.response.data.message);
+          setShowAlert(true);
         });
     } catch (error) {
-      console.error(error);
+      console.error(error)
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -74,7 +114,10 @@ const LeadFiles = ({lead, onCancel}) => {
             Authorization: `${token}`,
           },
         }
-      );
+      ).catch((error) => {
+        setErrorMessage(error.response.data.message);
+        setShowAlert(true);
+      });
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
@@ -83,7 +126,7 @@ const LeadFiles = ({lead, onCancel}) => {
       document.body.appendChild(link);
       link.click();
     } catch (error) {
-      console.error("Error downloading the file", error);
+      console.error(error)
     }
   };
 
@@ -101,16 +144,22 @@ const LeadFiles = ({lead, onCancel}) => {
     setFileToDelete(null);
     onClose();
     setIsDeleting(false);
+    if(deleteErrorMessage){
+      setDeleteErrorMessage("")
+    }
   };
 
   const handleFileChange = (e) => {
     setFileToUpload(e.target.files[0]);
+    if (!fileInputTouched) {
+      setFileInputTouched(true);
+    }
   };
-
 
   const deleteFile = async () => {
     if (fileToDelete) {
       try {
+        setLoading(true);
         await axios
           .delete(`http://localhost:3000/api/delete/file/${fileToDelete.id}`, {
             headers: {
@@ -124,35 +173,74 @@ const LeadFiles = ({lead, onCancel}) => {
             }
           });
       } catch (error) {
+        setDeleteErrorMessage(error.response.data.message);
         console.error("Error deleting the file", error);
+      }  finally {
+        setLoading(false);
       }
     }
   };
 
-
-  return(
+  return (
     <>
-     <Input
-        mt={8}
-        type="file"
-        onChange={handleFileChange}
-        ref={fileInputRef}
-      />
+      <Box mt={8}>
+        <Input
+          mt={8}
+          type="file"
+          onChange={handleFileChange}
+          ref={fileInputRef}
+          borderWidth="2px"
+          _hover={{
+            borderColor: "blue.500",
+            borderWidth: "3px",
+          }}
+          color="black.700"
+          sx={{
+            "::file-selector-button": {
+              bg: "teal.600",
+              border: "none",
+              color: "white",
+              fontWeight: "bold",
+              padding: "0.5rem 1rem",
+              cursor: "pointer",
+              mr: 2,
+              _hover: {
+                bg: "blue.300",
+              },
+            },
+          }}
+        />
+        <FormErrorMessage>Please select a file to upload.</FormErrorMessage>
+      </Box>
+      {errorMessage && (
+        <Alert status="error" mt={showAlert ? 4 : 0}>
+          <AlertIcon />
+          <AlertDescription>{errorMessage}</AlertDescription>
+        </Alert>
+      )}
       <Flex mt={6} justifyContent="flex-start">
-        <Button colorScheme="blue" onClick={uploadFile}>
-          Upload
-        </Button>
-        <Button ml={3} colorScheme="gray" onClick={handleCancel}>
-          Cancel
-        </Button>
+        <div>
+          <Button colorScheme="blue" onClick={uploadFile}>
+             {loading ? <Spinner size="md" thickness="4px" /> : "Upload"}
+          </Button>
+        </div>
+        <div>
+          <Button ml={3} colorScheme="gray" onClick={handleCancel}>
+            Cancel
+          </Button>
+        </div>
       </Flex>
-    <Box mt={6}>
-        {files.length > 0 ? (
+      <Box mt={6}>
+      {loading ? (
+          <Spinner marginStart="85px" />
+        ) :
+        files.length > 0 ? (
           files.map((file) => (
             <Flex key={file.id} alignItems="center" mt={2}>
               <Link
                 onClick={() => downloadFile(file.file_name)}
-                color="teal.500"
+                color="blue.500"
+                fontWeight="bold"
                 cursor="pointer"
               >
                 {file.file_name}
@@ -162,8 +250,7 @@ const LeadFiles = ({lead, onCancel}) => {
                   onClick={() => openDeleteModal(file)}
                   ml={2}
                   size="xs"
-                  variant="outline"
-                  colorScheme="teal"
+                  colorScheme="red"
                   icon={<DeleteIcon />}
                 ></IconButton>
               </Tooltip>
@@ -176,22 +263,30 @@ const LeadFiles = ({lead, onCancel}) => {
       {isDeleting && (
         <Modal isOpen={isOpen} onClose={closeDeleteModal}>
           <ModalOverlay />
-          <ModalContent>
-            <ModalCloseButton/>
-            <ModalBody>Delete File: {fileToDelete?.file_name}? ?</ModalBody>
+          <ModalContent minWidth="500px">
+            <ModalHeader>Permanently Delete: {fileToDelete?.file_name}? </ModalHeader>
+            {deleteErrorMessage && (
+              <ModalBody>
+                <Alert status="error" mt={showAlert ? 4 : 0}>
+                  <AlertIcon />
+                  <AlertDescription>{deleteErrorMessage}</AlertDescription>
+                </Alert>
+                </ModalBody>
+                )}
             <ModalFooter>
               <Button colorScheme="blue" mr={3} onClick={deleteFile}>
-                Confirm
+              {loading ? <Spinner size="md" thickness="4px" /> : "Confirm"}
               </Button>
               <Button colorScheme="red" mr={3} onClick={closeDeleteModal}>
                 Cancel
               </Button>
+              
             </ModalFooter>
           </ModalContent>
         </Modal>
       )}
     </>
-  )
-}
+  );
+};
 
-export default LeadFiles
+export default LeadFiles;

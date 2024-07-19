@@ -10,27 +10,39 @@ import {
   NumberDecrementStepper,
   NumberIncrementStepper,
   Button,
+  Alert,
+  AlertIcon,
+  AlertDescription,
+  Spinner,
+  FormErrorMessage,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useEffect } from "react";
 
-const ConvertToClientForm = ({ onCancel, lead, onFetchLeads }) => {
+const ConvertToClientForm = ({ onCancel, lead, onFetchLeads}) => {
   const [email, setEmail] = useState("");
+  const [emailTouched, setemailTouched] = useState(false);
   const [startDate, setStartDate] = useState("");
   const [numberOfWeeks, setNumberOfWeeks] = useState(1);
   const [endDate, setEndDate] = useState("");
   const [endDateCalcuated, setEndDateCalculated] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showAlert, setShowAlert] = useState(false);
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (lead) {
       setEmail(lead.lead_email);
     }
-  }, [lead]);
+  }, []);
 
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
+    if (!emailTouched) {
+      setemailTouched(true);
+    }
   };
 
   const handleStartDateChange = (e) => {
@@ -75,7 +87,7 @@ const ConvertToClientForm = ({ onCancel, lead, onFetchLeads }) => {
     const formData = {
       firstName: lead.firstName,
       lastName: lead.lastName,
-      clientEmail: lead.lead_email || email,
+      clientEmail: email,
       startDate: startDate,
       endDate: endDate,
       phoneNumber: lead.phone_number,
@@ -83,6 +95,7 @@ const ConvertToClientForm = ({ onCancel, lead, onFetchLeads }) => {
       socialMedia: lead.soical_media,
     };
     try {
+      setLoading(true)
       await axios
         .post(
           `http://localhost:3000/api/lead/convert/client/${lead.id}`,
@@ -100,26 +113,72 @@ const ConvertToClientForm = ({ onCancel, lead, onFetchLeads }) => {
           }
         });
     } catch (error) {
-      console.error(error);
+      setErrorMessage(error.response.data.message)
+      setShowAlert(true)
+    } finally{
+      setLoading(false)
     }
   };
 
+  const emailInputError =
+  (email.trim() === "" || !/^\S+@\S+\.\S+$/.test(email)) && emailTouched;
+
   return (
     <>
-        <FormControl>
-          <FormLabel>E-mail</FormLabel>
-          <Input onChange={handleEmailChange} placeholder="E-mail" value={email} />
-        </FormControl>
-      <FormControl mt={4}>
-        <FormLabel>Start Date</FormLabel>
-        <Input onChange={handleStartDateChange} size="md" type="date" />
+      <FormControl isInvalid ={emailInputError}>
+        <FormLabel color="white">E-mail</FormLabel>
+        <Input
+          sx={{
+            _focus: {
+              borderWidth: "4px",
+              borderColor: "blue.600",
+            },
+          }}
+          borderRadius={10}
+          backgroundColor="white"
+          onChange={handleEmailChange}
+          placeholder="E-mail"
+          value={email}
+        />
+         <FormErrorMessage
+          fontSize="14px"
+          fontWeight="bold"
+          backgroundColor="red.300"
+          maxWidth="225px"
+          textColor="black"
+        >
+          Please Enter a Valid E-mail.
+        </FormErrorMessage>
       </FormControl>
       <FormControl mt={4}>
-        <FormLabel>How many weeks is your program?</FormLabel>
+        <FormLabel color="white" >Start Date</FormLabel>
+        <Input
+          sx={{
+            _focus: {
+              borderWidth: "4px",
+              borderColor: "blue.600",
+            },
+          }}
+          borderRadius={10}
+          backgroundColor="white"
+         onChange={handleStartDateChange} size="md" type="date" />
+      </FormControl>
+      <FormControl mt={4}>
+        <FormLabel color="white" >How many weeks is your program?</FormLabel>
         <Flex justifyContent="space-between">
-          <InputGroup>
+          <InputGroup
+          >
             <NumberInput defaultValue={1} min={1} max={52}>
-              <NumberInputField onChange={handlInputWeeksChange} />
+              <NumberInputField 
+                sx={{
+                  _focus: {
+                    borderWidth: "4px",
+                    borderColor: "blue.600",
+                  },
+                }}
+                borderRadius={10}
+                backgroundColor="white"
+              onChange={handlInputWeeksChange} />
               <NumberInputStepper>
                 <NumberIncrementStepper
                   onClick={() => handleStepperChange(numberOfWeeks + 1)}
@@ -141,8 +200,16 @@ const ConvertToClientForm = ({ onCancel, lead, onFetchLeads }) => {
         </Flex>
         {endDateCalcuated && (
           <FormControl mt={4}>
-            <FormLabel>End Date</FormLabel>
+            <FormLabel color="white" >End Date</FormLabel>
             <Input
+              sx={{
+                _focus: {
+                  borderWidth: "4px",
+                  borderColor: "blue.600",
+                },
+              }}
+              borderRadius={10}
+              backgroundColor="white"
               onChange={handleEndDateChange}
               placeholder="Select Date"
               size="md"
@@ -152,13 +219,21 @@ const ConvertToClientForm = ({ onCancel, lead, onFetchLeads }) => {
           </FormControl>
         )}
       </FormControl>
+      {showAlert && (
+        <Alert mt={showAlert ? 4 : 0} status="error">
+          <AlertIcon />
+          <AlertDescription>{errorMessage}</AlertDescription>
+        </Alert>
+      )}
       <Flex mt={6} justifyContent="flex-start">
-        <Button onClick={convertLeadToClient} colorScheme="blue">
-          Convert
-        </Button>
-        <Button onClick={handleCancel} colorScheme="gray" ml={4}>
-          Cancel
-        </Button>
+      
+          <Button onClick={convertLeadToClient} colorScheme="blue">
+          {loading ? <Spinner size="md" thickness="4px" /> : "Convert"}
+          </Button>
+      
+          <Button onClick={handleCancel} colorScheme="gray" ml={4}>
+            Cancel
+          </Button>
       </Flex>
     </>
   );

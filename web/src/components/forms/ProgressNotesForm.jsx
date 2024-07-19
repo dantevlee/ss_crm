@@ -105,10 +105,7 @@ const ProgressNotesForm = ({
         height="200px"
         value={noteInput}
       />
-      <Text mt={2} align="right">
-        {charCount}/500
-      </Text>
-      <FormErrorMessage
+       <FormErrorMessage
           fontSize="14px"
           fontWeight="bold"
           backgroundColor="red.300"
@@ -117,6 +114,9 @@ const ProgressNotesForm = ({
         >
           Please Enter Note Details.
         </FormErrorMessage>
+      <Text mt={2} align="right">
+        {charCount}/500
+      </Text>
       </FormControl>
       {onAlert && (
           <Alert mt={onAlert ? 4 : 0} status="error">
@@ -125,6 +125,7 @@ const ProgressNotesForm = ({
           </Alert>
         )}
       <Flex mt={6} justifyContent="flex-start">
+        <div>
         <Button onClick={handleNotesSubmission} colorScheme="blue">
           {onLoading ? (
             <Spinner size="md" thickness="4px" />
@@ -134,9 +135,12 @@ const ProgressNotesForm = ({
             "Save"
           )}
         </Button>
+        </div>
+        <div>
         <Button ml={3} colorScheme="gray" onClick={handleCancel}>
           Cancel
         </Button>
+        </div>
       </Flex>
     </>
   );

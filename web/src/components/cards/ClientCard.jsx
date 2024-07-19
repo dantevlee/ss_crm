@@ -174,14 +174,6 @@ const ClientCard = ({ client, onEdit, onDelete, onArchive }) => {
     }
   };
 
-  const handleEditNote = (updatedNote) => {
-    setNotes((prevNotes) =>
-      prevNotes.map((note) =>
-        note.id === updatedNote.id ? updatedNote : note
-      )
-    );
-  };
-
   const handleClientEdit = (formData) => {
     editClient(formData);
   };
@@ -239,6 +231,14 @@ const ClientCard = ({ client, onEdit, onDelete, onArchive }) => {
     }
     onClose();
     setIsFileModalOpen(false);
+  };
+
+  const handleEditNote = (updatedNote) => {
+    setNotes((prevNotes) =>
+      prevNotes.map((note) =>
+        note.id === updatedNote.id ? updatedNote : note
+      )
+    );
   };
 
   const handleDeleteNote = (noteId) => {
