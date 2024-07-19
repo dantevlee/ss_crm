@@ -252,7 +252,7 @@ const ClientForm = ({
       socialMedia: socialMedia,
     };
 
-    onArchive(formData, clientFormValue.id);
+    onArchive(formData);
   };
 
   const handleCancel = () => {

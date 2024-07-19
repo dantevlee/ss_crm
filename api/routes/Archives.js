@@ -37,6 +37,32 @@ router.put("/update/archive/:archiveId", authenticateUser, async (req, res) => {
       socialMedia,
       lastActiveDate,
     } = req.body;
+
+    if (
+      !firstName ||
+      !lastName ||
+      !email
+    ) {
+      return res
+        .status(409)
+        .json({
+          message:
+            "Please ensure client first, last name and e-mail is entered.",
+        });
+    }
+
+    if (!lastActiveDate) {
+      return res.status(409).json({ message: "Error: Missing Last Active Date." });
+    }
+    
+    if (socialMediaSource) {
+      if (!socialMedia) {
+        return res
+          .status(409)
+          .json({ message: "Error: Missing Social Media Handle." });
+      }
+    } 
+
     const updatedArchive = await db.query(
       'UPDATE "Archives" SET "firstName" = $1, "lastName" = $2, "email" = $3, "phone_number" = $4, "social_media_source" = $5, "soical_media" = $6, "last_active_date" = $7 WHERE "id" = $8 AND "user_id" = $9 RETURNING *',
       [
@@ -51,7 +77,7 @@ router.put("/update/archive/:archiveId", authenticateUser, async (req, res) => {
         userId,
       ]
     );
-    res.json(updatedArchive[0]);
+    return res.json(updatedArchive[0]);
   } catch (error) {
     console.error(error);
     res
@@ -111,6 +137,32 @@ router.post(
         socialMediaSource,
         socialMedia,
       } = req.body;
+
+      if (!firstName || !lastName || !clientEmail) {
+        return res
+          .status(409)
+          .json({
+            message:
+              "Please ensure client first, last name and e-mail is entered.",
+          });
+      }
+
+      if (!startDate) {
+        return res.status(409).json({ message: "Error: Missing Start Date." });
+      }
+  
+      if (!endDate) {
+        return res.status(409).json({ message: "Error: Missing End Date." });
+      }
+
+      if (socialMediaSource) {
+        if (!socialMedia) {
+          return res
+            .status(409)
+            .json({ message: "Error: Missing Social Media Handle." });
+        }
+      } 
+
       const client = await db.query(
         'INSERT into "Clients"("user_id", "firstName", "lastName", "client_email", "start_date", "end_date", "phone_number", "social_media_source", "social_media") VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING*',
         [
@@ -213,6 +265,25 @@ router.post(
         socialMediaSource,
         soicalMedia,
       } = req.body;
+
+      if (!firstName || !lastName || !leadEmail) {
+        return res
+          .status(409)
+          .json({
+            message:
+              "Please ensure client first, last name and e-mail is entered.",
+          });
+      }
+  
+      if (!lastContactedAt) {
+        return res.status(409).json({ message: "Error: Missing date last contacted." });
+      }
+  
+      if (socialMediaSource && !soicalMedia) {
+          return res
+            .status(409)
+            .json({ message: "Error: Missing Social Media Handle." });
+      }
       const lead = await db.query(
         'INSERT into "Leads"("user_id", "firstName", "lastName", "lead_email", "last_contacted_at", "phone_number", "social_media_source", "soical_media") VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING*',
         [

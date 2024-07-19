@@ -10,6 +10,15 @@ router.post('/create/archive-note', authenticateUser, async (req, res) => {
   try{
     const {noteTitle, noteText} = req.body
     const archive_id = req.query.archive_id
+
+    if (!noteTitle){
+      return res.status(409).json({message: "Note title is required."})
+    }
+
+    if (!noteText){
+      return res.status(409).json({message: "Note details are required."})
+    }
+
     const note = await db.query(`INSERT into "Client_Notes"(archive_id, text, title, version) VALUES($1, $2, $3, $4) RETURNING *`, [archive_id, noteText, noteTitle, 0])
     res.json(note[0])
   } catch(error){

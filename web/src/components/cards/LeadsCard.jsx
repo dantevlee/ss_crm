@@ -428,6 +428,7 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive, onFetchLeads }) => {
             <ModalBody>
               <LeadsForm
                 onEdit={editLead}
+                onLoading={loading} 
                 onCancel={closeEditModal}
                 leadsFormData={lead}
                 onArchive={archiveLead}

@@ -17,11 +17,22 @@ router.post(
     const db = await dbPromise;
 
     try {
+
+      
+      if(!req.file) {
+        return res.status(404).json({message: "Please select a file to be uploaded."})
+      }
+
       const fileName = req.file.originalname;
       const fileType = validateFileType(fileName);
       const fileData = req.file.buffer;
 
       const archive_id = req.query.archive_id;
+
+      if (!fileType){
+        return res.status(409).json({message: "Unsupported file type. File must be in pdf, excel, or docx format"})
+      }
+
 
       const fileNameExists = await db.query(
         `SELECT "file_name" FROM "Files" WHERE "Files"."file_name" = $1 AND "Files"."archive_id" = $2`,
@@ -31,7 +42,7 @@ router.post(
       if (fileNameExists.length > 0) {
         return res
           .status(409)
-          .json({ error: "Archive cannot have two files with the same name." });
+          .json({ message: "Archive cannot have two files with the same name." });
       } else {
         const file = await db.query(
           `INSERT INTO "Files" ("archive_id", "file_name", "file_type", "file_data")

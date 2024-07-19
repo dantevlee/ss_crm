@@ -219,16 +219,12 @@ const LeadFiles = ({ lead, onCancel }) => {
         </Alert>
       )}
       <Flex mt={6} justifyContent="flex-start">
-        <div>
           <Button colorScheme="blue" onClick={uploadFile}>
              {loading ? <Spinner size="md" thickness="4px" /> : "Upload"}
           </Button>
-        </div>
-        <div>
           <Button ml={3} colorScheme="gray" onClick={handleCancel}>
             Cancel
           </Button>
-        </div>
       </Flex>
       <Box mt={6}>
       {loading ? (

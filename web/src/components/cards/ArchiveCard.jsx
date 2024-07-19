@@ -22,33 +22,144 @@ import {
   CardFooter,
   Spinner,
   ModalHeader,
+  Alert,
+  AlertIcon,
+  AlertDescription,
 } from "@chakra-ui/react";
 import ClientForm from "../forms/ClientForm";
 import LeadsForm from "../forms/LeadsForm";
 import ArchiveForm from "../forms/ArchiveForm";
-import ProgressNotes from "../notes/ProgressNotes";
 import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import axios from "axios";
-import ProgresNotesForm from '../forms/ProgressNotesForm'
+import ProgresNotesForm from "../forms/ProgressNotesForm";
 import { FaFileAlt } from "react-icons/fa";
 import ArchiveFiles from "../file_uploads/ArchiveFiles";
+import ArchiveProgressNotes from "../notes/ArchiveNotes";
 
-const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
+const ArchiveCard = ({ archives, onRestore, onDelete, onEdit }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isAddingNotes, setIsAddingNotes] = useState(false);
-  const [isUploadingFile, setIsUploadingFile] = useState(false)
+  const [isUploadingFile, setIsUploadingFile] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
   const [isRestoringAsLead, setIsRestoringAsLead] = useState(false);
   const [isRestoringAsClient, setIsRestoringAsClient] = useState(false);
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showAlert, setShowAlert] = useState(false);
+
   const token = Cookies.get("SessionID");
 
   useEffect(() => {
     fetchNotes();
-  }, [archives.id]);
+  }, []);
+
+  const editArchive = async (formData) => {
+    try {
+      setLoading(true);
+      const token = Cookies.get("SessionID");
+      await axios
+        .put(
+          `http://localhost:3000/api/update/archive/${archives.id}`,
+          formData,
+          {
+            headers: {
+              Authorization: `${token}`,
+            },
+          }
+        )
+        .then((res) => {
+          if (res.status === 200) {
+            onEdit(res.data);
+            closeEditModal();
+          }
+        });
+    } catch (error) {
+      setErrorMessage(error.response.data.message);
+      setShowAlert(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteArchive = async () => {
+    try {
+      setLoading(true);
+      await axios
+        .delete(`http://localhost:3000/api/delete/archive/${archives.id}`, {
+          headers: {
+            Authorization: `${token}`,
+          },
+        })
+        .then((res) => {
+          if (res.status === 200) {
+            closeDeleteModal();
+            onDelete(archives.id);
+          }
+        });
+    } catch (error) {
+      setErrorMessage(error.response.data.message);
+      setShowAlert(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const restoreAsClient = async (formData) => {
+    try {
+      setLoading(true);
+      await axios
+        .post(
+          `http://localhost:3000/api/archived/restore/client/${archives.id}`,
+          formData,
+          {
+            headers: {
+              Authorization: `${token}`,
+            },
+          }
+        )
+        .then((res) => {
+          if (res.status === 200) {
+            onRestore(archives.id);
+            closeClientForm();
+          }
+        });
+    } catch (error) {
+      setErrorMessage(error.response.data.message);
+      setShowAlert(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const restoreAsLead = async (formData) => {
+    try {
+      setLoading(true);
+      await axios
+        .post(
+          `http://localhost:3000/api/archived/restore/lead/${archives.id}`,
+          formData,
+          {
+            headers: {
+              Authorization: `${token}`,
+            },
+          }
+        )
+        .then((res) => {
+          if (res.status === 200) {
+            onRestore(archives.id);
+            closeLeadForm();
+          }
+        });
+    } catch (error) {
+      setErrorMessage(error.response.data.message);
+      setShowAlert(true);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchNotes = async () => {
     try {
@@ -65,14 +176,14 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
         });
     } catch (error) {
       console.error(error);
-    } finally{
-      setLoading(false)
+    } finally {
+      setLoading(false);
     }
   };
 
   const createNote = async (formData) => {
-  
     try {
+      setLoading(true);
       await axios
         .post(
           `http://localhost:3000/api/create/archive-note?archive_id=${archives.id}`,
@@ -90,46 +201,23 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
           }
         });
     } catch (error) {
+      setErrorMessage(error.response.data.message);
+      setShowAlert(true);
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const deleteNote = async (noteId) => {
-    try {
-      axios
-        .delete(`http://localhost:3000/api/delete/note/${noteId}`, {
-          headers: {
-            Authorization: `${token}`,
-          },
-        })
-        .then((res) => {
-          if (res.status === 200) {
-            fetchNotes();
-            closeNotesModal();
-          }
-        });
-    } catch (error) {
-      console.error(error);
-    }
+  const handleDeleteNote = (noteId) => {
+    setNotes((prevNotes) => prevNotes.filter((note) => note.id !== noteId));
   };
 
-  const editNote = async (formData, notesId) => {
-    try{
-      axios.put(`http://localhost:3000/api/update/note/${notesId}`, formData, {
-        headers: {
-          Authorization: `${token}`
-        }
-      }).then((res) => {
-        if(res.status === 200){
-          fetchNotes()
-          closeNotesModal()
-        }
-      })
-    } catch(error){
-      console.error(error)
-    }
-  }
-
+  const handleEditNote = (updatedNote) => {
+    setNotes((prevNotes) =>
+      prevNotes.map((note) => (note.id === updatedNote.id ? updatedNote : note))
+    );
+  };
 
   const {
     isOpen: isDeleteOpen,
@@ -170,17 +258,17 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
   const {
     isOpen: isFilesModalOpen,
     onOpen: onFileModalOpen,
-    onClose: onFileModalClose
-  } = useDisclosure()
+    onClose: onFileModalClose,
+  } = useDisclosure();
 
   const openFileModal = () => {
-    onFileModalOpen()
-    setIsUploadingFile(true)
+    onFileModalOpen();
+    setIsUploadingFile(true);
   };
 
   const closeFilesModal = () => {
-    onFileModalClose()
-    setIsUploadingFile(false)
+    onFileModalClose();
+    setIsUploadingFile(false);
   };
 
   const openDeleteModal = () => {
@@ -212,36 +300,22 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
   const closeDeleteModal = () => {
     onDeleteClose();
     setIsDeleting(false);
+    if (showAlert) {
+      setShowAlert(false);
+    }
   };
 
   const closeEditModal = () => {
     onEditClose();
     setIsEditing(false);
+    if (showAlert) {
+      setShowAlert(false);
+    }
   };
 
   const closeArchiveModal = () => {
     onRestoreClose();
     setIsRestoring(false);
-  };
-
-  const handleDelete = () => {
-    onDelete(archives.id);
-    closeDeleteModal();
-  };
-
-  const handleEdit = (formData) => {
-    onEdit(formData, archives.id);
-    closeEditModal();
-  };
-
-  const handleArchiveToActive = (formData) => {
-    onRestore(formData, archives.id);
-    closeClientForm();
-  };
-
-  const handleArchiveToActiveLead = (formData) => {
-    onMakeLead(formData, archives.id);
-    closeLeadForm();
   };
 
   const handleArchiveToClient = () => {
@@ -260,12 +334,18 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
     onRestoreClientClose();
     onRestoreClose();
     setIsRestoringAsClient(false);
+    if (showAlert) {
+      setShowAlert(false);
+    }
   };
 
   const closeLeadForm = () => {
     onRestoreLeadClose();
     onRestoreClose();
     setIsRestoringAsLead(false);
+    if (showAlert) {
+      setShowAlert(false);
+    }
   };
 
   const formatDate = (dateString) => {
@@ -281,61 +361,68 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
   return (
     <>
       <Card
-       shadow="lg"
-       _hover={{
-         boxShadow: "xl",
-         transform: "scale(1.05)",
-         transition: "transform 0.2s",
-       }}
-       minWidth="250px"
-       maxWidth='350px'
-       marginStart="75px"
-       marginEnd='10px'
-       marginTop="125px"
-       backgroundColor="gray.300"
-       borderRadius={15}>
+        shadow="lg"
+        _hover={{
+          boxShadow: "xl",
+          transform: "scale(1.05)",
+          transition: "transform 0.2s",
+        }}
+        minWidth="250px"
+        maxWidth="350px"
+        marginStart="75px"
+        marginEnd="10px"
+        marginTop="125px"
+        backgroundColor="gray.300"
+        borderRadius={15}
+      >
         <CardHeader>
-        <Flex alignItems="center" width="100%">
-        <Tooltip label="Files">
-            <IconButton
-              onClick={openFileModal}
-              colorScheme="blue"
-              icon={<FaFileAlt />}
-            ></IconButton>
-          </Tooltip>
-          <Flex ml="auto">
-          <Tooltip label="Restore">
-            <IconButton
-              onClick={openArchiveModal}
-              colorScheme="green"
-              icon={<UnlockIcon />}
-              ml={1}
-            />
-          </Tooltip>
-          <Tooltip label="Edit">
-            <IconButton
-              onClick={openEditModal}
-              colorScheme="yellow"
-              icon={<EditIcon />}
-              ml={1}
-            />
-          </Tooltip>
-          <Tooltip label="Delete">
-            <IconButton
-              onClick={openDeleteModal}
-              colorScheme="red"
-              icon={<DeleteIcon />}
-              ml={1}
-            />
-          </Tooltip>
-          </Flex>
+          <Flex alignItems="center" width="100%">
+            <Tooltip label="Files">
+              <IconButton
+                onClick={openFileModal}
+                colorScheme="blue"
+                icon={<FaFileAlt />}
+              ></IconButton>
+            </Tooltip>
+            <Flex ml="auto">
+              <Tooltip label="Restore">
+                <IconButton
+                  onClick={openArchiveModal}
+                  colorScheme="green"
+                  icon={<UnlockIcon />}
+                  ml={1}
+                />
+              </Tooltip>
+              <Tooltip label="Edit">
+                <IconButton
+                  onClick={openEditModal}
+                  colorScheme="yellow"
+                  icon={<EditIcon />}
+                  ml={1}
+                />
+              </Tooltip>
+              <Tooltip label="Delete">
+                <IconButton
+                  onClick={openDeleteModal}
+                  colorScheme="red"
+                  icon={<DeleteIcon />}
+                  ml={1}
+                />
+              </Tooltip>
+            </Flex>
           </Flex>
         </CardHeader>
         <CardBody>
-          <Stack  divider={<StackDivider borderWidth="2px" borderColor="blue.500" />}
-            spacing="4">
+          <Stack
+            divider={<StackDivider borderWidth="2px" borderColor="blue.500" />}
+            spacing="4"
+          >
             <Box>
-            <Heading fontFamily="monospace" size="md" textTransform="uppercase">
+              <Heading
+                fontFamily="monospace"
+                size="md"
+                textTransform="uppercase"
+              >
                 Name
               </Heading>
               <Text fontFamily="initial" pt="2" fontSize="md">
@@ -344,7 +431,11 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
             </Box>
             {archives.email && (
               <Box>
-                 <Heading fontFamily="monospace" size="md" textTransform="uppercase">
+                <Heading
+                  fontFamily="monospace"
+                  size="md"
+                  textTransform="uppercase"
+                >
                   Email
                 </Heading>
                 <Text fontFamily="initial" pt="2" fontSize="md">
@@ -354,7 +445,11 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
             )}
             {archives.last_active_date && (
               <Box>
-                 <Heading fontFamily="monospace" size="md" textTransform="uppercase">
+                <Heading
+                  fontFamily="monospace"
+                  size="md"
+                  textTransform="uppercase"
+                >
                   Last Active Date
                 </Heading>
                 <Text fontFamily="initial" pt="2" fontSize="md">
@@ -364,7 +459,11 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
             )}
             {archives.phone_number && (
               <Box>
-                  <Heading fontFamily="monospace" size="md" textTransform="uppercase">
+                <Heading
+                  fontFamily="monospace"
+                  size="md"
+                  textTransform="uppercase"
+                >
                   Phone Number
                 </Heading>
                 <Text fontFamily="initial" pt="2" fontSize="md">
@@ -375,7 +474,11 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
 
             {archives.social_media_source && (
               <Box>
-                  <Heading fontFamily="monospace" size="md" textTransform="uppercase">
+                <Heading
+                  fontFamily="monospace"
+                  size="md"
+                  textTransform="uppercase"
+                >
                   Social Media
                 </Heading>
                 <Text fontFamily="initial" pt="2" fontSize="md">
@@ -385,7 +488,11 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
             )}
             {archives.soical_media && (
               <Box>
-                  <Heading fontFamily="monospace" size="md" textTransform="uppercase">
+                <Heading
+                  fontFamily="monospace"
+                  size="md"
+                  textTransform="uppercase"
+                >
                   Social Media Handle
                 </Heading>
                 <Text fontFamily="initial" pt="2" fontSize="md">
@@ -404,33 +511,41 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
           </Stack>
         </CardBody>
         <CardFooter>
-            {loading ? (
-              <Spinner marginStart="110px" size="md" thickness="4px"/>
-            ) : (
-              <Stack direction="column">
+          {loading ? (
+            <Spinner marginStart="110px" size="md" thickness="4px" />
+          ) : (
+            <Stack direction="column">
               {notes.map((n) => (
-              <ProgressNotes 
-              key={n.id} 
-              notes={n}
-              onDelete={deleteNote}
-              onEdit={editNote} />
-            ))}
-          </Stack>
-            )}
-        
+                <ArchiveProgressNotes
+                  key={n.id}
+                  notes={n}
+                  onDelete={handleDeleteNote}
+                  onNoteEdit={handleEditNote}
+                />
+              ))}
+            </Stack>
+          )}
         </CardFooter>
       </Card>
 
       {isDeleting && (
         <Modal isOpen={isDeleteOpen} onClose={closeDeleteModal}>
           <ModalOverlay />
-          <ModalContent  minWidth="500px">
-     
+          <ModalContent minWidth="500px">
             <ModalHeader>
-            Permanently Delete Archive: {archives.firstName} {archives.lastName}?
+              Permanently Delete Archive: {archives.firstName}{" "}
+              {archives.lastName}?
             </ModalHeader>
+            {showAlert && (
+              <ModalBody>
+                <Alert mt={showAlert ? 4 : 0} status="error">
+                  <AlertIcon />
+                  <AlertDescription>{errorMessage}</AlertDescription>
+                </Alert>
+              </ModalBody>
+            )}
             <ModalFooter>
-              <Button colorScheme="blue" mr={3} onClick={handleDelete}>
+              <Button colorScheme="blue" mr={3} onClick={deleteArchive}>
                 Confirm
               </Button>
               <Button colorScheme="red" mr={3} onClick={closeDeleteModal}>
@@ -444,13 +559,18 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
       {isEditing && (
         <Modal isOpen={isEditOpen} onClose={closeEditModal}>
           <ModalOverlay />
-          <ModalContent>
-            <ModalCloseButton />
+          <ModalContent backgroundColor="gray.500">
+          <ModalHeader color="white">
+              Edit Archive
+            </ModalHeader>
             <ModalBody>
               <ArchiveForm
                 archiveFormValue={archives}
                 onCancel={closeEditModal}
-                onEdit={handleEdit}
+                onEdit={editArchive}
+                onError={errorMessage}
+                onLoading={loading}
+                onAlert={showAlert}
               />
             </ModalBody>
           </ModalContent>
@@ -460,10 +580,10 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
         <Modal isOpen={isRestoreOpen} onClose={closeArchiveModal}>
           <ModalOverlay />
           <ModalContent>
-            <ModalCloseButton />
-            <ModalBody>
+            <ModalCloseButton/>
+            <ModalHeader>
               Restore {archives.firstName} {archives.lastName} As..?
-            </ModalBody>
+            </ModalHeader>
             <ModalFooter>
               <Button colorScheme="blue" mr={3} onClick={handleArchiveToClient}>
                 Client
@@ -478,14 +598,19 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
       {isRestoringAsLead && (
         <Modal isOpen={isRestoreLeadOpen} onClose={closeLeadForm}>
           <ModalOverlay />
-          <ModalContent>
-            <ModalCloseButton />
+          <ModalContent backgroundColor="gray.500">
+            <ModalHeader color="white">
+              Convert Archive To Active Lead
+            </ModalHeader>
             <ModalBody>
               <LeadsForm
                 onRestore={isRestoringAsLead}
                 onCancel={closeLeadForm}
                 leadsFormData={archives}
-                onArchive={handleArchiveToActiveLead}
+                onArchive={restoreAsLead}
+                onError={showAlert}
+                onLoading={loading}
+                onErrorMessage={errorMessage}
               />
             </ModalBody>
           </ModalContent>
@@ -494,14 +619,17 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
       {isRestoringAsClient && (
         <Modal isOpen={isRestoreClientOpen} onClose={closeClientForm}>
           <ModalOverlay />
-          <ModalContent>
-            <ModalCloseButton />
+          <ModalContent backgroundColor="gray.500">
+            <ModalHeader color="white">Convert Archive To Client</ModalHeader>
             <ModalBody>
               <ClientForm
                 onRestore={isRestoringAsClient}
                 clientFormValue={archives}
                 onCancel={closeClientForm}
-                onArchive={handleArchiveToActive}
+                onArchive={restoreAsClient}
+                onAlert={showAlert}
+                onLoading={loading}
+                onErrorMessage={errorMessage}
               />
             </ModalBody>
           </ModalContent>
@@ -514,8 +642,12 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit, onMakeLead }) => {
             <ModalCloseButton />
             <ModalBody>
               <ProgresNotesForm
-               onSave={createNote}
-               onCancel={closeNotesModal} />
+                onSave={createNote}
+                onCancel={closeNotesModal}
+                onLoading={loading}
+                onAlert={showAlert}
+                onErrorMessage={errorMessage}
+              />
             </ModalBody>
           </ModalContent>
         </Modal>

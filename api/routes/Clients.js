@@ -19,7 +19,7 @@ router.post("/create-client", authenticateUser, async (req, res) => {
       socialMediaSource,
       socialMedia,
     } = req.body;
-    console.log("body", req.body)
+ 
     if (!firstName || !lastName || !clientEmail) {
       return res
         .status(409)

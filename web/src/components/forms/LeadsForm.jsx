@@ -206,7 +206,7 @@ const LeadsForm = ({
       soicalMedia: socialMedia,
     };
 
-    onArchive(formData, leadsFormData.id);
+    onArchive(formData);
   };
 
   const handleCancel = () => {
