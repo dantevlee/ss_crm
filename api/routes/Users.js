@@ -348,7 +348,7 @@ router.get("/users/current", authenticateUser , async (req, res) => {
     return res.json(currentUser[0]);
   } catch (error) {
     return res.status(500).json({
-      message: "Internal Server Error. Unable To Determine Company Name.",
+      message: "Internal Server Error. Unable To Retrieve User Information.",
     });
   }
 });
