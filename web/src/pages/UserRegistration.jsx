@@ -15,7 +15,8 @@ import {
   Button,
   Link,
   FormErrorMessage,
-  useToast
+  useToast,
+  Spinner
 } from "@chakra-ui/react";
 import {
   FaLock,
@@ -35,6 +36,7 @@ const CFaExclamationCircleAlt = chakra(FaExclamationCircle);
 const UserRegistration = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [companyName, setCompanyName] = useState("")
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -42,6 +44,7 @@ const UserRegistration = () => {
   const [showAlert, setShowAlert] = useState(false);
   const [firstNameTouched, setFirstNameTouched] = useState(false);
   const [lastNameTouched, setLastNameTouched] = useState(false);
+  const [companyNameTouched, setCompanyNameTouched] = useState(false);
   const [emailTouched, setEmailTouched] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
   const [confirmPasswordTouched, setConfirmPasswordTouched] = useState(false);
@@ -49,6 +52,7 @@ const UserRegistration = () => {
 
   const firstNameInputError = firstName.trim() === "" && firstNameTouched;
   const lastNameInputError = lastName.trim() === "" && lastNameTouched;
+  const companyNameInputError = companyName.trim() === "" && companyNameTouched;
   const emailInputError =
     (email.trim() === "" || !/^\S+@\S+\.\S+$/.test(email)) && emailTouched;
   const passwordInputError = password.trim() === "" && passwordTouched;
@@ -76,6 +80,14 @@ const UserRegistration = () => {
     }
   };
 
+  const handleCompanyNameChange = (e) => {
+    setCompanyName(e.target.value);
+    if (!companyNameTouched) {
+      setCompanyNameTouched(true);
+    }
+  };
+
+
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
     if (!emailTouched) {
@@ -102,11 +114,13 @@ const UserRegistration = () => {
     if (
       !firstNameInputError &&
       !lastNameInputError &&
+      !companyNameInputError&&
       !emailInputError &&
       !passwordInputError &&
       !confirmPasswordInputError &&
       firstNameTouched &&
       lastNameTouched &&
+      companyNameTouched &&
       emailTouched &&
       passwordTouched &&
       confirmPasswordTouched
@@ -115,6 +129,7 @@ const UserRegistration = () => {
       const requestBody = {
         firstName: firstName,
         lastName: lastName,
+        companyName: companyName,
         email: email,
         password: password,
         confirmPassword: confirmPassword,
@@ -213,6 +228,24 @@ const UserRegistration = () => {
                   </InputGroup>
                   {lastNameInputError && (
                     <FormErrorMessage>Last Name is required.</FormErrorMessage>
+                  )}
+                </FormControl>
+                <FormControl isInvalid={companyNameInputError}>
+                  <InputGroup>
+                    <InputLeftElement
+                      pointerEvents="none"
+                      children={<CfaIdCardAlt color="gray.300" />}
+                    />
+                    <Input
+                      type="text"
+                      placeholder="Company Name"
+                      value={companyName}
+                      onChange={handleCompanyNameChange}
+                      onBlur={() => setCompanyNameTouched(true)}
+                    />
+                  </InputGroup>
+                  {companyNameInputError && (
+                    <FormErrorMessage>Company name is required.</FormErrorMessage>
                   )}
                 </FormControl>
                 <FormControl isInvalid={emailInputError}>

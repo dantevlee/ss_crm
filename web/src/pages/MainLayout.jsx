@@ -25,7 +25,7 @@ import {
 import { HamburgerIcon } from "@chakra-ui/icons";
 import Cookies from "js-cookie";
 import { Outlet, Route, Routes, useNavigate } from "react-router-dom";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import ClientPage from "./ClientPage";
 import ArchivePage from "./ArchivePage";
 import LeadsPage from "./LeadsPage";
@@ -44,11 +44,34 @@ import { MdLogout } from "react-icons/md";
 import SettingsPage from "./SettingsPage";
 import CalendarPage from "./CalendarPage";
 import UserFilesPage from "./UserFilesPage";
+import axios from "axios";
 
 const MainLayout = ({ setIsLoggedIn }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [currentUser, setCurrentUser] = useState([])
   const btnRef = useRef();
   const navigate = useNavigate();
+  const token = Cookies.get("SessionID");
+
+  const fetchCurrentUser = async () => {
+    try{
+      const response = await axios.get("http://localhost:3000/api/users/current", {
+        headers: {
+          Authorization: `${token}`,
+        },
+      });
+      if (response.status === 200) {
+        setCurrentUser(response.data);
+      }
+    } catch(error){
+      console.error(error)
+    }
+  }
+
+  useEffect(() => {
+    fetchCurrentUser();
+  }, []);
+
 
   const handleLogout = () => {
     Cookies.remove("SessionID");
@@ -91,7 +114,7 @@ const MainLayout = ({ setIsLoggedIn }) => {
             marginTop={5} 
             color="white"
           >
-            {"{Company Name}"}
+            {currentUser.company_name ? currentUser.company_name : ""}
           </Text>
         </Flex>
         <Flex align="center">
@@ -138,7 +161,7 @@ const MainLayout = ({ setIsLoggedIn }) => {
         <DrawerOverlay />
         <DrawerContent backgroundColor="gray.300">
           <DrawerCloseButton />
-          <DrawerHeader fontSize="x-large">{"{Company Name}"}</DrawerHeader>
+          <DrawerHeader fontSize="x-large">{currentUser.company_name ? currentUser.company_name : ""}</DrawerHeader>
           <DrawerBody overflowX="hidden">
             <Stack spacing={4}>
               <Link onClick={() => navigateToPage("/dashboard")}>
