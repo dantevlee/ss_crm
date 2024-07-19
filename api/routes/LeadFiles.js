@@ -29,7 +29,7 @@ router.post(
       const lead_id = req.query.lead_id;
 
       if (!fileType){
-        return res.status(404).json({message: "Unsupported file type. File must be in pdf, excel, or docx format"})
+        return res.status(409).json({message: "Unsupported file type. File must be in pdf, excel, or docx format"})
       }
 
 
