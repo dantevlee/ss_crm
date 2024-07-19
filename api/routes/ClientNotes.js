@@ -10,8 +10,18 @@ router.post('/create/client-note', authenticateUser, async (req, res) => {
   try{
     const {noteTitle, noteText} = req.body
     const client_id = req.query.client_id
+
+    if(!noteTitle){
+      return res.status(409).json({message: "Note title is required."})
+    }
+
+    if(!noteText){
+      return res.status(409).json({message: "Note details are required."})
+    }
+
+
     const note = await db.query(`INSERT into "Client_Notes"(client_id, text, title, version) VALUES($1, $2, $3, $4) RETURNING *`, [client_id, noteText, noteTitle, 0])
-    res.json(note[0])
+    return res.json(note[0])
   } catch(error){
     console.error(error)
     res.status(500).json({message: "Internal Server Error. Unable To Create Note For Client."})
@@ -69,11 +79,22 @@ router.put("/update/note/:noteId", authenticateUser, async (req, res) => {
     const noteId = req.params.noteId;
     const { noteTitle, noteText } = req.body;
     const currentTime = new Date()
-    const updatedNote = await db.query(
-      'UPDATE "Client_Notes" SET "title"= $1, "text" = $2, "updated_at" = $3, "version" = $4 WHERE "id" = $5 RETURNING *',
-      [noteTitle, noteText, currentTime, 1, noteId ]
-    );
-    res.json(updatedNote);
+
+    if(noteTitle.trim() === ""){
+      return res.status(409).json({message: "Note title is required."})
+    }
+
+    if(noteText.trim() === ""){
+      return res.status(409).json({message: "Note details are required."})
+    }
+    else {
+      const updatedNote = await db.query(
+        'UPDATE "Client_Notes" SET "title"= $1, "text" = $2, "updated_at" = $3, "version" = $4 WHERE "id" = $5 RETURNING *',
+        [noteTitle, noteText, currentTime, 1, noteId ]
+      );
+      return res.json(updatedNote[0]);
+    }
+   
   } catch (error) {
     console.error(error);
     res.status(500).json({

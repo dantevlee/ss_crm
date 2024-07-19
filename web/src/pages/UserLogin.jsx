@@ -46,6 +46,7 @@ const UserLogin = ({ setIsLoggedIn }) => {
 
   const emailInputError =
     (email.trim() === "" || !/^\S+@\S+\.\S+$/.test(email)) && emailTouched;
+    
   const passwordInputError = password.trim() === "" && passwordTouched;
 
   const handleEmailChange = (e) => {

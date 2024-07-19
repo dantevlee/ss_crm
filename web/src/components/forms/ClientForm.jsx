@@ -13,6 +13,11 @@ import {
   RadioGroup,
   Radio,
   Stack,
+  FormErrorMessage,
+  Spinner,
+  Alert,
+  AlertIcon,
+  AlertDescription,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
@@ -22,18 +27,28 @@ const ClientForm = ({
   onArchive,
   onCancel,
   clientFormValue,
-  onRestore
+  onRestore,
+  onLoading,
+  onAlert,
+  onErrorMessage,
 }) => {
   const [firstName, setFirstName] = useState("");
+  const [firstNameTouched, setFirstNameTouched] = useState(false);
   const [lastName, setLastName] = useState("");
+  const [lastNameTouched, setLastNameTouched] = useState(false);
   const [email, setEmail] = useState("");
+  const [emailTouched, setemailTouched] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [phoneNumberTouched, setPhoneNumberTouched] = useState(false);
   const [startDate, setStartDate] = useState("");
   const [numberOfWeeks, setNumberOfWeeks] = useState(1);
   const [endDate, setEndDate] = useState("");
-  const [contactSource, setContactSource] = useState("");
+  const [contactSource, setContactSource] = useState("None");
   const [socialMediaSource, setSocialMediaSource] = useState("");
+  const [socialMediaSourceTouched, setSocialMediaSourceTouched] =
+    useState(false);
   const [socialMedia, setSocialMedia] = useState("");
+  const [socialMediaTouched, setSocialMediaTouched] = useState(false);
   const [endDateCalcuated, setEndDateCalculated] = useState(false);
   const [isEditingEntry, setIsEditingEntry] = useState(false);
   const [archive, setArchive] = useState("N");
@@ -57,33 +72,58 @@ const ClientForm = ({
       );
       if (clientFormValue.phone_number) {
         setContactSource("Phone Number");
-      } if (clientFormValue.social_media_source) {
+      }
+      if (clientFormValue.social_media_source) {
         setContactSource("Social Media");
         setSocialMediaSource(clientFormValue.social_media_source);
         setSocialMedia(clientFormValue.social_media);
       }
-      if(onRestore){
+      if (onRestore) {
         setIsEditingEntry(false);
         setEmail(clientFormValue.email);
-        setSocialMedia(clientFormValue.soical_media)
-        setEndDateCalculated(false)
+        setSocialMedia(clientFormValue.soical_media);
+        setEndDateCalculated(false);
       } else {
         setIsEditingEntry(true);
       }
-    
     }
   }, [clientFormValue]);
 
+  const emailInputError =
+    (email.trim() === "" || !/^\S+@\S+\.\S+$/.test(email)) && emailTouched;
+
+  const firstNameInputError = firstName.trim() === "" && firstNameTouched;
+
+  const lastNameInputError = lastName.trim() === "" && lastNameTouched;
+
+  const phoneNumberInputError =
+    !/^[0-9\b()-]*$/.test(phoneNumber) ||
+    (phoneNumber.trim() === "" && phoneNumberTouched);
+
+  const socialMediaSourceInputError =
+    socialMediaSource.trim() === "" && socialMediaSourceTouched;
+
+  const socialMediaInputError = socialMedia.trim() === "" && socialMediaTouched;
+
   const handleFirstNameChange = (e) => {
     setFirstName(e.target.value);
+    if (!firstNameTouched) {
+      setFirstNameTouched(true);
+    }
   };
 
   const handleLastNameChange = (e) => {
     setLastName(e.target.value);
+    if (!lastNameTouched) {
+      setLastNameTouched(true);
+    }
   };
 
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
+    if (!emailTouched) {
+      setemailTouched(true);
+    }
   };
 
   const handleStartDateChange = (e) => {
@@ -106,24 +146,46 @@ const ClientForm = ({
 
   const handleContactSourceChange = (e) => {
     setContactSource(e);
-    if(e === "None"){
-      setSocialMedia("")
-      setPhoneNumber("")
-      setSocialMediaSource("")
+    if (e === "None") {
+      setSocialMedia("");
+      setPhoneNumber("");
+      setSocialMediaSource("");
+      setPhoneNumberTouched(false);
+      setSocialMediaTouched(false);
+    }
+    if (e === "Social Media") {
+      setPhoneNumber("");
+      setPhoneNumberTouched(false);
+      setSocialMediaTouched(true);
+    }
+
+    if (e === "Phone Number") {
+      setSocialMediaSource("");
+      setSocialMediaTouched(false);
+      setSocialMedia("");
     }
   };
 
   const handleSocialMediaSourceChange = (e) => {
     setSocialMediaSource(e);
     setSocialMedia("");
+    if (!socialMediaSourceTouched) {
+      setSocialMediaSourceTouched(true);
+    }
   };
 
   const handleSocialMediaChange = (e) => {
     setSocialMedia(e.target.value);
+    if (!socialMediaTouched) {
+      setSocialMediaTouched(true);
+    }
   };
 
   const handlePhoneNumberChange = (e) => {
     setPhoneNumber(e.target.value);
+    if (!phoneNumberTouched) {
+      setPhoneNumberTouched(true);
+    }
   };
 
   const calculateEndDate = () => {
@@ -149,17 +211,14 @@ const ClientForm = ({
       clientEmail: email,
       startDate: startDate,
       endDate: endDate,
-      phoneNumber: phoneNumber, 
+      phoneNumber: phoneNumber,
       socialMediaSource: socialMediaSource,
-      socialMedia: socialMedia
+      socialMedia: socialMedia,
     };
     if (isEditingEntry) {
-      onEdit(formData, clientFormValue.id);
-      if(archive === 'Y'){
-        handleArchiveSubmission()
-      }
+      onEdit(formData);
     } else if (onRestore) {
-      handleArchiveToClientSubmission()
+      handleArchiveToClientSubmission();
     } else {
       onSave(formData);
     }
@@ -174,10 +233,10 @@ const ClientForm = ({
       socialMediaSource: socialMediaSource,
       socialMedia: socialMedia,
       lastActiveDate: endDate,
-    }
+    };
 
-    onArchive(formData, clientFormValue.id)
-  }
+    onArchive(formData);
+  };
 
   const handleArchiveToClientSubmission = () => {
     const formData = {
@@ -186,48 +245,102 @@ const ClientForm = ({
       clientEmail: email,
       startDate: startDate,
       endDate: endDate,
-      phoneNumber: phoneNumber, 
-      socialMediaSource: socialMediaSource, 
-      socialMedia: socialMedia
-    }
+      phoneNumber: phoneNumber,
+      socialMediaSource: socialMediaSource,
+      socialMedia: socialMedia,
+    };
 
-    onArchive(formData, clientFormValue.id)
-  }
+    onArchive(formData, clientFormValue.id);
+  };
 
   const handleCancel = () => {
     onCancel();
   };
 
-
   return (
     <>
-      <FormControl>
-        <FormLabel>First Name:</FormLabel>
+      <FormControl isInvalid={firstNameInputError}>
+        <FormLabel color="white">First Name:</FormLabel>
         <Input
+          sx={{
+            _focus: {
+              borderWidth: "4px",
+              borderColor: "blue.600",
+            },
+          }}
+          borderRadius={10}
+          backgroundColor="white"
           onChange={handleFirstNameChange}
           placeholder="First Name"
           value={firstName}
         />
+        <FormErrorMessage
+          fontSize="14px"
+          fontWeight="bold"
+          backgroundColor="red.300"
+          maxWidth="225px"
+          textColor="black"
+        >
+          Please Enter First Name of Client.
+        </FormErrorMessage>
       </FormControl>
-      <FormControl mt={4}>
-        <FormLabel>Last Name:</FormLabel>
+      <FormControl isInvalid={lastNameInputError} mt={4}>
+        <FormLabel color="white">Last Name:</FormLabel>
         <Input
+          sx={{
+            _focus: {
+              borderWidth: "4px",
+              borderColor: "blue.600",
+            },
+          }}
+          borderRadius={10}
+          backgroundColor="white"
           onChange={handleLastNameChange}
           placeholder="Last Name"
           value={lastName}
         />
+        <FormErrorMessage
+          fontSize="14px"
+          fontWeight="bold"
+          backgroundColor="red.300"
+          maxWidth="225px"
+          textColor="black"
+        >
+          Please Enter Last Name of Client.
+        </FormErrorMessage>
       </FormControl>
-      <FormControl mt={4}>
-        <FormLabel>E-mail:</FormLabel>
+      <FormControl isInvalid={emailInputError} mt={4}>
+        <FormLabel color="white">E-mail:</FormLabel>
         <Input
+          sx={{
+            _focus: {
+              borderWidth: "4px",
+              borderColor: "blue.600",
+            },
+          }}
+          borderRadius={10}
+          backgroundColor="white"
           onChange={handleEmailChange}
           placeholder="E-mail"
           value={email}
         />
+        <FormErrorMessage
+          fontSize="14px"
+          fontWeight="bold"
+          backgroundColor="red.300"
+          maxWidth="225px"
+          textColor="black"
+        >
+          Please Enter a Valid E-mail.
+        </FormErrorMessage>
       </FormControl>
       <FormControl mt={4}>
-        <FormLabel>Alternate Contact Source?</FormLabel>
-        <RadioGroup onChange={handleContactSourceChange} value={contactSource}>
+        <FormLabel color="white">Alternate Contact Source?</FormLabel>
+        <RadioGroup
+          color="white"
+          onChange={handleContactSourceChange}
+          value={contactSource}
+        >
           <Stack direction="column">
             <Radio value="Social Media">Social Media</Radio>
             <Radio value="Phone Number">Phone Number</Radio>
@@ -236,9 +349,10 @@ const ClientForm = ({
         </RadioGroup>
       </FormControl>
       {contactSource === "Social Media" && (
-        <FormControl mt={4}>
-          <FormLabel>Social Media?</FormLabel>
+        <FormControl isInvalid={socialMediaSourceInputError} mt={4}>
+          <FormLabel color="white">Social Media?</FormLabel>
           <RadioGroup
+            color="white"
             onChange={handleSocialMediaSourceChange}
             value={socialMediaSource}
           >
@@ -249,61 +363,164 @@ const ClientForm = ({
               <Radio value="Tik Tok">Tik Tok</Radio>
             </Stack>
           </RadioGroup>
+          <FormErrorMessage
+            fontSize="14px"
+            fontWeight="bold"
+            backgroundColor="red.300"
+            maxWidth="250px"
+            textColor="black"
+          >
+            Please Select A Social Media Option.
+          </FormErrorMessage>
         </FormControl>
       )}{" "}
-      {socialMediaSource === "Instagram" && (
-        <FormControl mt={4}>
-          <FormLabel>IG:</FormLabel>
+      {socialMediaSource === "Instagram" &&
+        contactSource === "Social Media" && (
+          <FormControl isInvalid={socialMediaInputError} mt={4}>
+            <FormLabel color="white">IG:</FormLabel>
+            <Input
+              sx={{
+                _focus: {
+                  borderWidth: "4px",
+                  borderColor: "blue.600",
+                },
+              }}
+              borderRadius={10}
+              backgroundColor="white"
+              value={socialMedia}
+              placeholder="Instagram"
+              onChange={handleSocialMediaChange}
+            />
+            <FormErrorMessage
+              fontSize="14px"
+              fontWeight="bold"
+              backgroundColor="red.300"
+              maxWidth="160px"
+              textColor="black"
+            >
+              Please Enter IG Handle.
+            </FormErrorMessage>
+          </FormControl>
+        )}
+      {socialMediaSource === "Facebook" && contactSource === "Social Media" && (
+        <FormControl isInvalid={socialMediaInputError} mt={4}>
+          <FormLabel color="white">Facebook:</FormLabel>
           <Input
-            value={socialMedia}
-            placeholder="Instagram"
-            onChange={handleSocialMediaChange}
-          />
-        </FormControl>
-      )}
-      {socialMediaSource === "Facebook" && (
-        <FormControl mt={4}>
-          <FormLabel>Facebook:</FormLabel>
-          <Input
+            sx={{
+              _focus: {
+                borderWidth: "4px",
+                borderColor: "blue.600",
+              },
+            }}
+            borderRadius={10}
+            backgroundColor="white"
             value={socialMedia}
             placeholder="Facebook"
             onChange={handleSocialMediaChange}
           />
+          <FormErrorMessage
+            fontSize="14px"
+            fontWeight="bold"
+            backgroundColor="red.300"
+            maxWidth="200px"
+            textColor="black"
+          >
+            Please Enter Facebook Name.
+          </FormErrorMessage>
         </FormControl>
       )}
-      {socialMediaSource === "LinkedIn" && (
-        <FormControl mt={4}>
-          <FormLabel>LinkedIn:</FormLabel>
+      {socialMediaSource === "LinkedIn" && contactSource === "Social Media" && (
+        <FormControl mt={4} isInvalid={socialMediaInputError}>
+          <FormLabel color="white">LinkedIn:</FormLabel>
           <Input
+            sx={{
+              _focus: {
+                borderWidth: "4px",
+                borderColor: "blue.600",
+              },
+            }}
+            borderRadius={10}
+            backgroundColor="white"
             value={socialMedia}
             placeholder="LinkedIn"
             onChange={handleSocialMediaChange}
           />
+          <FormErrorMessage
+            fontSize="14px"
+            fontWeight="bold"
+            backgroundColor="red.300"
+            maxWidth="200px"
+            textColor="black"
+          >
+            Please Enter LinkedIn Name.
+          </FormErrorMessage>
         </FormControl>
       )}
-      {socialMediaSource === "Tik Tok" && (
-        <FormControl mt={4}>
-          <FormLabel>Tik Tok:</FormLabel>
+      {socialMediaSource === "Tik Tok" && contactSource === "Social Media" && (
+        <FormControl isInvalid={socialMediaInputError} mt={4}>
+          <FormLabel color="white">Tik Tok:</FormLabel>
           <Input
+            sx={{
+              _focus: {
+                borderWidth: "4px",
+                borderColor: "blue.600",
+              },
+            }}
+            borderRadius={10}
+            backgroundColor="white"
             value={socialMedia}
             placeholder="Tik-Tok"
             onChange={handleSocialMediaChange}
           />
+          <FormErrorMessage
+            fontSize="14px"
+            fontWeight="bold"
+            backgroundColor="red.300"
+            maxWidth="200px"
+            textColor="black"
+          >
+            Please Enter Tik-Tok Handle.
+          </FormErrorMessage>
         </FormControl>
       )}
-         {contactSource === "Phone Number" && (
-        <FormControl mt={4}>
-          <FormLabel>Phone Number</FormLabel>
+      {contactSource === "Phone Number" && (
+        <FormControl isInvalid={phoneNumberInputError} mt={4}>
+          <FormLabel color="white">Phone Number</FormLabel>
           <Input
+            sx={{
+              _focus: {
+                borderWidth: "4px",
+                borderColor: "blue.600",
+              },
+            }}
+            borderRadius={10}
+            backgroundColor="white"
             onChange={handlePhoneNumberChange}
             placeholder="Phone Number"
             value={phoneNumber}
           />
+          <FormErrorMessage
+            fontSize="14px"
+            fontWeight="bold"
+            backgroundColor="red.300"
+            maxWidth="245px"
+            textColor="black"
+          >
+            Please Enter A Valid Phone Number.
+          </FormErrorMessage>
         </FormControl>
       )}
       <FormControl mt={4}>
-        <FormLabel>Start Date</FormLabel>
+        <FormLabel color="white">Start Date</FormLabel>
         <Input
+          sx={{
+            _focus: {
+              borderWidth: "4px",
+              borderColor: "blue.600",
+            },
+          }}
+          borderRadius={10}
+          backgroundColor="white"
           onChange={handleStartDateChange}
           size="md"
           type="date"
@@ -311,11 +528,25 @@ const ClientForm = ({
         />
       </FormControl>
       <FormControl mt={4}>
-        <FormLabel>How many weeks is your program?</FormLabel>
+        <FormLabel color="white">How many weeks is your program?</FormLabel>
         <Flex justifyContent="space-between">
           <InputGroup>
-            <NumberInput defaultValue={1} min={1} max={52}>
-              <NumberInputField onChange={handlInputWeeksChange} />
+            <NumberInput
+              borderRadius={10}
+              backgroundColor="white"
+              defaultValue={1}
+              min={1}
+              max={52}
+            >
+              <NumberInputField
+                sx={{
+                  _focus: {
+                    borderWidth: "4px",
+                    borderColor: "blue.600",
+                  },
+                }}
+                onChange={handlInputWeeksChange}
+              />
               <NumberInputStepper>
                 <NumberIncrementStepper
                   onClick={() => handleStepperChange(numberOfWeeks + 1)}
@@ -328,7 +559,7 @@ const ClientForm = ({
           </InputGroup>
           <Button
             mr={8}
-            colorScheme="teal"
+            colorScheme="yellow"
             width="150px"
             onClick={calculateEndDate}
           >
@@ -337,8 +568,16 @@ const ClientForm = ({
         </Flex>
         {endDateCalcuated && (
           <FormControl mt={4}>
-            <FormLabel>End Date</FormLabel>
+            <FormLabel color="white">End Date</FormLabel>
             <Input
+              sx={{
+                _focus: {
+                  borderWidth: "4px",
+                  borderColor: "blue.600",
+                },
+              }}
+              borderRadius={10}
+              backgroundColor="white"
               onChange={handleEndDateChange}
               value={endDate}
               placeholder="Select Date"
@@ -349,8 +588,8 @@ const ClientForm = ({
         )}
         {isEditingEntry && (
           <FormControl mt={4}>
-            <FormLabel>Archive Client?</FormLabel>
-            <RadioGroup onChange={setArchive} value={archive}>
+            <FormLabel color="white">Archive Client?</FormLabel>
+            <RadioGroup color="white" onChange={setArchive} value={archive}>
               <Stack direction="column">
                 <Radio value="Y">Yes</Radio>
                 <Radio value="N">No</Radio>
@@ -359,10 +598,29 @@ const ClientForm = ({
           </FormControl>
         )}
       </FormControl>
+      {onAlert && (
+        <Alert mt={onAlert ? 4 : 0} status="error">
+          <AlertIcon />
+          <AlertDescription>{onErrorMessage}</AlertDescription>
+        </Alert>
+      )}
       <Flex mt={6} justifyContent="flex-start">
-        <Button onClick={handleFormSubmission} colorScheme="blue">
-          {isEditingEntry ? "Update" : "Save"}
-        </Button>
+        {archive === "Y" && (
+          <Button onClick={handleArchiveSubmission} colorScheme="red">
+            Archive
+          </Button>
+        )}
+        {archive === "N" && (
+          <Button onClick={handleFormSubmission} colorScheme="blue">
+            {onLoading ? (
+              <Spinner size="md" thickness="4px" />
+            ) : isEditingEntry ? (
+              "Update"
+            ) : (
+              "Save"
+            )}
+          </Button>
+        )}
         <Button onClick={handleCancel} colorScheme="gray" ml={4}>
           Cancel
         </Button>

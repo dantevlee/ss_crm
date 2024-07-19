@@ -3,7 +3,6 @@ import {
   Flex,
   Modal,
   ModalBody,
-  ModalCloseButton,
   ModalContent,
   ModalHeader,
   ModalOverlay,
@@ -22,8 +21,9 @@ import { useEffect, useState } from "react";
 const ClientPage = () => {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { isOpen, onOpen, onClose } = useDisclosure();
-
+  const[formLoading, setFormLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showAlert, setShowAlert] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const clientsPerPage = 8;
 
@@ -52,9 +52,9 @@ const ClientPage = () => {
 
   const createClient = async (formData) => {
     const token = Cookies.get("SessionID");
-
+    setFormLoading(true)
     try {
-      const response = await axios.post(
+        await axios.post(
         `http://localhost:3000/api/create-client`,
         formData,
         {
@@ -62,84 +62,53 @@ const ClientPage = () => {
             Authorization: `${token}`,
           },
         }
-      );
-      if (response.status === 200) {
-        fetchClients();
-        onClose();
-      }
+      ).then((res) => {
+        if(res.status === 200){
+          fetchClients();
+          closeAddClientModal();
+        }
+      })
     } catch (error) {
       console.error("Error saving client:", error.message);
+      setErrorMessage(error.response.data.message)
+      setShowAlert(true)
+    } finally {
+      setFormLoading(false)
     }
   };
 
-  const deleteClient = async (clientId) => {
-    try {
-      const token = Cookies.get("SessionID");
-      await axios
-        .delete(`http://localhost:3000/api/delete/client/${clientId}`, {
-          headers: {
-            Authorization: `${token}`,
-          },
-        })
-        .then((res) => {
-          if (res.status === 200) {
-            fetchClients();
-            onClose();
-          }
-        });
-    } catch (error) {
-      console.error(error);
-    }
+
+
+  const handleEditClient = (updatedClient) => {
+    setClients((prevClients) =>
+      prevClients.map((client) =>
+        client.id === updatedClient.id ? updatedClient : client
+      )
+    );
   };
 
-  const editClient = async (formData, clientId) => {
-    try {
-      const token = Cookies.get("SessionID");
-      await axios
-        .put(`http://localhost:3000/api/update/client/${clientId}`, formData, {
-          headers: {
-            Authorization: `${token}`,
-          },
-        })
-        .then((res) => {
-          if (res.status === 200) {
-            setClients(prevClients => {
-              const updatedClient = prevClients.map(client =>
-                client.id === clientId ? res.data : client
-              );
-              return updatedClient;
-            });
-            onClose();
-          }
-        });
-    } catch (error) {
-      console.error(error);
-    }
+  const handleDeleteClient = (clientId) => {
+    setClients((prevClients) => prevClients.filter((client) => client.id !== clientId));
   };
 
-  const archiveClient = async (formData, clientId) => {
-    const token = Cookies.get("SessionID");
-
-    try {
-      await axios
-        .post(
-          `http://localhost:3000/api/archive/client/${clientId}`,
-          formData,
-          {
-            headers: {
-              Authorization: `${token}`,
-            },
-          }
-        )
-        .then((res) => {
-          if (res.status === 200) {
-            fetchClients();
-          }
-        });
-    } catch (error) {
-      console.error(error);
-    }
+  const handleArchiveClient = (clientId) => {
+    setClients((prevClients) => prevClients.filter((client) => client.id !== clientId));
   };
+
+  const {
+    isOpen: isAddClientOpen,
+    onOpen: onAddClientOpen,
+    onClose: onAddClientClose,
+  } = useDisclosure();
+
+
+  const closeAddClientModal = () => {
+    if(showAlert){
+      setShowAlert(false)
+    }
+    onAddClientClose()
+  }
+
 
   const handleNextPage = () => {
     setCurrentPage((prevPage) => prevPage + 1);
@@ -165,7 +134,7 @@ const ClientPage = () => {
           colorScheme="blue"
           position="absolute"
           right="1rem"
-          onClick={onOpen}
+          onClick={onAddClientOpen}
         >
           <AddIcon mr={2} /> Add Client
         </Button>
@@ -187,9 +156,9 @@ const ClientPage = () => {
               <ClientCard
                 key={client.id}
                 client={client}
-                onDelete={deleteClient}
-                onEdit={editClient}
-                onArchive={archiveClient}
+                onEdit={handleEditClient}
+                onDelete={handleDeleteClient}
+                onArchive={handleArchiveClient}
               />
             ))}
           </SimpleGrid>
@@ -224,13 +193,12 @@ const ClientPage = () => {
           )}
         </>
       )}
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal isOpen={isAddClientOpen} onClose={closeAddClientModal}>
         <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Add New Client</ModalHeader>
-          <ModalCloseButton />
+        <ModalContent backgroundColor="gray.500">
+          <ModalHeader color='white'>Add New Client</ModalHeader>
           <ModalBody pb={6}>
-            <ClientForm onSave={createClient} onCancel={onClose} />
+            <ClientForm onSave={createClient} onCancel={closeAddClientModal} onLoading={formLoading} onAlert={showAlert} onErrorMessage={errorMessage}/>
           </ModalBody>
         </ModalContent>
       </Modal>
