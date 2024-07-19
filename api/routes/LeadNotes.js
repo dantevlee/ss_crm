@@ -4,15 +4,24 @@ const router = express.Router();
 const { dbPromise } = require("../resources/config");
 const { authenticateUser } = require("../middleware/authenticateUser");
 
-
 router.post('/create/lead-note', authenticateUser, async (req, res) => {
   const db = await dbPromise
 
   try{
     const {noteTitle, noteText} = req.body
     const lead_id = req.query.lead_id
+
+    if (!noteTitle){
+      return res.status(409).json({message: "Note title is required."})
+    }
+
+    if (!noteText){
+      return res.status(409).json({message: "Note details are required."})
+    }
+
+
     const note = await db.query(`INSERT into "Client_Notes"(lead_id, text, title, version) VALUES($1, $2, $3, $4) RETURNING *`, [lead_id, noteText, noteTitle, 0])
-    res.json(note[0])
+    return res.json(note[0])
   } catch(error){
     console.error(error)
     res.status(500).json({message: "Internal Server Error. Unable To Create Note For Lead."})

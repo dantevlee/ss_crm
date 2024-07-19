@@ -32,9 +32,9 @@ import { FaFileAlt, FaUserAlt } from "react-icons/fa";
 import ConvertToClientForm from "../forms/ConvertToClientForm";
 import Cookies from "js-cookie";
 import axios from "axios";
-import ProgressNotes from "../notes/ProgressNotes";
 import ProgressNotesForm from "../forms/ProgressNotesForm";
 import LeadFiles from "../file_uploads/LeadFiles";
+import LeadProgressNotes from "../notes/LeadProgressNotes";
 
 const LeadsCard = ({ lead, onDelete, onEdit, onArchive, onFetchLeads }) => {
   const [isDeleting, setIsDeleting] = useState(false);
@@ -52,7 +52,7 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive, onFetchLeads }) => {
 
   useEffect(() => {
     fetchNotes();
-  }, [lead.id]);
+  }, []);
 
   const editLead = async (formData) => {
     try {
@@ -144,8 +144,8 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive, onFetchLeads }) => {
   };
 
   const createNote = async (formData) => {
-    setLoading(true);
     try {
+      setLoading(true);
       await axios
         .post(
           `http://localhost:3000/api/create/lead-note?lead_id=${lead.id}`,
@@ -163,49 +163,26 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive, onFetchLeads }) => {
           }
         });
     } catch (error) {
+      setErrorMessage(error.response.data.message);
+      setShowAlert(true);
       console.error(error);
     } finally{
       setLoading(false)
     }
   };
 
-  const deleteNote = async (noteId) => {
-    try {
-      axios
-        .delete(`http://localhost:3000/api/delete/note/${noteId}`, {
-          headers: {
-            Authorization: `${token}`,
-          },
-        })
-        .then((res) => {
-          if (res.status === 200) {
-            fetchNotes();
-            onClose();
-          }
-        });
-    } catch (error) {
-      console.error(error);
-    }
+  const handleDeleteNote = (noteId) => {
+    setNotes((prevNotes) => prevNotes.filter((note) => note.id !== noteId))
+  }
+
+  const handleEditNote = (updatedNote) => {
+    setNotes((prevNotes) =>
+      prevNotes.map((note) =>
+        note.id === updatedNote.id ? updatedNote : note
+      )
+    );
   };
 
-  const editNote = async (formData, notesId) => {
-    try {
-      axios
-        .put(`http://localhost:3000/api/update/note/${notesId}`, formData, {
-          headers: {
-            Authorization: `${token}`,
-          },
-        })
-        .then((res) => {
-          if (res.status === 200) {
-            fetchNotes();
-            onClose();
-          }
-        });
-    } catch (error) {
-      console.error(error);
-    }
-  };
 
   const openDeleteModal = () => {
     onOpen();
@@ -406,11 +383,11 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive, onFetchLeads }) => {
           ) : (
             <Stack direction="column">
               {notes.map((n) => (
-                <ProgressNotes
+                <LeadProgressNotes
                   key={n.id}
                   notes={n}
-                  onDelete={deleteNote}
-                  onEdit={editNote}
+                  onDelete={handleDeleteNote}
+                  onNoteEdit={handleEditNote}
                 />
               ))}
             </Stack>
@@ -486,6 +463,9 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive, onFetchLeads }) => {
               <ProgressNotesForm
                 onCancel={closeNotesModal}
                 onSave={createNote}
+                onLoading={loading} 
+                onAlert={showAlert} 
+                onErrorMessage={errorMessage}
               />
             </ModalBody>
           </ModalContent>
