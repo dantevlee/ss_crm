@@ -36,100 +36,20 @@ const ArchivePage = () => {
     fetchArchives();
   }, []);
 
-  const restoreAsClient = async (formData, archiveId) => {
-    const token = Cookies.get("SessionID");
 
-    try {
-      await axios
-        .post(
-          `http://localhost:3000/api/archived/restore/client/${archiveId}`,
-          formData,
-          {
-            headers: {
-              Authorization: `${token}`,
-            },
-          }
-        )
-        .then((res) => {
-          if (res.status === 200) {
-            fetchArchives();
-          }
-        });
-    } catch (error) {
-      console.error(error);
-    }
+  const handleEditArchive = (updatedArchive) => {
+    setArchives((prevArchives) =>
+      prevArchives.map((archive) =>
+        archive.id === updatedArchive.id ? updatedArchive : archive
+      )
+    );
   };
 
-  const restoreAsLead = async (formData, archiveId) => {
-    const token = Cookies.get("SessionID");
+  const handleDelete = (archiveId) => {
+    setArchives((prevArchives) => prevArchives.filter((archive) => archive.id !== archiveId));
 
-    try {
-      await axios
-        .post(
-          `http://localhost:3000/api/archived/restore/lead/${archiveId}`,
-          formData,
-          {
-            headers: {
-              Authorization: `${token}`,
-            },
-          }
-        )
-        .then((res) => {
-          if (res.status === 200) {
-            fetchArchives();
-          }
-        });
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  }
 
-  const deleteArchive = async (archiveId) => {
-    try {
-      const token = Cookies.get("SessionID");
-      await axios
-        .delete(`http://localhost:3000/api/delete/archive/${archiveId}`, {
-          headers: {
-            Authorization: `${token}`,
-          },
-        })
-        .then((res) => {
-          if (res.status === 200) {
-            fetchArchives();
-          }
-        });
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const editArchive = async (formData, archiveId) => {
-    try {
-      const token = Cookies.get("SessionID");
-      await axios
-        .put(
-          `http://localhost:3000/api/update/archive/${archiveId}`,
-          formData,
-          {
-            headers: {
-              Authorization: `${token}`,
-            },
-          }
-        )
-        .then((res) => {
-          if (res.status === 200) {
-            setArchives((prevArchives) => {
-              const updatedArchive = prevArchives.map((archive) =>
-                archive.id === archiveId ? res.data : archive
-              );
-              return updatedArchive;
-            });
-          }
-        });
-    } catch (error) {
-      console.error(error);
-    }
-  };
 
   const handleNextPage = () => {
     setCurrentPage((prevPage) => prevPage + 1);
@@ -165,10 +85,9 @@ const ArchivePage = () => {
               <ArchiveCard
                 key={archive.id}
                 archives={archive}
-                onRestore={restoreAsClient}
-                onDelete={deleteArchive}
-                onMakeLead={restoreAsLead}
-                onEdit={editArchive}
+                onRestore={handleDelete}
+                onDelete={handleDelete}
+                onEdit={handleEditArchive}
               />
             ))}
           </SimpleGrid>
