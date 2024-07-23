@@ -6,6 +6,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const { authenticateUser } = require("../middleware/authenticateUser");
+const { validateImageType } = require("../middleware/ValidateImageType")
 
 router.post("/register/user", async (req, res) => {
   const db = await dbPromise;
@@ -352,5 +353,32 @@ router.get("/users/current", authenticateUser , async (req, res) => {
     });
   }
 });
+
+router.post('/upload/profile-picture', authenticateUser, validateImageType.single('profilePicture') , async(req, res) => {
+
+  const db = await dbPromise;
+
+  try{
+
+    if(!req.file){
+      return res.status(400).json({message: "Please select an image."})
+    }
+
+    const userId = req.id;
+    const { buffer, originalname, mimetype, size } = req.file;
+
+    if(!mimetype){
+      return res.status(4000).json({message: "Unsupported file type. Only JPEG, PNG, and GIF are allowed."})
+    }
+
+    const profilePicture = await db.query(`INSERT INTO "Profile_Pictures" ("user_id", "file_data", "file_name", "file_type", "file_size") VALUES($1, $2, $3, $4, $5) RETURNING *`,[userId, buffer, originalname, mimetype, size])
+    return res.json(profilePicture[0])
+  } catch(error){
+    console.error(error)
+    res.status(500).json({message: "Internal Server Error. Error uploading profile picture."})
+  }
+
+
+})
 
 module.exports = router;

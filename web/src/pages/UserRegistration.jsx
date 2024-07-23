@@ -16,7 +16,12 @@ import {
   Link,
   FormErrorMessage,
   useToast,
-  Spinner
+  Spinner,
+  useDisclosure,
+  Modal,
+  ModalContent,
+  ModalBody,
+  ModalOverlay,
 } from "@chakra-ui/react";
 import {
   FaLock,
@@ -27,6 +32,7 @@ import {
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import ProfilePictureForm from "../components/forms/ProfilePictureForm";
 
 const CFaMailAlt = chakra(FaEnvelope);
 const CFaLockAlt = chakra(FaLock);
@@ -36,11 +42,11 @@ const CFaExclamationCircleAlt = chakra(FaExclamationCircle);
 const UserRegistration = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [companyName, setCompanyName] = useState("")
+  const [companyName, setCompanyName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [errorMessage, setErrorMessage] = useState("")
+  const [errorMessage, setErrorMessage] = useState("");
   const [showAlert, setShowAlert] = useState(false);
   const [firstNameTouched, setFirstNameTouched] = useState(false);
   const [lastNameTouched, setLastNameTouched] = useState(false);
@@ -48,7 +54,8 @@ const UserRegistration = () => {
   const [emailTouched, setEmailTouched] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
   const [confirmPasswordTouched, setConfirmPasswordTouched] = useState(false);
-  const[loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [isAddingProfilePicture, setIsAddingProfilePicture] = useState(false);
 
   const firstNameInputError = firstName.trim() === "" && firstNameTouched;
   const lastNameInputError = lastName.trim() === "" && lastNameTouched;
@@ -65,6 +72,24 @@ const UserRegistration = () => {
   const handleShowClick = () => setShowPassword(!showPassword);
   const history = useNavigate();
   const toast = useToast();
+
+  const {
+    isOpen: isProfilePictureModalOpen,
+    onOpen: onProfilePictureModalOpen,
+    onClose: onProfilePictureModalClose,
+  } = useDisclosure();
+
+  const openProfilePictureModal = (e) => {
+    e.preventDefault()
+    onProfilePictureModalOpen();
+    setIsAddingProfilePicture(true);
+  };
+
+  const closeProfilePictureModal = () => {
+    onProfilePictureModalClose();
+    setIsAddingProfilePicture(false);
+  };
+
 
   const handleFirstNameChange = (e) => {
     setFirstName(e.target.value);
@@ -86,7 +111,6 @@ const UserRegistration = () => {
       setCompanyNameTouched(true);
     }
   };
-
 
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
@@ -114,7 +138,7 @@ const UserRegistration = () => {
     if (
       !firstNameInputError &&
       !lastNameInputError &&
-      !companyNameInputError&&
+      !companyNameInputError &&
       !emailInputError &&
       !passwordInputError &&
       !confirmPasswordInputError &&
@@ -125,7 +149,7 @@ const UserRegistration = () => {
       passwordTouched &&
       confirmPasswordTouched
     ) {
-      setLoading(true)
+      setLoading(true);
       const requestBody = {
         firstName: firstName,
         lastName: lastName,
@@ -135,33 +159,32 @@ const UserRegistration = () => {
         confirmPassword: confirmPassword,
       };
       try {
-        await axios.post(
-          "http://localhost:3000/api/register/user",
-          requestBody
-        ).then((res) => {
-          if(res.status === 200){
-            if(showAlert){
-              setShowAlert(false)
+        await axios
+          .post("http://localhost:3000/api/register/user", requestBody)
+          .then((res) => {
+            if (res.status === 200) {
+              if (showAlert) {
+                setShowAlert(false);
+              }
+              toast({
+                title: "Account Created!",
+                description: res.data.message,
+                status: "success",
+                duration: 5000,
+                position: "top",
+                isClosable: true,
+              });
+              history("/");
             }
-            toast({
-              title: "Account Created!",
-              description: res.data.message,
-              status: "success",
-              duration: 5000,
-              position: 'top',
-              isClosable: true,
-            });
-            history('/');
-          }
-        }).catch((error) => {
-         setErrorMessage(error.response.data.error)
-         setShowAlert(true);
-        })
-
+          })
+          .catch((error) => {
+            setErrorMessage(error.response.data.error);
+            setShowAlert(true);
+          });
       } catch (error) {
         console.error(error);
-      } finally{
-        setLoading(false)
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -179,7 +202,7 @@ const UserRegistration = () => {
         justifyContent="center"
         alignItems="center"
       >
-        <form onSubmit={createAccount}>
+        <form onSubmit={openProfilePictureModal}>
           <Stack
             flexDir="column"
             mb="4"
@@ -245,7 +268,9 @@ const UserRegistration = () => {
                     />
                   </InputGroup>
                   {companyNameInputError && (
-                    <FormErrorMessage>Company name is required.</FormErrorMessage>
+                    <FormErrorMessage>
+                      Company name is required.
+                    </FormErrorMessage>
                   )}
                 </FormControl>
                 <FormControl isInvalid={emailInputError}>
@@ -291,7 +316,7 @@ const UserRegistration = () => {
                     <FormErrorMessage>Password is required</FormErrorMessage>
                   )}
                 </FormControl>
-                <FormControl  isInvalid={confirmPasswordInputError}>
+                <FormControl isInvalid={confirmPasswordInputError}>
                   <InputGroup>
                     <InputLeftElement
                       pointerEvents="none"
@@ -308,12 +333,10 @@ const UserRegistration = () => {
                   {confirmPasswordInputError && (
                     <FormErrorMessage>Passwords do not match.</FormErrorMessage>
                   )}
-                     {showAlert && (
+                  {showAlert && (
                     <Alert mt={showAlert ? 4 : 0} status="error">
                       <AlertIcon />
-                      <AlertDescription>
-                        {errorMessage}
-                      </AlertDescription>
+                      <AlertDescription>{errorMessage}</AlertDescription>
                     </Alert>
                   )}
                 </FormControl>
@@ -323,7 +346,7 @@ const UserRegistration = () => {
                   variant="solid"
                   colorScheme="blue"
                 >
-                  { loading ? <Spinner size='md' thickness= '4px'/> : 'Create Account'}
+                  {loading ? <Spinner size="md" thickness="4px" /> : "Next"}
                 </Button>
               </Stack>
             </Box>
@@ -336,6 +359,20 @@ const UserRegistration = () => {
           </Link>
         </Box>
       </Flex>
+      {isAddingProfilePicture && (
+        <Modal
+          isOpen={isProfilePictureModalOpen}
+          onClose={onProfilePictureModalClose}
+        >
+          {" "}
+          <ModalOverlay />
+          <ModalContent backgroundColor="gray.200">
+            <ModalBody>
+              <ProfilePictureForm />
+            </ModalBody>
+          </ModalContent>
+        </Modal>
+      )}
     </div>
   );
 };

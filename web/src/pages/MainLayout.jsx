@@ -12,7 +12,6 @@ import {
   DrawerHeader,
   DrawerOverlay,
   DrawerContent,
-  DrawerCloseButton,
   Link,
   useDisclosure,
   Stack,
@@ -160,7 +159,6 @@ const MainLayout = ({ setIsLoggedIn }) => {
       >
         <DrawerOverlay />
         <DrawerContent backgroundColor="gray.300">
-          <DrawerCloseButton />
           <DrawerHeader fontSize="x-large">{currentUser.company_name ? currentUser.company_name : ""}</DrawerHeader>
           <DrawerBody overflowX="hidden">
             <Stack spacing={4}>
