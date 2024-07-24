@@ -360,6 +360,7 @@ router.post('/upload/profile-picture', authenticateUser, validateImageType.singl
 
   try{
 
+
     if(!req.file){
       return res.status(400).json({message: "Please select an image."})
     }
@@ -378,7 +379,29 @@ router.post('/upload/profile-picture', authenticateUser, validateImageType.singl
     res.status(500).json({message: "Internal Server Error. Error uploading profile picture."})
   }
 
-
 })
+
+router.get('/profile-picture', authenticateUser, async (req, res) => {
+  const db = await dbPromise;
+  const userId = req.id
+
+  try {
+
+    const result = await db.query('SELECT * FROM "Profile_Pictures" WHERE "user_id" = $1 ORDER BY "uploaded_at" DESC LIMIT 1', [userId]);
+
+    if (result.length === 0) {
+      return res.status(404).json({ message: "Profile picture not found." });
+    }
+
+    const { file_data, file_type } = result[0];
+
+    res.setHeader('Content-Type', file_type);
+
+    res.send(file_data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error. Error retrieving profile picture." });
+  }
+});
 
 module.exports = router;

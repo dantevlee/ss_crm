@@ -30,12 +30,7 @@ import ArchivePage from "./ArchivePage";
 import LeadsPage from "./LeadsPage";
 import Dashboard from "./Dashboard";
 import "../App.css";
-import {
-  FaCalendarAlt,
-  FaFolderOpen,
-  FaHome,
-  FaHouseUser,
-} from "react-icons/fa";
+import { FaCalendarAlt, FaFolderOpen, FaHouseUser } from "react-icons/fa";
 import { IoMdPerson } from "react-icons/io";
 import { BsFillPersonPlusFill } from "react-icons/bs";
 import { IoArchive, IoSettingsOutline } from "react-icons/io5";
@@ -47,30 +42,59 @@ import axios from "axios";
 
 const MainLayout = ({ setIsLoggedIn }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [currentUser, setCurrentUser] = useState([])
+  const [currentUser, setCurrentUser] = useState([]);
+  const [profilePicture, setProfilePicture] = useState(null);
   const btnRef = useRef();
   const navigate = useNavigate();
   const token = Cookies.get("SessionID");
 
   const fetchCurrentUser = async () => {
-    try{
-      const response = await axios.get("http://localhost:3000/api/users/current", {
-        headers: {
-          Authorization: `${token}`,
-        },
-      });
+    try {
+      const response = await axios.get(
+        "http://localhost:3000/api/users/current",
+        {
+          headers: {
+            Authorization: `${token}`,
+          },
+        }
+      );
       if (response.status === 200) {
         setCurrentUser(response.data);
       }
-    } catch(error){
-      console.error(error)
+    } catch (error) {
+      console.error(error);
     }
+  };
+
+  const fetchProfilePicture = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:3000/api/profile-picture`,
+        {
+          headers: {
+            Authorization: `${token}`,
+          },
+          responseType: "blob",
+        }
+      );
+      if (response.status === 200) {
+        const blob = await response.data;
+        setProfilePicture(URL.createObjectURL(blob));
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const changeProfilePicture = async (updatedPhoto) => {
+    setProfilePicture(updatedPhoto);
+    await fetchProfilePicture()
   }
 
   useEffect(() => {
     fetchCurrentUser();
+    fetchProfilePicture();
   }, []);
-
 
   const handleLogout = () => {
     Cookies.remove("SessionID");
@@ -108,9 +132,10 @@ const MainLayout = ({ setIsLoggedIn }) => {
             as="a"
             href="/dashboard"
             cursor="pointer"
-            _hover={{ textDecoration: "none"}}
-            fontSize='x-large' marginStart='35px' 
-            marginTop={5} 
+            _hover={{ textDecoration: "none" }}
+            fontSize="x-large"
+            marginStart="35px"
+            marginTop={5}
             color="white"
           >
             {currentUser.company_name ? currentUser.company_name : ""}
@@ -126,7 +151,7 @@ const MainLayout = ({ setIsLoggedIn }) => {
               position="absolute"
               right="1rem"
             >
-              <Avatar size="lg" bg="blue.500" />
+              <Avatar src={profilePicture} size="lg" bg="blue.500" />
             </MenuButton>
             <MenuList>
               <MenuGroup>
@@ -159,7 +184,18 @@ const MainLayout = ({ setIsLoggedIn }) => {
       >
         <DrawerOverlay />
         <DrawerContent backgroundColor="gray.300">
-          <DrawerHeader fontSize="x-large">{currentUser.company_name ? currentUser.company_name : ""}</DrawerHeader>
+          {profilePicture && (
+            <Stack 
+            flexDir="row"
+            marginTop="15px"
+            justifyContent="center"
+            alignItems="center" >
+              <Avatar src={profilePicture} boxSize="175px"  />
+            </Stack>
+          )}
+          <DrawerHeader fontSize="x-large">
+            {currentUser.company_name ? currentUser.company_name : ""}
+          </DrawerHeader>
           <DrawerBody overflowX="hidden">
             <Stack spacing={4}>
               <Link onClick={() => navigateToPage("/dashboard")}>
@@ -214,7 +250,7 @@ const MainLayout = ({ setIsLoggedIn }) => {
         <Route path="/clients" element={<ClientPage />} />
         <Route path="/archives" element={<ArchivePage />} />
         <Route path="/leads" element={<LeadsPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/settings" element={<SettingsPage onProfileImg={profilePicture} onImgChange={changeProfilePicture} />} />
         <Route path="/calendar" element={<CalendarPage />} />
         <Route path="/user-files" element={<UserFilesPage />} />
       </Routes>
