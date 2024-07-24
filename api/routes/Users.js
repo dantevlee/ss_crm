@@ -4,14 +4,21 @@ const router = express.Router();
 const { dbPromise, transporter } = require("../resources/config");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const crypto = require('crypto');
+const crypto = require("crypto");
 const { authenticateUser } = require("../middleware/authenticateUser");
+const { validateImageType } = require("../middleware/ValidateImageType")
 
 router.post("/register/user", async (req, res) => {
   const db = await dbPromise;
   try {
-    const { firstName, lastName, email, password, confirmPassword } =
-      req.body;
+    const {
+      firstName,
+      lastName,
+      email,
+      companyName,
+      password,
+      confirmPassword,
+    } = req.body;
     const userExists = await db.query(
       `SELECT * FROM "Users" WHERE "Users"."email" = $1`,
       [email]
@@ -24,20 +31,27 @@ router.post("/register/user", async (req, res) => {
     } else {
       const salt = await bcrypt.genSalt();
       if (password === confirmPassword) {
-        try{
+        try {
           const hashedPassword = await bcrypt.hash(password, salt);
-          const confirmationToken = crypto.randomBytes(20).toString('hex');
+          const confirmationToken = crypto.randomBytes(20).toString("hex");
           await db.query(
-            `INSERT INTO "Users"("firstName", "lastName", "email", "password", "confirmation_token") VALUES($1, $2, $3, $4, $5) RETURNING *`,
-            [firstName, lastName, email, hashedPassword, confirmationToken]
+            `INSERT INTO "Users"("firstName", "lastName", "email", "company_name","password", "confirmation_token") VALUES($1, $2, $3, $4, $5, $6) RETURNING *`,
+            [
+              firstName,
+              lastName,
+              email,
+              companyName,
+              hashedPassword,
+              confirmationToken,
+            ]
           );
-          
+
           const confirmationUrl = `http://localhost:3000/api/confirm-email?token=${confirmationToken}`;
           const mailContent = {
             from: process.env.ADMIN_EMAIL,
             to: email,
             subject: `Confirm Your Account`,
-            text:  `Welcome to our platform! Please confirm your email address by clicking the following link: 
+            text: `Welcome to our platform! Please confirm your email address by clicking the following link: 
            ${confirmationUrl}`,
           };
 
@@ -46,18 +60,21 @@ router.post("/register/user", async (req, res) => {
               console.error(error);
               return res
                 .status(500)
-                .json({ error: `Could not send confirmation email. Please try again later.` });
+                .json({
+                  error: `Could not send confirmation email. Please try again later.`,
+                });
             } else {
-              res.json({ message: `Confirmation email sent! Please check your email to activate your account.` });
+              res.json({
+                message: `Confirmation email sent! Please check your email to activate your account.`,
+              });
             }
           });
         } catch (error) {
-          console.error("An error occurred with creating your account.", error)
+          console.error("An error occurred with creating your account.", error);
         }
       } else {
         return res.status(400).json({
-          message:
-            "Passwords don't match. Please try another password.",
+          message: "Passwords don't match. Please try another password.",
         });
       }
     }
@@ -85,16 +102,19 @@ router.get("/confirm-email", async (req, res) => {
 
     await db.query(
       `UPDATE "Users" SET "confirmed_user" = $1 WHERE "confirmation_token" = $2`,
-      ['Y', token]
+      ["Y", token]
     );
-    const loginUrl = `http://localhost:5173/`
-    return res.send(`Email confirmed! Log into your account by clicking <a href="${loginUrl}">Here</a>!`);
+    const loginUrl = `http://localhost:5173/`;
+    return res.send(
+      `Email confirmed! Log into your account by clicking <a href="${loginUrl}">Here</a>!`
+    );
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: "Could not confirm email. Please try again later." });
+    return res
+      .status(500)
+      .json({ message: "Could not confirm email. Please try again later." });
   }
 });
-
 
 router.post("/login", async (req, res) => {
   const db = await dbPromise;
@@ -112,7 +132,7 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    if (user[0].confirmed_user !== 'Y') {
+    if (user[0].confirmed_user !== "Y") {
       return res.status(401).json({
         status: "failed",
         userData: [],
@@ -129,13 +149,12 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({
         status: "failed",
         userData: [],
-        message:
-          "Invalid email or password. Please try again.",
+        message: "Invalid email or password. Please try again.",
       });
 
     const loggedInUserPayload = {
       id: user[0].id,
-      email: user[0].email
+      email: user[0].email,
     };
 
     const token = jwt.sign(
@@ -148,7 +167,7 @@ router.post("/login", async (req, res) => {
       id: user[0].id,
       email: user[0].email,
       message: "Login Successful!",
-      token: token
+      token: token,
     });
   } catch (error) {
     console.error(error);
@@ -233,9 +252,11 @@ router.post("/password/reset", async (req, res) => {
   const db = await dbPromise;
 
   try {
+    const findEmail = await db.query(
+      `SELECT email from "Reset_Tokens" WHERE "token" = $1`,
+      [token]
+    );
 
-    const findEmail = await db.query(`SELECT email from "Reset_Tokens" WHERE "token" = $1`, [token])
-   
     if (findEmail.length === 0) {
       return res.status(401).json({
         status: "failed",
@@ -243,7 +264,7 @@ router.post("/password/reset", async (req, res) => {
       });
     }
 
-    const email = findEmail[0].email
+    const email = findEmail[0].email;
 
     const validToken = await db.query(
       `SELECT * FROM "Reset_Tokens" WHERE "email" = $1 AND "token" = $2`,
@@ -252,7 +273,8 @@ router.post("/password/reset", async (req, res) => {
 
     if (validToken.length === 0) {
       return res.status(401).json({
-        message: "Could not locate password reset request. Please request a new one.",
+        message:
+          "Could not locate password reset request. Please request a new one.",
       });
     }
 
@@ -263,43 +285,166 @@ router.post("/password/reset", async (req, res) => {
         });
       }
 
-      try{
+      try {
         const salt = await bcrypt.genSalt();
         const hashedPassword = await bcrypt.hash(newPassword, salt);
-  
-        const currentPassword = await db.query(`SELECT "password" FROM "Users" WHERE "email" = $1`, [email]);
-        const isSamePassword = await bcrypt.compare(newPassword, currentPassword[0].password);
-  
+
+        const currentPassword = await db.query(
+          `SELECT "password" FROM "Users" WHERE "email" = $1`,
+          [email]
+        );
+        const isSamePassword = await bcrypt.compare(
+          newPassword,
+          currentPassword[0].password
+        );
+
         if (isSamePassword) {
-          return res.status(400).json({ message: "New password cannot be the same as old password." });
-        }
-  
-        if (newPassword === confirmPassword) {
-          await db.query(`UPDATE "Users" SET "password" = $1 WHERE "email" = $2`, [hashedPassword, email]);
-          await db.query(`DELETE FROM "Reset_Tokens" WHERE "email" = $1 AND "token" = $2`, [email, token]);
-          return res.status(204).json({ message: "Password reset successful!" });
-        } else {
-          return res.status(400).json({ message: "Passwords must match. Please try again." });
+          return res
+            .status(400)
+            .json({
+              message: "New password cannot be the same as old password.",
+            });
         }
 
-      } catch(error){
-        console.error(`An error occurred with updating the new password for email: ${email}`,error)
+        if (newPassword === confirmPassword) {
+          await db.query(
+            `UPDATE "Users" SET "password" = $1 WHERE "email" = $2`,
+            [hashedPassword, email]
+          );
+          await db.query(
+            `DELETE FROM "Reset_Tokens" WHERE "email" = $1 AND "token" = $2`,
+            [email, token]
+          );
+          return res
+            .status(204)
+            .json({ message: "Password reset successful!" });
+        } else {
+          return res
+            .status(400)
+            .json({ message: "Passwords must match. Please try again." });
+        }
+      } catch (error) {
+        console.error(
+          `An error occurred with updating the new password for email: ${email}`,
+          error
+        );
       }
-     
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Could not reset password. Please try again later." });
+    res
+      .status(500)
+      .json({ message: "Could not reset password. Please try again later." });
   }
 });
 
-router.get('/users/company-name', authenticateUser, async(req, res) => {
+router.get("/users/current", authenticateUser , async (req, res) => {
   const db = await dbPromise;
+  try {
+    const userId = req.id;
+    const currentUser = await db.query(
+      'SELECT * FROM "Users" WHERE "id"= $1',
+      [userId]
+    );
+    return res.json(currentUser[0]);
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error. Unable To Retrieve User Information.",
+    });
+  }
+});
+
+router.post('/upload/profile-picture', authenticateUser, validateImageType.single('profilePicture') , async(req, res) => {
+
+  const db = await dbPromise;
+
   try{
-    //TODO
+
+
+    if(!req.file){
+      return res.status(400).json({message: "Please select an image."})
+    }
+
+    const userId = req.id;
+    const { buffer, originalname, mimetype, size } = req.file;
+
+    if(!mimetype){
+      return res.status(400).json({message: "Unsupported file type. Only JPEG, PNG, and GIF are allowed."})
+    }
+
+    const profilePicture = await db.query(`INSERT INTO "Profile_Pictures" ("user_id", "file_data", "file_name", "file_type", "file_size") VALUES($1, $2, $3, $4, $5) RETURNING *`,[userId, buffer, originalname, mimetype, size])
+    return res.json(profilePicture[0])
   } catch(error){
     console.error(error)
+    res.status(500).json({message: "Internal Server Error. Error uploading profile picture."})
   }
+
 })
+
+router.get('/profile-picture', authenticateUser, async (req, res) => {
+  const db = await dbPromise;
+  const userId = req.id
+
+  try {
+
+    const result = await db.query('SELECT * FROM "Profile_Pictures" WHERE "user_id" = $1 ORDER BY "uploaded_at" DESC LIMIT 1', [userId]);
+
+    if (result.length === 0) {
+      return res.status(404).json({ message: "Profile picture not found." });
+    }
+
+    const { file_data, file_type } = result[0];
+
+    res.setHeader('Content-Type', file_type);
+
+    res.send(file_data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error. Error retrieving profile picture." });
+  }
+});
+
+router.put('/edit/user', authenticateUser, async (req, res) => {
+  const db = await dbPromise;
+  try {
+
+    const user_id = req.id
+
+    const {
+      firstName,
+      lastName,
+      companyName,
+    } = req.body;
+
+    if (
+      !firstName ||
+      !lastName ||
+      !companyName
+    ) {
+      return res
+        .status(400)
+        .json({
+          message:
+            "Please ensure first, last name and company name are entered.",
+        });
+    }
+
+    const updatedUser = await db.query(
+      'UPDATE "Users" SET "firstName" = $1, "lastName" = $2, "company_name" = $3 WHERE "id" = $4 RETURNING*',
+      [
+        firstName,
+        lastName,
+        companyName,
+        user_id,
+      ]
+    );
+
+    return res.json({user: updatedUser[0], message: "Changes successfully saved!"});
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: error.message });
+  }
+});
 
 module.exports = router;
