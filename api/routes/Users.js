@@ -369,7 +369,7 @@ router.post('/upload/profile-picture', authenticateUser, validateImageType.singl
     const { buffer, originalname, mimetype, size } = req.file;
 
     if(!mimetype){
-      return res.status(4000).json({message: "Unsupported file type. Only JPEG, PNG, and GIF are allowed."})
+      return res.status(400).json({message: "Unsupported file type. Only JPEG, PNG, and GIF are allowed."})
     }
 
     const profilePicture = await db.query(`INSERT INTO "Profile_Pictures" ("user_id", "file_data", "file_name", "file_type", "file_size") VALUES($1, $2, $3, $4, $5) RETURNING *`,[userId, buffer, originalname, mimetype, size])
