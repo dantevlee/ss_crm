@@ -12,30 +12,30 @@ import {
   InputLeftElement,
   Button,
   FormErrorMessage,
-  chakra, 
+  chakra,
   Icon,
-  Link, 
+  Link,
   useToast,
-  Spinner
+  Spinner,
 } from "@chakra-ui/react";
 import { FaEnvelope, FaLock } from "react-icons/fa";
-import { useState } from 'react'
-import axios from 'axios'
+import { useState } from "react";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const CFaMailAlt = chakra(FaEnvelope);
 
-const PasswordResetRequestForm = () => {
+const PasswordResetRequestForm = ({ isLoggedIn }) => {
   const [email, setemail] = useState("");
-  const [errorMessage, setErrorMessage] = useState("")
+  const [errorMessage, setErrorMessage] = useState("");
   const [showAlert, setShowAlert] = useState(false);
   const [emailTouched, setemailTouched] = useState(false);
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
   const history = useNavigate();
   const toast = useToast();
 
   const emailInputError =
-  (email.trim() === "" || !/^\S+@\S+\.\S+$/.test(email)) && emailTouched;
+    (email.trim() === "" || !/^\S+@\S+\.\S+$/.test(email)) && emailTouched;
 
   const handleEmailChange = (e) => {
     setemail(e.target.value);
@@ -45,41 +45,47 @@ const PasswordResetRequestForm = () => {
   };
 
   const handlePasswordResetRequest = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
     const requestBody = {
-      email: email
-    }
+      email: email,
+    };
 
-    if(!emailInputError && emailTouched){
+    if (!emailInputError && emailTouched) {
       try {
-        setLoading(true)
-        await axios.post(`http://localhost:3000/api/reset/request`, requestBody).then((res) => {
-          if(res.status === 200){
-            if(showAlert){
-              setShowAlert(false)
+        setLoading(true);
+        await axios
+          .post(`http://localhost:3000/api/reset/request`, requestBody)
+          .then((res) => {
+            if (res.status === 200) {
+              if (showAlert) {
+                setShowAlert(false);
+              }
+              toast({
+                title: "Password Reset Request Submitted!",
+                description: res.data.message,
+                status: "success",
+                duration: 5000,
+                position: "top",
+                isClosable: true,
+              });
+              if (!isLoggedIn) {
+                history("/");
+              } else {
+                history("/dashboard");
+              }
             }
-            toast({
-              title: "Password Reset Request Submitted!",
-              description: res.data.message,
-              status: "success",
-              duration: 5000,
-              position: 'top',
-              isClosable: true,
-            });
-            history('/')
-          }
-        }).catch((error) => {
-          setErrorMessage(error.response.data.error)
-          setShowAlert(true);
-        })
-      } catch(error){
-        console.error(error)
-      } finally{
-        setLoading(false)
+          })
+          .catch((error) => {
+            setErrorMessage(error.response.data.error);
+            setShowAlert(true);
+          });
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
       }
     }
-  
-  }
+  };
 
   return (
     <>
@@ -116,15 +122,18 @@ const PasswordResetRequestForm = () => {
                       pointerEvents="none"
                       children={<CFaMailAlt color="gray.300" />}
                     />
-                    <Input type="text" placeholder="E-mail" onChange={handleEmailChange} onBlur={() => setemailTouched(true)} />
+                    <Input
+                      type="text"
+                      placeholder="E-mail"
+                      onChange={handleEmailChange}
+                      onBlur={() => setemailTouched(true)}
+                    />
                   </InputGroup>
                   <FormErrorMessage>Enter a valid email.</FormErrorMessage>
                   {showAlert && (
                     <Alert mt={showAlert ? 4 : 0} status="error">
                       <AlertIcon />
-                      <AlertDescription>
-                        {errorMessage}
-                      </AlertDescription>
+                      <AlertDescription>{errorMessage}</AlertDescription>
                     </Alert>
                   )}
                 </FormControl>
@@ -135,18 +144,31 @@ const PasswordResetRequestForm = () => {
                   colorScheme="blue"
                   width="full"
                 >
-                  { loading ? <Spinner size="md" thickness="4px"/> : 'Request Password Reset'}
+                  {loading ? (
+                    <Spinner size="md" thickness="4px" />
+                  ) : (
+                    "Request Password Reset"
+                  )}
                 </Button>
               </Stack>
             </Box>
           </Stack>
         </form>
-        <Box>
-          Ready to login?{" "}
-          <Link color="blue.500" href="/">
-           Login
-          </Link>
-        </Box>
+        {isLoggedIn ? (
+          <Box>
+            Return to Dashboard?{" "}
+            <Link color="blue.500" href="/dashboard">
+              Go Back
+            </Link>
+          </Box>
+        ) : (
+          <Box>
+            Ready to login?{" "}
+            <Link color="blue.500" href="/">
+              Login
+            </Link>
+          </Box>
+        )}
       </Flex>
     </>
   );

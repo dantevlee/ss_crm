@@ -20,6 +20,7 @@ import {
   Box,
   Avatar,
   Divider,
+  useToast,
 } from "@chakra-ui/react";
 import { HamburgerIcon } from "@chakra-ui/icons";
 import Cookies from "js-cookie";
@@ -44,9 +45,11 @@ const MainLayout = ({ setIsLoggedIn }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [currentUser, setCurrentUser] = useState([]);
   const [profilePicture, setProfilePicture] = useState(null);
+  const [showProfilePictureAlert, setShowProfilePictureAlert] = useState(true)
   const btnRef = useRef();
   const navigate = useNavigate();
   const token = Cookies.get("SessionID");
+  const toast = useToast();
 
   const fetchCurrentUser = async () => {
     try {
@@ -88,12 +91,38 @@ const MainLayout = ({ setIsLoggedIn }) => {
 
   const changeProfilePicture = async (updatedPhoto) => {
     setProfilePicture(updatedPhoto);
-    await fetchProfilePicture()
-  }
+    await fetchProfilePicture();
+  };
+
+  const changeUserDetails = async (updatedUser) => {
+    setCurrentUser(updatedUser);
+  };
+
+  const profilePictureAlert = () => {
+    const alertShown = localStorage.getItem("profilePictureAlertShown");
+
+    if (!alertShown) {
+      toast({
+        title: "Add A Profile Picture",
+        description: "Your account is missing a profile picture. Visit the settings page by clicking the avatar on the right hand corner!",
+        duration: 10000,
+        status: "warning",
+        position: "top",
+        isClosable: true,
+        onCloseComplete: () => {
+          localStorage.setItem("profilePictureAlertShown", "true");
+        },
+      });
+    }
+
+  };
 
   useEffect(() => {
     fetchCurrentUser();
     fetchProfilePicture();
+    if(!profilePicture){
+      profilePictureAlert()
+    }
   }, []);
 
   const handleLogout = () => {
@@ -143,23 +172,45 @@ const MainLayout = ({ setIsLoggedIn }) => {
         </Flex>
         <Flex align="center">
           <Menu>
-            <MenuButton
-              _hover={{ backgroundColor: "gray.300", shadow: "lg" }}
-              backgroundColor="blue.500"
-              marginTop="-40px"
-              as={Button}
-              position="absolute"
-              right="1rem"
-            >
-              <Avatar src={profilePicture} size="lg" bg="blue.500" />
-            </MenuButton>
+          {!profilePicture && (
+                 <MenuButton
+                 _hover={{ backgroundColor: "gray.300", shadow: "lg" }}
+                 backgroundColor="white"
+                 marginTop="-40px"
+                 as={Button}
+                 position="absolute"
+                 right="1rem"
+               >
+                 <Avatar src={profilePicture} size="lg"  bg="blue.500" />
+                 </MenuButton>
+            )}
+            {profilePicture && (
+                 <MenuButton
+                 _hover={{ backgroundColor: "gray.300", shadow: "lg" }}
+                 backgroundColor="transparent"
+                 marginTop="-40px"
+                 as={Button}
+                 position="absolute"
+                 right="1rem"
+               >
+                 <Avatar src={profilePicture} size="lg"  bg="blue.500" />
+                 </MenuButton>
+            )}
+         
+             
             <MenuList>
               <MenuGroup>
+                <Flex justifyContent="center" alignItems="center">
+                  <Avatar src={profilePicture} size="2xl" bg="blue.500" />
+                </Flex>
+                <Flex justifyContent="center" alignItems="center">
+                  <Text fontSize="35px">Hi, {currentUser.firstName}!</Text>
+                </Flex>
                 <MenuItem
                   color="black"
                   onClick={() => navigateToPage("/settings")}
                 >
-                  <Flex align="center">
+                  <Flex mt={4} align="center">
                     <Icon boxSize={5} as={IoSettingsOutline} marginRight={2} />
                     <Text fontWeight="bold">Settings</Text>
                   </Flex>
@@ -185,12 +236,13 @@ const MainLayout = ({ setIsLoggedIn }) => {
         <DrawerOverlay />
         <DrawerContent backgroundColor="gray.300">
           {profilePicture && (
-            <Stack 
-            flexDir="row"
-            marginTop="15px"
-            justifyContent="center"
-            alignItems="center" >
-              <Avatar src={profilePicture} boxSize="175px"  />
+            <Stack
+              flexDir="row"
+              marginTop="15px"
+              justifyContent="center"
+              alignItems="center"
+            >
+              <Avatar src={profilePicture} boxSize="175px" />
             </Stack>
           )}
           <DrawerHeader fontSize="x-large">
@@ -250,7 +302,17 @@ const MainLayout = ({ setIsLoggedIn }) => {
         <Route path="/clients" element={<ClientPage />} />
         <Route path="/archives" element={<ArchivePage />} />
         <Route path="/leads" element={<LeadsPage />} />
-        <Route path="/settings" element={<SettingsPage onProfileImg={profilePicture} onImgChange={changeProfilePicture} />} />
+        <Route
+          path="/settings"
+          element={
+            <SettingsPage
+              onProfileImg={profilePicture}
+              onImgChange={changeProfilePicture}
+              onUserDetails={currentUser}
+              onUserEdit={changeUserDetails}
+            />
+          }
+        />
         <Route path="/calendar" element={<CalendarPage />} />
         <Route path="/user-files" element={<UserFilesPage />} />
       </Routes>

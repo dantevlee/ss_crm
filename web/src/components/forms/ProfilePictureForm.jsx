@@ -15,16 +15,17 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState, useRef } from "react";
 import { BsCamera } from "react-icons/bs";
-import { IoCameraOutline } from "react-icons/io5";
+
 
 const ProfilePictureForm = ({ onUpload, onLoading, onProfileImg, onErrorMessage }) => {
   const [selectedImage, setSelectedImage] = useState(null);
+  const [profilePicture, setProfilePicture] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (onProfileImg) {
-      setSelectedImage(onProfileImg);
+      setProfilePicture(onProfileImg);
     }
   }, [onProfileImg]);
 
@@ -33,6 +34,7 @@ const ProfilePictureForm = ({ onUpload, onLoading, onProfileImg, onErrorMessage 
     if (file) {
       setSelectedImage(URL.createObjectURL(file));
       setImageFile(file);
+      setProfilePicture(null)
     }
   };
 
@@ -41,7 +43,8 @@ const ProfilePictureForm = ({ onUpload, onLoading, onProfileImg, onErrorMessage 
     const formData = new FormData();
     formData.append("profilePicture", imageFile);
     onUpload(formData)
-    
+    setImageFile(null)
+    setSelectedImage(null)
   };
 
   const handleAvatarClick = () => {
@@ -52,7 +55,6 @@ const ProfilePictureForm = ({ onUpload, onLoading, onProfileImg, onErrorMessage 
     <>
       <Flex
         flexDirection="column"
-        position="fixed"
         top="0"
         left="0"
         right="0"
@@ -68,8 +70,8 @@ const ProfilePictureForm = ({ onUpload, onLoading, onProfileImg, onErrorMessage 
           padding="4"
           backgroundColor="white"
           boxShadow="md"
-          height="400px"
-          width="35%"
+          maxHeight="400px"
+          width="25%"
           margin="auto"
           marginTop="100px"
         >
@@ -93,11 +95,27 @@ const ProfilePictureForm = ({ onUpload, onLoading, onProfileImg, onErrorMessage 
                 borderRadius="full"
                 onClick={handleAvatarClick}
               >
-                <Avatar
-                  size="full"
-                  src={selectedImage}
-                  bg={selectedImage ? "transparent" : "blue.500"}
-                />
+                {profilePicture && (
+                   <Avatar
+                   size="full"
+                   src={profilePicture}
+                   bg={profilePicture  ? "transparent" : "blue.500"}
+                 />
+                )}
+              {selectedImage && (
+                   <Avatar
+                   size="full"
+                   src={selectedImage}
+                   bg={selectedImage  ? "transparent" : "blue.500"}
+                 />
+                )}
+                {!selectedImage && !profilePicture && (
+                    <Avatar
+                    size="full"
+                    bg="blue.500"
+                  />
+                )}
+              
                 <Box
                   position="absolute"
                   top="50%"
@@ -119,9 +137,10 @@ const ProfilePictureForm = ({ onUpload, onLoading, onProfileImg, onErrorMessage 
             alignItems="center"
           >
             <Text fontSize="x-large" fontFamily="monospace">
-              {selectedImage ? "Change Business Logo" : "Add Business Logo"}
+              {selectedImage || profilePicture ? "Change Business Logo" : "Add Business Logo"}
             </Text>
             <Button
+              mt={4}
               onClick={handleSubmit}
               borderRadius={0}
               type="submit"
@@ -130,21 +149,12 @@ const ProfilePictureForm = ({ onUpload, onLoading, onProfileImg, onErrorMessage 
             >
               {onLoading ? <Spinner size="md" thickness="4px" /> : "Upload"}
             </Button>
-            <Button
-              marginTop="50px"
-              borderRadius={0}
-              type="submit"
-              variant="solid"
-              colorScheme="blue"
-            >
               {onErrorMessage && (
                 <Alert mt={onErrorMessage ? 4 : 0} status="error">
                   <AlertIcon />
                   <AlertDescription>{onErrorMessage}</AlertDescription>
                 </Alert>
               )}
-              Edit Account
-            </Button>
           </Stack>
         </Box>
       </Flex>

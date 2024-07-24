@@ -404,4 +404,47 @@ router.get('/profile-picture', authenticateUser, async (req, res) => {
   }
 });
 
+router.put('/edit/user', authenticateUser, async (req, res) => {
+  const db = await dbPromise;
+  try {
+
+    const user_id = req.id
+
+    const {
+      firstName,
+      lastName,
+      companyName,
+    } = req.body;
+
+    if (
+      !firstName ||
+      !lastName ||
+      !companyName
+    ) {
+      return res
+        .status(400)
+        .json({
+          message:
+            "Please ensure first, last name and company name are entered.",
+        });
+    }
+
+    const updatedUser = await db.query(
+      'UPDATE "Users" SET "firstName" = $1, "lastName" = $2, "company_name" = $3 WHERE "id" = $4 RETURNING*',
+      [
+        firstName,
+        lastName,
+        companyName,
+        user_id,
+      ]
+    );
+
+    return res.json({user: updatedUser[0], message: "Changes successfully saved!"});
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: error.message });
+  }
+});
+
 module.exports = router;
