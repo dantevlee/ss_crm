@@ -29,7 +29,7 @@ router.post(
       const client_id = req.query.client_id;
 
       if (!fileType){
-        return res.status(4000).json({message: "Unsupported file type. File must be in pdf, excel, or docx format"})
+        return res.status(400).json({message: "Unsupported file type. File must be in pdf, excel, or docx format"})
       }
 
       const fileNameExists = await db.query(
