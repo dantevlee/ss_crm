@@ -1,4 +1,4 @@
-import {Box, Button, Flex, FormControl, FormErrorMessage, Heading, Input, InputGroup, InputLeftElement, InputRightElement, Stack, chakra} from '@chakra-ui/react'
+import {Alert, AlertDescription, AlertIcon, Box, Button, Flex, FormControl, FormErrorMessage, Heading, Input, InputGroup, InputLeftElement, InputRightElement, Spinner, Stack, chakra} from '@chakra-ui/react'
 import {FaLock, FaExclamationCircle} from 'react-icons/fa'
 import { useState, useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
@@ -14,6 +14,8 @@ const ResetRequestForm = () => {
   const [passwordTouched, setPasswordTouched] = useState(false);
   const [confirmPasswordTouched, setConfirmPasswordTouched] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const[loading, setLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
   const [redirectTo, setRedirectTo] = useState(null);
 
   const passwordInputError = password.trim() === "" && passwordTouched;
@@ -50,17 +52,25 @@ const ResetRequestForm = () => {
   const changePassword = async (e) => {
     e.preventDefault()
     if(passwordTouched && confirmPasswordTouched && !passwordInputError && !confirmPasswordInputError){
+      setLoading(true)
       const requestBody ={
         newPassword: password,
         confirmPassword: confirmPassword, 
       }
       const params = new URLSearchParams(location.search)
       const token = params.get('token')
-      const passwordChangeResponse = await axios.post(`http://localhost:3000/api/password/reset?token=${token}`, requestBody)
+      try {
+        const passwordChangeResponse = await axios.post(`http://localhost:3000/api/password/reset?token=${token}`, requestBody)
   
       if(passwordChangeResponse.status === 204){
         history('/')
       }
+      } catch(error){
+        setErrorMessage(error.response.data.message)
+      } finally{
+        setLoading(false)
+      }
+      
     }
   }
 
@@ -132,13 +142,19 @@ const ResetRequestForm = () => {
                     </InputGroup>
                     <FormErrorMessage>Passwords Don't Match.</FormErrorMessage>
                   </FormControl>
+                  {errorMessage && (
+                      <Alert mt={errorMessage ? 4 : 0} status="error">
+                        <AlertIcon />
+                        <AlertDescription>{errorMessage}</AlertDescription>
+                      </Alert>
+                    )}
                   <Button
                    borderRadius={0}
                    type="submit"
                    variant="solid"
                    colorScheme="blue"
                   >
-                    Change Password
+                    {loading ? <Spinner size="md" thickness="4px" />: "Change Password"}
                   </Button>
                 </Stack>
               </Box>
