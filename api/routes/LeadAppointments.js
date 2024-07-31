@@ -4,7 +4,7 @@ const router = express.Router();
 const { dbPromise } = require("../resources/config");
 const { authenticateUser } = require("../middleware/authenticateUser");
 
-router.post('lead/create-appointment', authenticateUser, async(req, res) => {
+router.post('/lead/create-appointment', authenticateUser, async(req, res) => {
     const db = await dbPromise;
 
     try {
@@ -51,7 +51,7 @@ router.post('lead/create-appointment', authenticateUser, async(req, res) => {
     }
 })
 
-router.put('update/appointments/:appointmentId', authenticateUser, async(req, res) => {
+router.put('/update/appointments/:appointmentId', authenticateUser, async(req, res) => {
     const db = await dbPromise;
 
     try {
@@ -119,6 +119,19 @@ router.delete(`/delete/appointments/:appointmentId`, authenticateUser, async (re
         });
     }
   });
+
+  router.get(`/lead/appointments`, authenticateUser, async(req, res) => {
+    const db = await dbPromise;
+
+    try {
+      const userId = req.id      
+      const leadAppointments = await db.query(`SELECT "start_time", "endTime", "appointment_date", "notes" FROM "Lead_Appointments" la join "Leads" l on la.lead_id = l.id WHERE l.user_id = $1`, [userId])  
+      return res.json(leadAppointments)
+    } catch(error){
+        console.error(error)
+        return res.status(500).json({messsage: "Internal Server Error. Unable To Retrieve Lead Appointments."})
+    }
+  })
   
 
 module.exports = router;

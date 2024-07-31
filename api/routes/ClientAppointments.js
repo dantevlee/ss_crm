@@ -3,8 +3,9 @@ const express = require("express");
 const router = express.Router();
 const { dbPromise } = require("../resources/config");
 const { authenticateUser } = require("../middleware/authenticateUser");
+const { default: cli } = require("@angular/cli");
 
-router.post('client/create-appointment', authenticateUser, async(req, res) => {
+router.post('/client/create-appointment', authenticateUser, async(req, res) => {
     const db = await dbPromise;
 
     try {
@@ -51,7 +52,7 @@ router.post('client/create-appointment', authenticateUser, async(req, res) => {
     }
 })
 
-router.put('update/appointments/:appointmentId', authenticateUser, async(req, res) => {
+router.put('/update/appointments/:appointmentId', authenticateUser, async(req, res) => {
     const db = await dbPromise;
 
     try {
@@ -119,6 +120,19 @@ router.delete(`/delete/appointments/:appointmentId`, authenticateUser, async (re
         });
     }
   });
+
+  router.get(`/client/appointments`, authenticateUser, async(req, res) => {
+    const db = await dbPromise;
+
+    try {
+      const userId = req.id  
+      const clientAppointments = await db.query(`SELECT ca."start_time", ca."endTime" ,ca."appointment_date", ca."notes", c."start_date", c."end_date" FROM "Client_Appointments" ca join "Clients" c on ca.client_id = c.id WHERE c.user_id = $1`, [userId])  
+      return res.json(clientAppointments)
+    } catch(error){
+        console.error(error)
+        return res.status(500).json({messsage: "Internal Server Error. Unable To Retrieve Client Appointments."})
+    }
+  })
   
 
 module.exports = router;
