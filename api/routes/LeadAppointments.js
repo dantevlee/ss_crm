@@ -4,7 +4,7 @@ const router = express.Router();
 const { dbPromise } = require("../resources/config");
 const { authenticateUser } = require("../middleware/authenticateUser");
 
-router.post('client/create-appointment', authenticateUser, async(req, res) => {
+router.post('lead/create-appointment', authenticateUser, async(req, res) => {
     const db = await dbPromise;
 
     try {
@@ -13,7 +13,7 @@ router.post('client/create-appointment', authenticateUser, async(req, res) => {
         endTime,
         appointmentDate,
         notes,
-        clientId
+        leadId
       } = req.body;
    
       if (!appointmentDate) {
@@ -32,13 +32,13 @@ router.post('client/create-appointment', authenticateUser, async(req, res) => {
       }
    
         const appointment = await db.query(
-          'INSERT into "Client_Appointments"("start_time, "endTime", "appointment_date", "notes", "client_id") VALUES($1, $2, $3, $4, $5) RETURNING*',
+          'INSERT into "Lead_Appointments"("start_time, "endTime", "appointment_date", "notes", "lead_Id") VALUES($1, $2, $3, $4, $5) RETURNING*',
           [
             startTime,
             endTime,
             appointmentDate,
             notes,
-            clientId
+            leadId
           ]
         );
   
@@ -61,7 +61,7 @@ router.put('update/appointments/:appointmentId', authenticateUser, async(req, re
         endTime,
         appointmentDate,
         notes, 
-        clientId
+        leadId
       } = req.body;
    
       if (!appointmentDate) {
@@ -80,14 +80,14 @@ router.put('update/appointments/:appointmentId', authenticateUser, async(req, re
       }
    
         const appointment = await db.query(
-          'UPDATE "Client_Appointments" SET "start_time" = $1, "endTime" = $2, "appointment_date" = $3, "notes" = $4 WHERE id = $5 AND client_id = $6 RETURNING*',
+          'UPDATE "Lead_Appointments" SET "start_time" = $1, "endTime" = $2, "appointment_date" = $3, "notes" = $4 WHERE id = $5 AND lead_Id = $6 RETURNING*',
           [
             startTime,
             endTime,
             appointmentDate,
             notes,
             appointmentId,
-            clientId
+            leadId
           ]
         );
   
@@ -108,7 +108,7 @@ router.delete(`/delete/appointments/:appointmentId`, authenticateUser, async (re
       if(!appointmentId){
         return res.status(404).json({message: "Unable to find task to be deleted."})
       }
-      await db.query(`DELETE FROM "Client_Appointments" WHERE "id" = $1`, [appointmentId]);
+      await db.query(`DELETE FROM "Lead_Appointments" WHERE "id" = $1`, [appointmentId]);
       return res.json({ message: "Task Successfully Deleted." });
     } catch (error) {
       console.error(error);
