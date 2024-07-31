@@ -8,22 +8,42 @@ router.post('/lead/create-appointment', authenticateUser, async(req, res) => {
     const db = await dbPromise;
 
     try {
+      const leadId = req.query.leadId  
       const {
         startTime,
         endTime,
-        appointmentDate,
+        appointmentStartDate,
+        appointmentEndDate,
+        title,
         notes,
-        leadId
       } = req.body;
-   
-      if (!appointmentDate) {
+
+      if (!title) {
         return res
           .status(400)
           .json({
             message:
-              "Please add date.",
+              "Please add event title.",
           });
       }
+   
+      if (!appointmentStartDate) {
+        return res
+          .status(400)
+          .json({
+            message:
+              "Please add start date.",
+          });
+      }
+
+      if (!appointmentEndDate) {
+        return res
+          .status(400)
+          .json({
+            message:
+              "Please add end date.",
+          });
+        }
   
       if (startTime) {
         if (!endTime) {
@@ -32,11 +52,13 @@ router.post('/lead/create-appointment', authenticateUser, async(req, res) => {
       }
    
         const appointment = await db.query(
-          'INSERT into "Lead_Appointments"("start_time, "endTime", "appointment_date", "notes", "lead_Id") VALUES($1, $2, $3, $4, $5) RETURNING*',
+          'INSERT into "Lead_Appointments"("start_time, "endTime", "appointment_start_date", "appointment_end_date" "title", "notes", "lead_Id") VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING*',
           [
             startTime,
             endTime,
-            appointmentDate,
+            appointmentStartDate,
+            appointmentEndDate,
+            title,
             notes,
             leadId
           ]
@@ -55,22 +77,43 @@ router.put('/update/appointments/:appointmentId', authenticateUser, async(req, r
     const db = await dbPromise;
 
     try {
+    const leadId = req.query.leadId  
     const appointmentId = req.params.appointmentId;
-      const {
-        startTime,
-        endTime,
-        appointmentDate,
-        notes, 
-        leadId
-      } = req.body;
-   
-      if (!appointmentDate) {
-        return res
-          .status(400)
-          .json({
-            message:
-              "Please add date.",
-          });
+
+    const {
+      startTime,
+      endTime,
+      appointmentStartDate,
+      appointmentEndDate,
+      title,
+      notes, 
+    } = req.body;
+
+    if (!title) {
+      return res
+        .status(400)
+        .json({
+          message:
+            "Please add event title.",
+        });
+    }
+ 
+    if (!appointmentStartDate) {
+      return res
+        .status(400)
+        .json({
+          message:
+            "Please add start date.",
+        });
+    }
+
+    if (!appointmentEndDate) {
+      return res
+        .status(400)
+        .json({
+          message:
+            "Please add end date.",
+        });
       }
   
       if (startTime) {
@@ -80,11 +123,13 @@ router.put('/update/appointments/:appointmentId', authenticateUser, async(req, r
       }
    
         const appointment = await db.query(
-          'UPDATE "Lead_Appointments" SET "start_time" = $1, "endTime" = $2, "appointment_date" = $3, "notes" = $4 WHERE id = $5 AND lead_Id = $6 RETURNING*',
+          'UPDATE "Lead_Appointments" SET "start_time" = $1, "endTime" = $2, "appointment_start_date" = $3, "appointment_end_date" = $4 "notes" = $5, "title" = $6 WHERE id = $7 AND lead_Id = $8 RETURNING*',
           [
             startTime,
             endTime,
-            appointmentDate,
+            appointmentStartDate,
+            appointmentEndDate,
+            title,
             notes,
             appointmentId,
             leadId
@@ -125,7 +170,7 @@ router.delete(`/delete/appointments/:appointmentId`, authenticateUser, async (re
 
     try {
       const userId = req.id      
-      const leadAppointments = await db.query(`SELECT "start_time", "endTime", "appointment_date", "notes" FROM "Lead_Appointments" la join "Leads" l on la.lead_id = l.id WHERE l.user_id = $1`, [userId])  
+      const leadAppointments = await db.query(`SELECT "start_time", "endTime", "appointment_start_date", "appointment_end_date", "title", "notes" FROM "Lead_Appointments" la join "Leads" l on la.lead_id = l.id WHERE l.user_id = $1`, [userId])  
       return res.json(leadAppointments)
     } catch(error){
         console.error(error)
