@@ -82,7 +82,6 @@ const EditUserForm = ({ onEdit, onErrorMessage, onLoading, userFormValue }) => {
     <>
       <Flex
         flexDirection="column"
-        backgroundColor="gray.200"
         justifyContent="center"
         alignItems="center"
       >
