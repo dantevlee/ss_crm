@@ -12,7 +12,16 @@ const CalendarPage = () => {
   const [loading, setLoading] = useState(false)
   const [clients, setClients] = useState([])
   const [leads, setLeads] = useState([])
+  const [clientAppointments, setClientAppointments] = useState([])
+  const [leadAppointments, setLeadAppointments] = useState([])
   const token = Cookies.get("SessionID");
+
+  useEffect(() => {
+    fetchClients();
+    fetchLeads();
+    fetchClientAppointments();
+    fetchLeadAppointments()
+  }, []);
 
   const fetchClients = async () => {
     try {
@@ -22,7 +31,6 @@ const CalendarPage = () => {
         },
       });
       if (response.status === 200) {
-        console.log(response.data)
         setClients(response.data);
       }
     } catch (error) {
@@ -45,10 +53,79 @@ const CalendarPage = () => {
     } 
   };
 
-  useEffect(() => {
-    fetchClients();
-    fetchLeads()
-  }, []);
+  const fetchLeadAppointments = async () => {
+    try {
+      const response = await axios.get(`http://localhost:3000/api/lead/appointments`, {
+        headers: {
+          Authorization: `${token}`,
+        },
+      });
+      if (response.status === 200) {
+        console.log(response.data)
+        setLeadAppointments(response.data);
+      }
+    } catch (error) {
+      console.error(error);
+    } 
+  };
+
+  const fetchClientAppointments = async () => {
+    try {
+      const response = await axios.get(`http://localhost:3000/api/client/appointments`, {
+        headers: {
+          Authorization: `${token}`,
+        },
+      });
+      if (response.status === 200) {
+        console.log(response.data)
+        setClientAppointments(response.data);
+      }
+    } catch (error) {
+      console.error(error);
+    } 
+  };
+
+  const createClientEvent = async (formData) => {
+    try{
+      setFormLoading(true)
+      axios.post(`http://localhost:3000/api/client/create-appointment`, formData, {
+        headers:{
+          Authorization: `${token}`
+        }
+      }).then((res) => {
+        if(res.status === 200){
+          closeEventModal()
+        }
+      }).catch((err) =>{
+        setErrorMessage(err.response.data.message)
+      })
+    } catch(error){
+      console.error(error)
+    } finally{
+      setFormLoading(false)
+    }
+  }
+
+  const createLeadEvent = async (formData) => {
+    try{
+      setFormLoading(true)
+      axios.post(`http://localhost:3000/api/lead/create-appointment`, formData, {
+        headers:{
+          Authorization: `${token}`
+        }
+      }).then((res) => {
+        if(res.status === 200){
+          closeEventModal()
+        }
+      }).catch((err) =>{
+        setErrorMessage(err.response.data.message)
+      })
+    } catch(error){
+      console.error(error)
+    } finally{
+      setFormLoading(false)
+    }
+  }
 
   const {
     isOpen: isAddEventOpen,
@@ -58,7 +135,7 @@ const CalendarPage = () => {
 
   const closeEventModal = () => {
     if (errorMessage) {
-      setShowAlert(false);
+      setErrorMessage("");
     }
     if (loading) {
       setLoading(false);
@@ -87,9 +164,12 @@ const CalendarPage = () => {
           <ModalBody pb={6}>
             <EventForm
             onClose={closeEventModal}
+            onError={errorMessage}
             onLoading={formLoading}
             clients={clients}
             leads={leads}
+            addClientEvent={createClientEvent}
+            addLeadEvent={createLeadEvent}
             />
           </ModalBody>
         </ModalContent>

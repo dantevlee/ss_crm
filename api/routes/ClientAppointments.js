@@ -8,15 +8,25 @@ router.post('/client/create-appointment', authenticateUser, async(req, res) => {
     const db = await dbPromise;
 
     try {
-      const clientId = req.query.clientId
+
       const {
         startTime,
         endTime,
         appointmentStartDate,
         appointmentEndDate,
         title,
-        notes, 
+        notes,
+        clientId 
       } = req.body;
+
+      if (!clientId) {
+        return res
+          .status(400)
+          .json({
+            message:
+              "Please select a client.",
+          });
+      }
 
       if (!title) {
         return res
@@ -52,7 +62,7 @@ router.post('/client/create-appointment', authenticateUser, async(req, res) => {
       }
    
         const appointment = await db.query(
-          'INSERT into "Client_Appointments"("start_time, "endTime", "appointment_start_date", "appointment_end_date", "title" ,"notes", "client_id") VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING*',
+          'INSERT into "Client_Appointments"("start_time", "endTime", "appointment_start_date", "appointment_end_date", "title" ,"notes", "client_id") VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING*',
           [
             startTime,
             endTime,
@@ -170,7 +180,7 @@ router.delete(`/delete/appointments/:appointmentId`, authenticateUser, async (re
 
     try {
       const userId = req.id  
-      const clientAppointments = await db.query(`SELECT ca."start_time", ca."endTime" ,ca."appointment_start_date", ca."appointment_end_date", ca."title" ,ca."notes", c."start_date", c."end_date" FROM "Client_Appointments" ca join "Clients" c on ca.client_id = c.id WHERE c.user_id = $1`, [userId])  
+      const clientAppointments = await db.query(`SELECT ca."start_time", ca."endTime" ,ca."appointment_start_date", ca."appointment_end_date", ca."title" ,ca."notes", c."start_date", c."end_date", c."id" as client_id FROM "Client_Appointments" ca join "Clients" c on ca.client_id = c.id WHERE c.user_id = $1`, [userId])  
       return res.json(clientAppointments)
     } catch(error){
         console.error(error)

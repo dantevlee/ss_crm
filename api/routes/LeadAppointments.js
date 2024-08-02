@@ -8,7 +8,7 @@ router.post('/lead/create-appointment', authenticateUser, async(req, res) => {
     const db = await dbPromise;
 
     try {
-      const leadId = req.query.leadId  
+     
       const {
         startTime,
         endTime,
@@ -16,7 +16,17 @@ router.post('/lead/create-appointment', authenticateUser, async(req, res) => {
         appointmentEndDate,
         title,
         notes,
+        leadId
       } = req.body;
+
+      if (!leadId) {
+        return res
+          .status(400)
+          .json({
+            message:
+              "Please select a lead.",
+          });
+      }
 
       if (!title) {
         return res
@@ -52,7 +62,7 @@ router.post('/lead/create-appointment', authenticateUser, async(req, res) => {
       }
    
         const appointment = await db.query(
-          'INSERT into "Lead_Appointments"("start_time, "endTime", "appointment_start_date", "appointment_end_date" "title", "notes", "lead_Id") VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING*',
+          'INSERT into "Lead_Appointments"("start_time", "endTime", "appointment_start_date", "appointment_end_date", "title", "notes", "lead_id") VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING*',
           [
             startTime,
             endTime,
