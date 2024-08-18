@@ -92,7 +92,7 @@ const UserLogin = ({ setIsLoggedIn }) => {
               if (showAlert) {
                 setShowAlert(false);
               }
-              history("/dashboard");
+              history("/calendar");
             }
           })
           .catch((error) => {

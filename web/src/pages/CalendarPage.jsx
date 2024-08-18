@@ -21,58 +21,75 @@ import CustomEvents from "../customs/CustomEvents";
 
 const localizer = momentLocalizer(moment);
 
-
 const CalendarPage = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [formLoading, setFormLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [clients, setClients] = useState([]);
   const [leads, setLeads] = useState([]);
-  const [clientAppointments, setClientAppointments] = useState({ clientDates: [], clientAppointments: []});
+  const [clientAppointments, setClientAppointments] = useState({
+    clientDates: [],
+    clientAppointments: [],
+  });
   const [leadAppointments, setLeadAppointments] = useState([]);
   const [events, setEvents] = useState([]);
+  const [isEditing, setIsEditing] = useState(false);
   const token = Cookies.get("SessionID");
 
   useEffect(() => {
     const clientDates = clientAppointments.clientDates || [];
     const clientvalidAppointments = clientAppointments.clientAppointments || [];
-    const allAppointments = [...clientDates, ...clientvalidAppointments, ...leadAppointments];
+    const allAppointments = [
+      ...clientDates,
+      ...clientvalidAppointments,
+      ...leadAppointments,
+    ];
 
-
-   const combineDateTime = (date, time) => {
-    const [hours, minutes] = time.split(':');
-    const combined = new Date(date);
-    combined.setHours(hours, minutes, 0, 0);
-    return combined;
-  };
-    setEvents(allAppointments.flatMap(appointment => {
-      const events = [];
-      if (appointment.start_date) {
-        events.push({
-          start: new Date(appointment.start_date),
-          end: new Date(appointment.start_date),
-          title: `${appointment.firstName || ''} ${appointment.lastName || ''}\'s start date`.trim()
-        });
-      }
-      if (appointment.end_date) {
-        events.push({
-          start: new Date(appointment.end_date),
-          end: new Date(appointment.end_date),
-          title: `${appointment.firstName || ''} ${appointment.lastName || ''}\'s end date`.trim()
-        });
-      }
-      if (appointment.appointment_start_date) {
-        events.push({
-          start: combineDateTime(appointment.appointment_start_date, appointment.start_time),
-          end: combineDateTime(appointment.appointment_end_date, appointment.endTime),
-          title: appointment.title,
-          notes: appointment.notes
-        });
-      }
-      return events;
-    }));
+    const combineDateTime = (date, time) => {
+      const [hours, minutes] = time.split(":");
+      const combined = new Date(date);
+      combined.setHours(hours, minutes, 0, 0);
+      return combined;
+    };
+    setEvents(
+      allAppointments.flatMap((appointment) => {
+        const events = [];
+        if (appointment.start_date) {
+          events.push({
+            start: new Date(appointment.start_date),
+            end: new Date(appointment.start_date),
+            title: `${appointment.firstName || ""} ${
+              appointment.lastName || ""
+            }\'s start date`.trim(),
+          });
+        }
+        if (appointment.end_date) {
+          events.push({
+            start: new Date(appointment.end_date),
+            end: new Date(appointment.end_date),
+            title: `${appointment.firstName || ""} ${
+              appointment.lastName || ""
+            }\'s end date`.trim(),
+          });
+        }
+        if (appointment.appointment_start_date) {
+          events.push({
+            start: combineDateTime(
+              appointment.appointment_start_date,
+              appointment.start_time
+            ),
+            end: combineDateTime(
+              appointment.appointment_end_date,
+              appointment.endTime
+            ),
+            title: appointment.title,
+            notes: appointment.notes,
+          });
+        }
+        return events;
+      })
+    );
   }, [clientAppointments, leadAppointments]);
-
 
   useEffect(() => {
     fetchClients();
@@ -210,7 +227,15 @@ const CalendarPage = () => {
     if (loading) {
       setLoading(false);
     }
+    if(isEditing){
+      setIsEditing(false)
+    }
     onAddEventClose();
+  };
+
+  const openEditEventModal = () => {
+    onAddEventOpen();
+    setIsEditing(true)
   };
 
   return (
@@ -232,8 +257,9 @@ const CalendarPage = () => {
         defaultDate={new Date()}
         defaultView="month"
         events={events}
+        onSelectEvent={openEditEventModal}
         components={{
-          event: CustomEvents
+          event: CustomEvents,
         }}
         style={{
           height: "90vh",
@@ -247,15 +273,24 @@ const CalendarPage = () => {
         <ModalContent backgroundColor="gray.500">
           <ModalHeader color="white">Add Event</ModalHeader>
           <ModalBody pb={6}>
-            <EventForm
+            {isEditing ? (
+              <EventForm 
               onClose={closeEventModal}
               onError={errorMessage}
               onLoading={formLoading}
-              clients={clients}
-              leads={leads}
-              addClientEvent={createClientEvent}
-              addLeadEvent={createLeadEvent}
-            />
+              onEdit={isEditing}
+              />
+            ) : (
+              <EventForm
+                onClose={closeEventModal}
+                onError={errorMessage}
+                onLoading={formLoading}
+                clients={clients}
+                leads={leads}
+                addClientEvent={createClientEvent}
+                addLeadEvent={createLeadEvent}
+              />
+            )}
           </ModalBody>
         </ModalContent>
       </Modal>

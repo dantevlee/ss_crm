@@ -29,9 +29,8 @@ import { useEffect, useRef, useState } from "react";
 import ClientPage from "./ClientPage";
 import ArchivePage from "./ArchivePage";
 import LeadsPage from "./LeadsPage";
-import Dashboard from "./Dashboard";
 import "../App.css";
-import { FaCalendarAlt, FaFolderOpen, FaHouseUser } from "react-icons/fa";
+import { FaCalendarAlt, FaFolderOpen } from "react-icons/fa";
 import { IoMdPerson } from "react-icons/io";
 import { BsFillPersonPlusFill } from "react-icons/bs";
 import { IoArchive, IoSettingsOutline } from "react-icons/io5";
@@ -250,12 +249,6 @@ const MainLayout = ({ setIsLoggedIn }) => {
           </DrawerHeader>
           <DrawerBody overflowX="hidden">
             <Stack spacing={4}>
-              <Link onClick={() => navigateToPage("/dashboard")}>
-                <Flex align="center">
-                  <Icon boxSize={5} as={FaHouseUser} marginRight={2} />
-                  <Text fontSize={20}>Home</Text>
-                </Flex>
-              </Link>
               <Link onClick={() => navigateToPage("/clients")}>
                 <Flex align="center">
                   <Icon boxSize={5} as={IoMdPerson} marginRight={2} />
@@ -298,7 +291,6 @@ const MainLayout = ({ setIsLoggedIn }) => {
         </DrawerContent>
       </Drawer>
       <Routes>
-        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/clients" element={<ClientPage />} />
         <Route path="/archives" element={<ArchivePage />} />
         <Route path="/leads" element={<LeadsPage />} />
