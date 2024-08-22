@@ -15,18 +15,28 @@ import {
   Alert,
   AlertIcon,
   AlertDescription,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
 const EventForm = ({
   onClose,
   onLoading,
+  onOpenDelete,
+  openDelete,
+  onCloseDelete,
+  loading,
   leads,
   clients,
   addClientEvent,
   addLeadEvent,
   onError,
-  onEdit
+  onEdit, 
+  events
 }) => {
   const [selectedClient, setSelectedClient] = useState("");
   const [selectedLead, setSelectedLead] = useState("");
@@ -48,16 +58,31 @@ const EventForm = ({
   const [charCount, setCharCount] = useState(0);
 
   useEffect(() => {
-  }, []);
+    console.log('events', events)
+    if (events) {
+      setTitleInput(events.title || "");
+      setNoteInput(events.notes || "");
+      setStartDate(events.start ? events.start.toISOString().split('T')[0] : "");
+      setStartTime(events.startTime || "");
+      setEndDate(events.end ? events.end.toISOString().split('T')[0] : "");
+      setEndTime(events.endTime || "");
+      setEventType(events.client_id ? "Client" : "Lead");
+      if (events.client_id) {
+        setSelectedClient(events.client_id);
+      } else if (events.lead_id) {
+        setSelectedLead(events.lead_id);
+      }
+    }
+  }, [events]);
 
   const clientSelectionError =
-    selectedClient.trim() === "" && selectedClientTouched;
-  const leadSelectionError = selectedLead.trim() === "" && selectedLeadTouched;
+    !selectedClient && selectedClientTouched;
+  const leadSelectionError = !selectedLead && selectedLeadTouched;
   const eventTitleInputError =
     titleInput.trim() === "" && eventTitleInputTouched;
   const eventNoteInputError = noteInput.trim() === "" && eventNoteInputTouched;
   const startDateInvalid = startDate.trim() === "" && startDateTouched;
-  const startTimeError = startTime.trim() === "" && startTimeTouched;
+  const startTimeError = !startTime && startTimeTouched;
   const endDateError = endDate.trim() === "" && endDateTouched;
   const endTimeError = endTime.trim() === "" && endTimeTouched;
 
@@ -154,7 +179,6 @@ const EventForm = ({
 
   return (
     <>
-    {!onEdit && (
   <FormControl>
     <FormLabel color="white">Set Event For?</FormLabel>
     <RadioGroup
@@ -239,8 +263,6 @@ const EventForm = ({
       </FormControl>
     )}
   </FormControl>
-)}
-
       <FormControl mt={4} isInvalid={eventTitleInputError}>
         <FormLabel color="white">Title:</FormLabel>
         <Input
@@ -433,10 +455,39 @@ const EventForm = ({
       </FormControl>
       {onEdit && (
         <FormControl mt={12}>
-        <Button marginStart="120px" size='lg' colorScheme="red">
+        <Button onClick={openDelete} marginStart="120px" size='lg' colorScheme="red">
           Delete Event
         </Button>
         </FormControl>
+      )}
+      {onOpenDelete && (
+        <Modal isOpen={onOpenDelete}>
+        <ModalOverlay />
+        <ModalContent minWidth="500px">
+          <ModalHeader>
+            {" "}
+            <Text>
+            Permanently Delete Event: {events.title} ?
+            </Text>
+          </ModalHeader>
+          {/* {showAlert && (
+            <ModalBody>
+              <Alert mt={showAlert ? 4 : 0} status="error">
+                <AlertIcon />
+                <AlertDescription>{errorMessage}</AlertDescription>
+              </Alert>
+              </ModalBody>
+            )} */}
+          <ModalFooter>
+            <Button colorScheme="blue" mr={3}>
+              {loading ? <Spinner size="md" thickness="4px" /> : "Confirm"}
+            </Button>
+            <Button onClick={onCloseDelete} colorScheme="red" mr={3}>
+              Cancel
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
       )}
     </>
   );

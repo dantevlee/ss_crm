@@ -34,6 +34,7 @@ const CalendarPage = () => {
   const [leadAppointments, setLeadAppointments] = useState([]);
   const [events, setEvents] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState([]);
   const token = Cookies.get("SessionID");
 
   useEffect(() => {
@@ -54,34 +55,36 @@ const CalendarPage = () => {
     setEvents(
       allAppointments.flatMap((appointment) => {
         const events = [];
-        if (appointment.start_date) {
+        if (appointment.appointment_start_date && appointment.client_id) {
           events.push({
-            start: new Date(appointment.start_date),
-            end: new Date(appointment.start_date),
-            title: `${appointment.firstName || ""} ${
-              appointment.lastName || ""
-            }\'s start date`.trim(),
-          });
-        }
-        if (appointment.end_date) {
-          events.push({
-            start: new Date(appointment.end_date),
-            end: new Date(appointment.end_date),
-            title: `${appointment.firstName || ""} ${
-              appointment.lastName || ""
-            }\'s end date`.trim(),
-          });
-        }
-        if (appointment.appointment_start_date) {
-          events.push({
+            client_id: appointment.client_id,
             start: combineDateTime(
               appointment.appointment_start_date,
               appointment.start_time
             ),
+            startTime: appointment.start_time || "",
             end: combineDateTime(
               appointment.appointment_end_date,
               appointment.endTime
             ),
+            endTime: appointment.endTime,
+            title: appointment.title,
+            notes: appointment.notes,
+          });
+        }
+        if (appointment.appointment_start_date && appointment.lead_id) {
+          events.push({
+            lead_id: appointment.lead_id,
+            start: combineDateTime(
+              appointment.appointment_start_date,
+              appointment.start_time
+            ),
+            startTime: appointment.start_time,
+            end: combineDateTime(
+              appointment.appointment_end_date,
+              appointment.endTime
+            ),
+            endTime: appointment.endTime,
             title: appointment.title,
             notes: appointment.notes,
           });
@@ -139,7 +142,6 @@ const CalendarPage = () => {
         }
       );
       if (response.status === 200) {
-        console.log(response.data);
         setLeadAppointments(response.data);
       }
     } catch (error) {
@@ -158,7 +160,6 @@ const CalendarPage = () => {
         }
       );
       if (response.status === 200) {
-        console.log(response.data);
         setClientAppointments(response.data);
       }
     } catch (error) {
@@ -220,6 +221,12 @@ const CalendarPage = () => {
     onClose: onAddEventClose,
   } = useDisclosure();
 
+  const {
+    isOpen: isDeleteEventOpen,
+    onOpen: onDeleteEventOpen,
+    onClose: onDeleteEventClose,
+  } = useDisclosure();
+
   const closeEventModal = () => {
     if (errorMessage) {
       setErrorMessage("");
@@ -233,10 +240,19 @@ const CalendarPage = () => {
     onAddEventClose();
   };
 
-  const openEditEventModal = () => {
+  const openEditEventModal = (event) => {
+    setSelectedEvent(event); 
     onAddEventOpen();
     setIsEditing(true)
   };
+
+  const openDeleteModal = () =>{
+    onDeleteEventOpen()
+  }
+
+  const closeDeleteModal = () => {
+    onDeleteEventClose()
+  }
 
   return (
     <>
@@ -274,12 +290,18 @@ const CalendarPage = () => {
           <ModalHeader color="white">Add Event</ModalHeader>
           <ModalBody pb={6}>
             {isEditing ? (
-              <EventForm 
-              onClose={closeEventModal}
-              onError={errorMessage}
-              onLoading={formLoading}
-              onEdit={isEditing}
-              />
+                <EventForm 
+                onClose={closeEventModal}
+                onError={errorMessage}
+                onLoading={formLoading}
+                clients={clients}
+                leads={leads}
+                events={selectedEvent}
+                onEdit={isEditing}
+                onOpenDelete={isDeleteEventOpen}
+                openDelete={openDeleteModal}
+                onCloseDelete={closeDeleteModal}
+                />
             ) : (
               <EventForm
                 onClose={closeEventModal}
