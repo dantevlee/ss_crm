@@ -155,7 +155,7 @@ router.put('/update/appointments/:appointmentId', authenticateUser, async(req, r
     }
 })
 
-router.delete(`/delete/appointments/:appointmentId`, authenticateUser, async (req, res) => {
+router.delete(`/delete-lead/appointments/:appointmentId`, authenticateUser, async (req, res) => {
     const db = await dbPromise;
   
     try {
@@ -180,7 +180,7 @@ router.delete(`/delete/appointments/:appointmentId`, authenticateUser, async (re
 
     try {
       const userId = req.id      
-      const leadAppointments = await db.query(`SELECT * FROM "Lead_Appointments" la join "Leads" l on la.lead_id = l.id WHERE l.user_id = $1`, [userId])  
+      const leadAppointments = await db.query(`SELECT *, la.id as "event_id" FROM "Lead_Appointments" la join "Leads" l on la.lead_id = l.id WHERE l.user_id = $1`, [userId])  
       return res.json(leadAppointments)
     } catch(error){
         console.error(error)

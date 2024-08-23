@@ -180,7 +180,7 @@ router.delete(`/delete/appointments/:appointmentId`, authenticateUser, async (re
 
     try {
       const userId = req.id  
-      const clientAppointments = await db.query(`SELECT ca."start_time", ca."endTime" ,ca."appointment_start_date", ca."appointment_end_date", ca."title" ,ca."notes", c."id" as client_id FROM "Client_Appointments" ca join "Clients" c on ca.client_id = c.id WHERE c.user_id = $1`, [userId])
+      const clientAppointments = await db.query(`SELECT ca."id", ca."start_time", ca."endTime" ,ca."appointment_start_date", ca."appointment_end_date", ca."title" ,ca."notes", c."id" as client_id FROM "Client_Appointments" ca join "Clients" c on ca.client_id = c.id WHERE c.user_id = $1`, [userId])
       const clientDates = await db.query(`SELECT start_date, end_date, "firstName", "lastName", "client_email" FROM "Clients" WHERE user_id = $1`, [userId])  
       return res.json({clientAppointments: clientAppointments, clientDates: clientDates})
     } catch(error){

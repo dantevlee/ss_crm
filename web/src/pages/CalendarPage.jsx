@@ -37,6 +37,13 @@ const CalendarPage = () => {
   const [selectedEvent, setSelectedEvent] = useState([]);
   const token = Cookies.get("SessionID");
 
+  const combineDateTime = (date, time) => {
+    const [hours, minutes] = time.split(":");
+    const combined = new Date(date);
+    combined.setHours(hours, minutes, 0, 0);
+    return combined;
+  };
+
   useEffect(() => {
     const clientDates = clientAppointments.clientDates || [];
     const clientvalidAppointments = clientAppointments.clientAppointments || [];
@@ -46,17 +53,12 @@ const CalendarPage = () => {
       ...leadAppointments,
     ];
 
-    const combineDateTime = (date, time) => {
-      const [hours, minutes] = time.split(":");
-      const combined = new Date(date);
-      combined.setHours(hours, minutes, 0, 0);
-      return combined;
-    };
     setEvents(
       allAppointments.flatMap((appointment) => {
         const events = [];
         if (appointment.appointment_start_date && appointment.client_id) {
           events.push({
+            id: appointment.id,
             client_id: appointment.client_id,
             start: combineDateTime(
               appointment.appointment_start_date,
@@ -74,6 +76,7 @@ const CalendarPage = () => {
         }
         if (appointment.appointment_start_date && appointment.lead_id) {
           events.push({
+            id: appointment.event_id,
             lead_id: appointment.lead_id,
             start: combineDateTime(
               appointment.appointment_start_date,
@@ -87,6 +90,26 @@ const CalendarPage = () => {
             endTime: appointment.endTime,
             title: appointment.title,
             notes: appointment.notes,
+          });
+        }
+        if (appointment.start_date) {
+          events.push({
+            client_id: appointment.client_id,
+            start: new Date(appointment.start_date),
+            end: new Date(appointment.start_date),
+            title: `${appointment.firstName || ""} ${
+              appointment.lastName || ""
+            }\'s start date`.trim(),
+          });
+        }
+        if (appointment.end_date) {
+          events.push({
+            client_id: appointment.client_id,
+            start: new Date(appointment.end_date),
+            end: new Date(appointment.end_date),
+            title: `${appointment.firstName || ""} ${
+              appointment.lastName || ""
+            }\'s end date`.trim(),
           });
         }
         return events;
@@ -178,6 +201,20 @@ const CalendarPage = () => {
         })
         .then((res) => {
           if (res.status === 200) {
+            const createdEvent = res.data;
+      
+            const newEvent = {
+              id: createdEvent.id,
+              client_id: createdEvent.client_id,
+              start: combineDateTime(createdEvent.appointment_start_date, createdEvent.start_time),
+              startTime: createdEvent.start_time,
+              end: combineDateTime(createdEvent.appointment_end_date, createdEvent.endTime),
+              endTime: createdEvent.endTime,
+              title: createdEvent.title,
+              notes: createdEvent.notes,
+            };
+      
+            setEvents((prevEvents) => [...prevEvents, newEvent]);
             closeEventModal();
           }
         })
@@ -202,6 +239,20 @@ const CalendarPage = () => {
         })
         .then((res) => {
           if (res.status === 200) {
+            const createdEvent = res.data;
+
+            const newEvent = {
+              id: createdEvent.id,
+              lead_id: createdEvent.lead_id,
+              start: combineDateTime(createdEvent.appointment_start_date, createdEvent.start_time),
+              startTime: createdEvent.start_time,
+              end: combineDateTime(createdEvent.appointment_end_date, createdEvent.endTime),
+              endTime: createdEvent.endTime,
+              title: createdEvent.title,
+              notes: createdEvent.notes,
+            };
+      
+            setEvents((prevEvents) => [...prevEvents, newEvent]);
             closeEventModal();
           }
         })
@@ -214,6 +265,12 @@ const CalendarPage = () => {
       setFormLoading(false);
     }
   };
+
+
+  const handleDeleteEvent = (eventId) => {
+    setEvents((prevEvents) => prevEvents.filter((event) => event.id !== eventId));
+  };
+
 
   const {
     isOpen: isAddEventOpen,
@@ -241,17 +298,24 @@ const CalendarPage = () => {
   };
 
   const openEditEventModal = (event) => {
-    setSelectedEvent(event); 
-    onAddEventOpen();
-    setIsEditing(true)
+    if(event.startTime) {
+      setSelectedEvent(event); 
+      onAddEventOpen();
+      setIsEditing(true)
+    }
+    
   };
 
   const openDeleteModal = () =>{
     onDeleteEventOpen()
   }
 
-  const closeDeleteModal = () => {
+  const closeAllEditDeleteModals = () => {
+    if(isEditing){
+      setIsEditing(false)
+    }
     onDeleteEventClose()
+    onAddEventClose();
   }
 
   return (
@@ -296,11 +360,12 @@ const CalendarPage = () => {
                 onLoading={formLoading}
                 clients={clients}
                 leads={leads}
-                events={selectedEvent}
+                event={selectedEvent}
                 onEdit={isEditing}
+                onDelete={handleDeleteEvent}
                 onOpenDelete={isDeleteEventOpen}
                 openDelete={openDeleteModal}
-                onCloseDelete={closeDeleteModal}
+                onCloseDelete={closeAllEditDeleteModals}
                 />
             ) : (
               <EventForm

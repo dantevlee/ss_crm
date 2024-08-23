@@ -20,8 +20,11 @@ import {
   ModalContent,
   ModalHeader,
   ModalFooter,
+  ModalBody,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
+import axios from "axios";
+import Cookies from "js-cookie";
 
 const EventForm = ({
   onClose,
@@ -29,14 +32,14 @@ const EventForm = ({
   onOpenDelete,
   openDelete,
   onCloseDelete,
-  loading,
   leads,
   clients,
   addClientEvent,
   addLeadEvent,
   onError,
   onEdit, 
-  events
+  onDelete,
+  event
 }) => {
   const [selectedClient, setSelectedClient] = useState("");
   const [selectedLead, setSelectedLead] = useState("");
@@ -50,30 +53,33 @@ const EventForm = ({
   const [startTimeTouched, setStartTimeTouched] = useState(false);
   const [endDateTouched, setEndDateTouched] = useState(false);
   const [endTimeTouched, setEndTimeTouched] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [startDate, setStartDate] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endDate, setEndDate] = useState("");
   const [endTime, setEndTime] = useState("");
   const [eventType, setEventType] = useState("Client");
   const [charCount, setCharCount] = useState(0);
+  const token = Cookies.get("SessionID");
 
   useEffect(() => {
-    console.log('events', events)
-    if (events) {
-      setTitleInput(events.title || "");
-      setNoteInput(events.notes || "");
-      setStartDate(events.start ? events.start.toISOString().split('T')[0] : "");
-      setStartTime(events.startTime || "");
-      setEndDate(events.end ? events.end.toISOString().split('T')[0] : "");
-      setEndTime(events.endTime || "");
-      setEventType(events.client_id ? "Client" : "Lead");
-      if (events.client_id) {
-        setSelectedClient(events.client_id);
-      } else if (events.lead_id) {
-        setSelectedLead(events.lead_id);
+
+    if (event) {
+      setTitleInput(event.title || "");
+      setNoteInput(event.notes || "");
+      setStartDate(event.start ? event.start.toISOString().split('T')[0] : "");
+      setStartTime(event.startTime || "");
+      setEndDate(event.end ? event.end.toISOString().split('T')[0] : "");
+      setEndTime(event.endTime || "");
+      setEventType(event.client_id ? "Client" : "Lead");
+      if (event.client_id) {
+        setSelectedClient(event.client_id);
+      } else if (event.lead_id) {
+        setSelectedLead(event.lead_id);
       }
     }
-  }, [events]);
+  }, [event]);
 
   const clientSelectionError =
     !selectedClient && selectedClientTouched;
@@ -162,6 +168,45 @@ const EventForm = ({
       addLeadEvent(formData);
     }
   };
+
+  const deleteEvent = async () => {
+    try {
+      setLoading(true);
+      if (event.client_id) {
+        await axios
+        .delete(`http://localhost:3000/api/delete/appointments/${event.id}`, {
+          headers: {
+            Authorization: `${token}`,
+          },
+        })
+        .then((res) => {
+          if (res.status === 200) {
+            onCloseDelete()
+            onDelete(event.id);
+          }
+        });
+      } else if (event.lead_id) {
+        await axios
+        .delete(`http://localhost:3000/api/delete-lead/appointments/${event.id}`, {
+          headers: {
+            Authorization: `${token}`,
+          },
+        })
+        .then((res) => {
+          if (res.status === 200) {
+            onCloseDelete()
+            onDelete(event.id);
+          }
+        });
+      }
+      
+    } catch (error) {
+      console.log(error)
+      setErrorMessage(error.respon.data.message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const handleClientSelection = (e) => {
     setSelectedClient(e.target.value);
@@ -467,19 +512,19 @@ const EventForm = ({
           <ModalHeader>
             {" "}
             <Text>
-            Permanently Delete Event: {events.title} ?
+            Permanently Delete Event: {event.title} ?
             </Text>
           </ModalHeader>
-          {/* {showAlert && (
+          {errorMessage && (
             <ModalBody>
-              <Alert mt={showAlert ? 4 : 0} status="error">
+              <Alert mt={errorMessage ? 4 : 0} status="error">
                 <AlertIcon />
                 <AlertDescription>{errorMessage}</AlertDescription>
               </Alert>
               </ModalBody>
-            )} */}
+            )}
           <ModalFooter>
-            <Button colorScheme="blue" mr={3}>
+            <Button onClick={deleteEvent} colorScheme="blue" mr={3}>
               {loading ? <Spinner size="md" thickness="4px" /> : "Confirm"}
             </Button>
             <Button onClick={onCloseDelete} colorScheme="red" mr={3}>
