@@ -36,6 +36,8 @@ const EventForm = ({
   clients,
   addClientEvent,
   addLeadEvent,
+  editClientEvent,
+  editLeadEvent,
   onError,
   onEdit, 
   onDelete,
@@ -72,14 +74,17 @@ const EventForm = ({
       setStartTime(event.startTime || "");
       setEndDate(event.end ? event.end.toISOString().split('T')[0] : "");
       setEndTime(event.endTime || "");
-      setEventType(event.client_id ? "Client" : "Lead");
+      
       if (event.client_id) {
+        setEventType("Client")
         setSelectedClient(event.client_id);
-      } else if (event.lead_id) {
+      }
+      if (event.lead_id) {
         setSelectedLead(event.lead_id);
+        setEventType("Lead")
       }
     }
-  }, [event]);
+  }, []);
 
   const clientSelectionError =
     !selectedClient && selectedClientTouched;
@@ -159,14 +164,27 @@ const EventForm = ({
       notes: noteInput,
     };
 
-    if (eventType === "Client") {
-      formData.clientId = selectedClient;
-      addClientEvent(formData);
+    if(onEdit){
+      if (eventType === "Client") {
+        console.log(selectedClient)
+        formData.clientId = selectedClient;
+        editClientEvent(formData)
+      } else if(eventType === "Lead") {
+        formData.leadId = selectedLead;
+        editLeadEvent(formData)
+      }
+    } else {
+      if (eventType === "Client") {
+        formData.clientId = selectedClient;
+        addClientEvent(formData);
+      }
+      else if (eventType === "Lead") {
+        formData.leadId = selectedLead;
+        addLeadEvent(formData);
+      }
     }
-    if (eventType === "Lead") {
-      formData.leadId = selectedLead;
-      addLeadEvent(formData);
-    }
+
+    
   };
 
   const deleteEvent = async () => {

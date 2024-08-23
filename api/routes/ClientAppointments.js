@@ -88,8 +88,8 @@ router.put('/update/appointments/:appointmentId', authenticateUser, async(req, r
 
     try {
     const appointmentId = req.params.appointmentId;
-    const clientId = req.query.clientId
       const {
+        clientId,
         startTime,
         endTime,
         appointmentStartDate,
@@ -133,7 +133,7 @@ router.put('/update/appointments/:appointmentId', authenticateUser, async(req, r
       }
    
         const appointment = await db.query(
-          'UPDATE "Client_Appointments" SET "start_time" = $1, "endTime" = $2, "appointment_start_date" = $3, "appointment_start_date" = $4 ,"title" = $5, "notes" = $6 WHERE id = $7 AND client_id = $8 RETURNING*',
+          'UPDATE "Client_Appointments" SET "start_time" = $1, "endTime" = $2, "appointment_start_date" = $3, "appointment_end_date" = $4 ,"title" = $5, "notes" = $6 WHERE id = $7 AND client_id = $8 RETURNING*',
           [
             startTime,
             endTime,

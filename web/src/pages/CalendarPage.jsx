@@ -39,9 +39,8 @@ const CalendarPage = () => {
 
   const combineDateTime = (date, time) => {
     const [hours, minutes] = time.split(":");
-    const combined = new Date(date);
-    combined.setHours(hours, minutes, 0, 0);
-    return combined;
+    const combined = moment.utc(date).set({ hour: hours, minute: minutes, second: 0 });
+    return combined.local().toDate();
   };
 
   useEffect(() => {
@@ -64,7 +63,7 @@ const CalendarPage = () => {
               appointment.appointment_start_date,
               appointment.start_time
             ),
-            startTime: appointment.start_time || "",
+            startTime: appointment.start_time,
             end: combineDateTime(
               appointment.appointment_end_date,
               appointment.endTime
@@ -266,6 +265,98 @@ const CalendarPage = () => {
     }
   };
 
+  const editClientEvent = async (formData) => {
+    try {
+      setFormLoading(true);
+      const res = await axios.put(
+        `http://localhost:3000/api/update/appointments/${selectedEvent.id}`,
+        formData,
+        {
+          headers: {
+            Authorization: `${token}`,
+          },
+        }
+      );
+      if (res.status === 200) {
+        const updatedEvent = res.data;
+  
+        const newEvent = {
+          id: updatedEvent.id,
+          client_id: updatedEvent.client_id,
+          start: combineDateTime(
+            updatedEvent.appointment_start_date,
+            updatedEvent.start_time
+          ),
+          startTime: updatedEvent.start_time,
+          end: combineDateTime(
+            updatedEvent.appointment_end_date,
+            updatedEvent.endTime
+          ),
+          endTime: updatedEvent.endTime,
+          title: updatedEvent.title,
+          notes: updatedEvent.notes,
+        };
+  
+        setEvents((prevEvents) =>
+          prevEvents.map((event) =>
+            event.id === updatedEvent.id ? newEvent : event
+          )
+        );
+        closeEventModal();
+      }
+    } catch (err) {
+      setErrorMessage(err.response.data.message);
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
+  const editLeadEvent = async (formData) => {
+    try {
+      setFormLoading(true);
+      const res = await axios.put(
+        `http://localhost:3000/api/update/lead-appointments/${selectedEvent.id}`,
+        formData,
+        {
+          headers: {
+            Authorization: `${token}`,
+          },
+        }
+      );
+      if (res.status === 200) {
+        const updatedEvent = res.data;
+  
+        const newEvent = {
+          id: updatedEvent.id,
+          lead_id: updatedEvent.lead_id,
+          start: combineDateTime(
+            updatedEvent.appointment_start_date,
+            updatedEvent.start_time
+          ),
+          startTime: updatedEvent.start_time,
+          end: combineDateTime(
+            updatedEvent.appointment_end_date,
+            updatedEvent.endTime
+          ),
+          endTime: updatedEvent.endTime,
+          title: updatedEvent.title,
+          notes: updatedEvent.notes,
+        };
+  
+        setEvents((prevEvents) =>
+          prevEvents.map((event) =>
+            event.id === updatedEvent.id ? newEvent : event
+          )
+        );
+        closeEventModal();
+      }
+    } catch (err) {
+      setErrorMessage(err.response.data.message);
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
 
   const handleDeleteEvent = (eventId) => {
     setEvents((prevEvents) => prevEvents.filter((event) => event.id !== eventId));
@@ -362,6 +453,8 @@ const CalendarPage = () => {
                 leads={leads}
                 event={selectedEvent}
                 onEdit={isEditing}
+                editClientEvent={editClientEvent}
+                editLeadEvent={editLeadEvent}
                 onDelete={handleDeleteEvent}
                 onOpenDelete={isDeleteEventOpen}
                 openDelete={openDeleteModal}

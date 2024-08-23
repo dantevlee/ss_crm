@@ -83,14 +83,14 @@ router.post('/lead/create-appointment', authenticateUser, async(req, res) => {
     }
 })
 
-router.put('/update/appointments/:appointmentId', authenticateUser, async(req, res) => {
+router.put('/update/lead-appointments/:appointmentId', authenticateUser, async(req, res) => {
     const db = await dbPromise;
 
-    try {
-    const leadId = req.query.leadId  
+    try { 
     const appointmentId = req.params.appointmentId;
 
     const {
+      leadId,
       startTime,
       endTime,
       appointmentStartDate,
@@ -133,7 +133,7 @@ router.put('/update/appointments/:appointmentId', authenticateUser, async(req, r
       }
    
         const appointment = await db.query(
-          'UPDATE "Lead_Appointments" SET "start_time" = $1, "endTime" = $2, "appointment_start_date" = $3, "appointment_end_date" = $4 "notes" = $5, "title" = $6 WHERE id = $7 AND lead_Id = $8 RETURNING*',
+          'UPDATE "Lead_Appointments" SET "start_time" = $1, "endTime" = $2, "appointment_start_date" = $3, "appointment_end_date" = $4, "notes" = $5, "title" = $6 WHERE id = $7 AND lead_Id = $8 RETURNING*',
           [
             startTime,
             endTime,
