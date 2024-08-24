@@ -26,7 +26,7 @@ const App = () => {
           }
         />
         <Route path="/register" element={<UserRegistration />} />
-        <Route path="/password/reset" element={<PasswordResetRequestForm isLoggedIn={setIsLoggedIn} />} />
+        <Route path="/password/reset" element={<PasswordResetRequestForm isLoggedIn={isLoggedIn} />} />
         <Route path="/change-password" element={<ResetRequestForm/>}/>
       </Routes>
     </>

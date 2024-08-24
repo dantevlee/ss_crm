@@ -101,6 +101,8 @@ router.delete(
 
       await db.query(`DELETE FROM "Files" WHERE "client_id" = $1`, [clientId]);
 
+      await db.query(`DELETE FROM "Client_Appointments" WHERE "client_id" = $1`, [clientId]);
+
       await db.query(
         `DELETE FROM "Clients" WHERE "id" = $1 and "user_id" = $2`,
         [clientId, userId]

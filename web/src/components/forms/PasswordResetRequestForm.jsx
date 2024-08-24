@@ -46,6 +46,7 @@ const PasswordResetRequestForm = ({ isLoggedIn }) => {
 
   const handlePasswordResetRequest = async (e) => {
     e.preventDefault();
+    console.log(isLoggedIn)
     const requestBody = {
       email: email,
     };
@@ -154,7 +155,7 @@ const PasswordResetRequestForm = ({ isLoggedIn }) => {
             </Box>
           </Stack>
         </form>
-        {isLoggedIn ? (
+        {!!isLoggedIn ? (
           <Box>
             Return to Dashboard?{" "}
             <Link color="blue.500" href="/dashboard">
