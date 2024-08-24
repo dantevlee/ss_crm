@@ -16,8 +16,12 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { useEffect } from "react";
 import "react-big-calendar/lib/css/react-big-calendar.css";
-import moment from "moment";
+import moment from "moment-timezone"; 
 import CustomEvents from "../customs/CustomEvents";
+
+const localTimeZone = moment.tz.guess();
+
+moment.tz.setDefault(localTimeZone);
 
 const localizer = momentLocalizer(moment);
 
@@ -39,8 +43,13 @@ const CalendarPage = () => {
 
   const combineDateTime = (date, time) => {
     const [hours, minutes] = time.split(":");
-    const combined = moment.utc(date).set({ hour: hours, minute: minutes, second: 0 });
-    return combined.local().toDate();
+    // Combine date and time in UTC, then convert to the local time zone
+    const combined = moment.tz(date, localTimeZone).set({
+      hour: hours,
+      minute: minutes,
+      second: 0,
+    });
+    return combined.toDate();  // Convert to a native Date object
   };
 
   useEffect(() => {
