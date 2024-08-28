@@ -158,7 +158,7 @@ const MainLayout = ({ setIsLoggedIn }) => {
 
           <Text
             as="a"
-            href="/dashboard"
+            href="/calendar"
             cursor="pointer"
             _hover={{ textDecoration: "none" }}
             fontSize="x-large"

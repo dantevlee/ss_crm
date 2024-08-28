@@ -7,6 +7,7 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
+  Spinner,
   useDisclosure,
 } from "@chakra-ui/react";
 import { Calendar, momentLocalizer } from "react-big-calendar";
@@ -53,6 +54,7 @@ const CalendarPage = () => {
   };
 
   useEffect(() => {
+    setLoading(true)
     const clientDates = clientAppointments.clientDates || [];
     const clientvalidAppointments = clientAppointments.clientAppointments || [];
     const allAppointments = [
@@ -120,6 +122,7 @@ const CalendarPage = () => {
             }\'s end date`.trim(),
           });
         }
+        setLoading(false)
         return events;
       })
     );
@@ -420,6 +423,7 @@ const CalendarPage = () => {
 
   return (
     <>
+    
       <Flex>
         <Button
           marginTop="100px"
@@ -432,6 +436,17 @@ const CalendarPage = () => {
           <AddIcon mr={2} /> Add Event
         </Button>
       </Flex>
+      {loading ? (
+        <Flex justifyContent="center" alignItems="center" height="80vh">
+          <Spinner
+            thickness="12px"
+            speed="0.6s"
+            emptyColor="gray.400"
+            color="blue.500"
+            size="xl"
+          />
+        </Flex>
+      ) : (
       <Calendar
         localizer={localizer}
         defaultDate={new Date()}
@@ -448,6 +463,7 @@ const CalendarPage = () => {
           marginLeft: "30vh",
         }}
       />
+      )}
       <Modal isOpen={isAddEventOpen} onClose={closeEventModal}>
         <ModalOverlay />
         <ModalContent backgroundColor="gray.500">
