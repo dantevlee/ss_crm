@@ -3,11 +3,13 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
 import ArchiveCard from "../components/cards/ArchiveCard";
+import SearchBar from "../customs/SearchBar";
 
 const ArchivePage = () => {
   const [archives, setArchives] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
   const archivesPerPage = 8;
 
   const fetchArchives = async () => {
@@ -59,12 +61,22 @@ const ArchivePage = () => {
     setCurrentPage((prevPage) => Math.max(prevPage - 1, 1));
   };
 
+  const filteredArchives = archives.filter((archive) => {
+    const fullName = `${archive.firstName} ${archive.lastName}`.toLowerCase(); 
+    const query = searchQuery.toLowerCase(); // 
+    return (
+      archive.firstName.toLowerCase().includes(query) ||
+      archive.lastName.toLowerCase().includes(query) ||
+      fullName.includes(query)
+    );
+  });
+
   const paginateArchives = () => {
     const startIndex = (currentPage - 1) * archivesPerPage;
-    return archives.slice(startIndex, startIndex + archivesPerPage);
+    return filteredArchives.slice(startIndex, startIndex + archivesPerPage);
   };
 
-  const totalPages = Math.ceil(archives.length / archivesPerPage);
+  const totalPages = Math.ceil(filteredArchives.length / archivesPerPage);
 
   return (
     <>
@@ -80,8 +92,14 @@ const ArchivePage = () => {
         </Flex>
       ) : (
         <>
+        <Flex justifyContent="center" alignItems="center" >
+            <SearchBar
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+            />
+          </Flex>
           <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={4} mt={8}>
-            {...paginateArchives().map((archive) => (
+            {paginateArchives().map((archive) => (
               <ArchiveCard
                 key={archive.id}
                 archives={archive}
@@ -91,7 +109,7 @@ const ArchivePage = () => {
               />
             ))}
           </SimpleGrid>
-          {archives.length > archivesPerPage && (
+          {filteredArchives.length > archivesPerPage && (
             <Flex justifyContent="center" mt={12} mb={4}>
               {currentPage !== 1 && (
                 <Button onClick={handlePreviousPage} mr={2}>
@@ -111,7 +129,7 @@ const ArchivePage = () => {
                 </Button>
               ))}
               {!(
-                currentPage * archivesPerPage >= archives.length ||
+                currentPage * archivesPerPage >= filteredArchives.length ||
                 currentPage === totalPages
               ) && (
                 <Button onClick={handleNextPage} ml={2}>

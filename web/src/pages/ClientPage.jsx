@@ -9,7 +9,7 @@ import {
   SimpleGrid,
   Spinner,
   Text,
-  useDisclosure,
+  useDisclosure
 } from "@chakra-ui/react";
 import ClientForm from "../components/forms/ClientForm";
 import axios from "axios";
@@ -17,14 +17,16 @@ import Cookies from "js-cookie";
 import { AddIcon } from "@chakra-ui/icons";
 import ClientCard from "../components/cards/ClientCard";
 import { useEffect, useState } from "react";
+import SearchBar from "../customs/SearchBar";
 
 const ClientPage = () => {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
-  const[formLoading, setFormLoading] = useState(false);
+  const [formLoading, setFormLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [showAlert, setShowAlert] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
   const clientsPerPage = 8;
 
   const fetchClients = async () => {
@@ -53,30 +55,26 @@ const ClientPage = () => {
   const createClient = async (formData) => {
     const token = Cookies.get("SessionID");
     try {
-        setFormLoading(true)
-        await axios.post(
-        `http://localhost:3000/api/create-client`,
-        formData,
-        {
+      setFormLoading(true);
+      await axios
+        .post(`http://localhost:3000/api/create-client`, formData, {
           headers: {
             Authorization: `${token}`,
           },
-        }
-      ).then((res) => {
-        if(res.status === 200){
-          fetchClients();
-          closeAddClientModal();
-        }
-      })
+        })
+        .then((res) => {
+          if (res.status === 200) {
+            fetchClients();
+            closeAddClientModal();
+          }
+        });
     } catch (error) {
-      setErrorMessage(error.response.data.message)
-      setShowAlert(true)
+      setErrorMessage(error.response.data.message);
+      setShowAlert(true);
     } finally {
-      setFormLoading(false)
+      setFormLoading(false);
     }
   };
-
-
 
   const handleEditClient = (updatedClient) => {
     setClients((prevClients) =>
@@ -87,11 +85,15 @@ const ClientPage = () => {
   };
 
   const handleDeleteClient = (clientId) => {
-    setClients((prevClients) => prevClients.filter((client) => client.id !== clientId));
+    setClients((prevClients) =>
+      prevClients.filter((client) => client.id !== clientId)
+    );
   };
 
   const handleArchiveClient = (clientId) => {
-    setClients((prevClients) => prevClients.filter((client) => client.id !== clientId));
+    setClients((prevClients) =>
+      prevClients.filter((client) => client.id !== clientId)
+    );
   };
 
   const {
@@ -100,17 +102,15 @@ const ClientPage = () => {
     onClose: onAddClientClose,
   } = useDisclosure();
 
-
   const closeAddClientModal = () => {
-    if(showAlert){
-      setShowAlert(false)
-    } 
-    if(loading){
-      setLoading(false)
+    if (showAlert) {
+      setShowAlert(false);
     }
-    onAddClientClose()
-  }
-
+    if (loading) {
+      setLoading(false);
+    }
+    onAddClientClose();
+  };
 
   const handleNextPage = () => {
     setCurrentPage((prevPage) => prevPage + 1);
@@ -120,12 +120,22 @@ const ClientPage = () => {
     setCurrentPage((prevPage) => Math.max(prevPage - 1, 1));
   };
 
+  const filteredClients = clients.filter((client) => {
+    const fullName = `${client.firstName} ${client.lastName}`.toLowerCase(); 
+    const query = searchQuery.toLowerCase(); // 
+    return (
+      client.firstName.toLowerCase().includes(query) ||
+      client.lastName.toLowerCase().includes(query) ||
+      fullName.includes(query)
+    );
+  });
+
   const paginateClients = () => {
     const startIndex = (currentPage - 1) * clientsPerPage;
-    return clients.slice(startIndex, startIndex + clientsPerPage);
+    return filteredClients.slice(startIndex, startIndex + clientsPerPage);
   };
 
-  const totalPages = Math.ceil(clients.length / clientsPerPage);
+  const totalPages = Math.ceil(filteredClients.length / clientsPerPage);
 
   return (
     <>
@@ -153,8 +163,18 @@ const ClientPage = () => {
         </Flex>
       ) : (
         <>
-          <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={4} mt={8}>
-            {...paginateClients().map((client) => (
+          <Flex justifyContent="center" alignItems="center" mt={10} >
+            <SearchBar
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+            />
+          </Flex>
+          <SimpleGrid
+            mt={0}
+            columns={{ base: 1, md: 2, lg: 4 }}
+        
+          >
+            {paginateClients().map((client) => (
               <ClientCard
                 key={client.id}
                 client={client}
@@ -164,7 +184,7 @@ const ClientPage = () => {
               />
             ))}
           </SimpleGrid>
-          {clients.length > clientsPerPage && (
+          {filteredClients.length > clientsPerPage && (
             <Flex justifyContent="center" mt={12} mb={4}>
               {currentPage !== 1 && (
                 <Button onClick={handlePreviousPage} mr={2}>
@@ -184,7 +204,7 @@ const ClientPage = () => {
                 </Button>
               ))}
               {!(
-                currentPage * clientsPerPage >= clients.length ||
+                currentPage * clientsPerPage >= filteredClients.length ||
                 currentPage === totalPages
               ) && (
                 <Button onClick={handleNextPage} ml={2}>
@@ -198,9 +218,15 @@ const ClientPage = () => {
       <Modal isOpen={isAddClientOpen} onClose={closeAddClientModal}>
         <ModalOverlay />
         <ModalContent backgroundColor="gray.500">
-          <ModalHeader color='white'>Add New Client</ModalHeader>
+          <ModalHeader color="white">Add New Client</ModalHeader>
           <ModalBody pb={6}>
-            <ClientForm onSave={createClient} onCancel={closeAddClientModal} onLoading={formLoading} onAlert={showAlert} onErrorMessage={errorMessage}/>
+            <ClientForm
+              onSave={createClient}
+              onCancel={closeAddClientModal}
+              onLoading={formLoading}
+              onAlert={showAlert}
+              onErrorMessage={errorMessage}
+            />
           </ModalBody>
         </ModalContent>
       </Modal>

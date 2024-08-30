@@ -255,11 +255,24 @@ router.post("/archive/client/:clientId", authenticateUser, async (req, res) => {
       array.every((otherFile) => file.client_id === otherFile.client_id)
     );
 
+    const clientApptId = await db.query(
+      `SELECT "client_id" from "Client_Appointments" WHERE client_id = $1`,
+      [clientId]
+    );
+
+    const isAllSameclientApptId= clientApptId.every((appt, _, array) =>
+      array.every((otherAppt) => appt.client_id === otherAppt.client_id)
+    );
+
+    if (isAllSameclientApptId && clientApptId.length > 0) {
+      await db.query('DELETE FROM "Client_Appointments" WHERE "client_id" = $1', [clientId])
+    }
+
     if (
       clientNoteId.length > 0 &&
       isAllSameClientId &&
       isAllSameClientIdFiles &&
-      clientFilesId.length > 0
+      clientFilesId.length > 0 
     ) {
       const updatedNotes = await db.query(
         `UPDATE "Client_Notes" SET "archive_id" = $1, "client_id"= $2 WHERE "client_id" = $3 RETURNING *`,

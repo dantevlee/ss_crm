@@ -17,6 +17,7 @@ import LeadsForm from "../components/forms/LeadsForm";
 import LeadsCard from "../components/cards/LeadsCard";
 import axios from "axios";
 import Cookies from "js-cookie";
+import SearchBar from "../customs/SearchBar";
 
 const LeadsPage = () => {
   const [leads, setLeads] = useState([]);
@@ -24,6 +25,7 @@ const LeadsPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [formLoading, setFormLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [showAlert, setShowAlert] = useState(false);
 
   const token = Cookies.get("SessionID");
@@ -77,7 +79,7 @@ const LeadsPage = () => {
 
   const handleDeleteLead = (leadId) => {
     setLeads((prevLeads) => prevLeads.filter((lead) => lead.id !== leadId));
-  }
+  };
 
   const handleArchiveLead = (leadId) => {
     setLeads((prevLeads) => prevLeads.filter((lead) => lead.id !== leadId));
@@ -88,7 +90,6 @@ const LeadsPage = () => {
       prevLeads.map((lead) => (lead.id === updatedLead.id ? updatedLead : lead))
     );
   };
-
 
   const {
     isOpen: isAddLeadOpen,
@@ -114,12 +115,22 @@ const LeadsPage = () => {
     setCurrentPage((prevPage) => Math.max(prevPage - 1, 1));
   };
 
+  const filteredLeads = leads.filter((lead) => {
+    const fullName = `${lead.firstName} ${lead.lastName}`.toLowerCase(); 
+    const query = searchQuery.toLowerCase(); // 
+    return (
+      lead.firstName.toLowerCase().includes(query) ||
+      lead.lastName.toLowerCase().includes(query) ||
+      fullName.includes(query)
+    );
+  });
+
   const paginateLeads = () => {
     const startIndex = (currentPage - 1) * leadsPerPage;
-    return leads.slice(startIndex, startIndex + leadsPerPage);
+    return filteredLeads.slice(startIndex, startIndex + leadsPerPage);
   };
 
-  const totalPages = Math.ceil(leads.length / leadsPerPage);
+  const totalPages = Math.ceil(filteredLeads.length / leadsPerPage);
 
   return (
     <>
@@ -147,8 +158,14 @@ const LeadsPage = () => {
         </Flex>
       ) : (
         <>
-          <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={4} mt={8}>
-            {...paginateLeads().map((lead) => (
+          <Flex justifyContent="center" alignItems="center" mt={10}>
+            <SearchBar
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+            />
+          </Flex>
+          <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} mt={0}>
+            {paginateLeads().map((lead) => (
               <LeadsCard
                 key={lead.id}
                 lead={lead}
@@ -159,7 +176,7 @@ const LeadsPage = () => {
               />
             ))}
           </SimpleGrid>
-          {leads.length > leadsPerPage && (
+          {filteredLeads.length > leadsPerPage && (
             <Flex justifyContent="center" mt={12} mb={4}>
               {currentPage !== 1 && (
                 <Button onClick={handlePreviousPage} mr={2}>
@@ -178,7 +195,7 @@ const LeadsPage = () => {
                 </Button>
               ))}
               {!(
-                currentPage * leadsPerPage >= leads.length ||
+                currentPage * leadsPerPage >= filteredLeads.length ||
                 currentPage === totalPages
               ) && (
                 <Button onClick={handleNextPage} ml={2}>
