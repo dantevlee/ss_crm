@@ -3,11 +3,10 @@ import { useRef } from "react";
 import { useState } from "react";
 
 
-const UserFileForm = ({onCancel, onUpload}) => {
+const UserFileForm = ({onCancel, onUpload, onError}) => {
   const [errorMessage, setErrorMessage] = useState("");
   const [fileToUpload, setFileToUpload] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [showAlert, setShowAlert] = useState(false);
   const [fileInputTouched, setFileInputTouched] = useState(false);
 
   const fileInputRef = useRef(null);
@@ -59,10 +58,10 @@ const UserFileForm = ({onCancel, onUpload}) => {
       />
       <FormErrorMessage>Please select a file to upload.</FormErrorMessage>
       </Box>
-      {errorMessage && (
-        <Alert status="error" mt={showAlert ? 4 : 0}>
+      {onError && (
+        <Alert status="error" mt={onError ? 4 : 0}>
           <AlertIcon />
-          <AlertDescription>{errorMessage}</AlertDescription>
+          <AlertDescription>{onError}</AlertDescription>
         </Alert>
       )}
       <Flex mt={6} justifyContent="flex-start">

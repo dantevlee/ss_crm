@@ -4,7 +4,6 @@ import ProfilePictureForm from "../components/forms/ProfilePictureForm";
 import axios from "axios";
 import EditUserForm from "../components/forms/EditUserForm";
 import { useToast } from "@chakra-ui/react";
-import { useNavigate } from "react-router-dom";
 
 const SettingsPage = ({ onProfileImg, onImgChange, onUserDetails, onUserEdit }) => {
   const [loading, setLoading] = useState(false);
