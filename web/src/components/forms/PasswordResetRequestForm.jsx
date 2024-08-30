@@ -72,7 +72,7 @@ const PasswordResetRequestForm = ({ isLoggedIn }) => {
               if (!isLoggedIn) {
                 history("/");
               } else {
-                history("/dashboard");
+                history("/calendar");
               }
             }
           })
@@ -157,8 +157,8 @@ const PasswordResetRequestForm = ({ isLoggedIn }) => {
         </form>
         {!!isLoggedIn ? (
           <Box>
-            Return to Dashboard?{" "}
-            <Link color="blue.500" href="/dashboard">
+            Return to Home?{" "}
+            <Link color="blue.500" href="/calendar">
               Go Back
             </Link>
           </Box>

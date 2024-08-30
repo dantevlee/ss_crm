@@ -86,7 +86,7 @@ const ClientFiles = ({ onCancel, client }) => {
         )
         .then((res) => {
           if (res.status === 200) {
-            fetchFiles();
+            setFiles((prevFiles) => [...prevFiles, res.data])
             setFileToUpload(null);
             if (showAlert) {
               setShowAlert(false);
@@ -146,7 +146,7 @@ const ClientFiles = ({ onCancel, client }) => {
           } )
           .then((res) => {
             if (res.status === 200) {
-              fetchFiles();
+              setFiles((prevFiles) => prevFiles.filter((file) => file.id !== fileToDelete.id))
               closeDeleteModal();
             }
           });
