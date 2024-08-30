@@ -306,7 +306,9 @@ const MainLayout = ({ setIsLoggedIn }) => {
           }
         />
         <Route path="/calendar" element={<CalendarPage />} />
-        <Route path="/user-files" element={<UserFilesPage />} />
+        <Route path="/user-files" element={<UserFilesPage
+        onCurrentUser={currentUser}
+        />} />
       </Routes>
       <Outlet />
     </>

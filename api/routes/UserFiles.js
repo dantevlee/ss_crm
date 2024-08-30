@@ -64,23 +64,13 @@ router.get(`/users/files`, authenticateUser, async (req, res) => {
   const userId = req.id;
 
   try {
-    const user = await db.query(
-      `SELECT "id" FROM "Users" WHERE "id" = $1`,
-      [userId]
-    );
-
-    if (user.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "User not found, while trying to retrieve files." });
-    }
 
     const files = await db.query(
       `SELECT * FROM "Files" WHERE "user_id" = $1 `,
       [userId]
     );
 
-    return res.json({ user: user[0], files: files });
+    return res.json({ files: files });
   } catch (error) {
     console.error(error);
     res.status(500).json({
