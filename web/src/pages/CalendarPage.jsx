@@ -1,13 +1,17 @@
 import { AddIcon } from "@chakra-ui/icons";
 import {
+  Box,
   Button,
   Flex,
+  Heading,
   Modal,
   ModalBody,
   ModalContent,
   ModalHeader,
   ModalOverlay,
   Spinner,
+  Stack,
+  Text,
   useDisclosure,
 } from "@chakra-ui/react";
 import { Calendar, momentLocalizer } from "react-big-calendar";
@@ -26,10 +30,10 @@ moment.tz.setDefault(localTimeZone);
 
 const localizer = momentLocalizer(moment);
 
-const CalendarPage = () => {
+const CalendarPage = ({onCurrentUser}) => {
   const [errorMessage, setErrorMessage] = useState("");
   const [formLoading, setFormLoading] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [clients, setClients] = useState([]);
   const [leads, setLeads] = useState([]);
   const [clientAppointments, setClientAppointments] = useState({
@@ -54,7 +58,7 @@ const CalendarPage = () => {
   };
 
   useEffect(() => {
-    setLoading(true)
+   
     const clientDates = clientAppointments.clientDates || [];
     const clientvalidAppointments = clientAppointments.clientAppointments || [];
     const allAppointments = [
@@ -122,7 +126,6 @@ const CalendarPage = () => {
             }\'s end date`.trim(),
           });
         }
-        setLoading(false)
         return events;
       })
     );
@@ -162,6 +165,8 @@ const CalendarPage = () => {
       }
     } catch (error) {
       console.error(error);
+    } finally{
+      setLoading(false)
     }
   };
 
@@ -180,6 +185,8 @@ const CalendarPage = () => {
       }
     } catch (error) {
       console.error(error);
+    } finally{
+      setLoading(false)
     }
   };
 
@@ -198,6 +205,8 @@ const CalendarPage = () => {
       }
     } catch (error) {
       console.error(error);
+    } finally{
+      setLoading(false)
     }
   };
 
@@ -437,7 +446,7 @@ const CalendarPage = () => {
         </Button>
       </Flex>
       {loading ? (
-        <Flex justifyContent="center" alignItems="center" height="80vh">
+        <Flex justifyContent="center" alignItems="center" >
           <Spinner
             thickness="12px"
             speed="0.6s"
@@ -446,7 +455,8 @@ const CalendarPage = () => {
             size="xl"
           />
         </Flex>
-      ) : (
+      ) :  (
+        clients.length > 0 || leads.length > 0 ?
       <Calendar
         localizer={localizer}
         defaultDate={new Date()}
@@ -457,13 +467,31 @@ const CalendarPage = () => {
           event: CustomEvents,
         }}
         style={{
-          height: "90vh",
+          minHeight: "625px",
           marginTop: "200px",
-          maxWidth: "150vh",
-          marginLeft: "30vh",
+          minWidth: "150px",
         }}
       />
-      )}
+      : (
+        <Flex flexDirection="column" justifyContent="center" alignItems="center">
+        <Box marginTop="250px" minW={{ base: "100%", md: "500px" }}>
+          <Stack
+            spacing={6}
+            p="3rem"
+            backgroundColor="whiteAlpha.900"
+            boxShadow="md"
+            flexDir="column"
+            mb="4"
+            justifyContent="center"
+            alignItems="center"
+          >
+            <Heading>Welcome {onCurrentUser.firstName}!</Heading>
+                <Text>No current clients or leads found. Navigate to to the toolbar on the left to start managing your business.</Text>
+              </Stack>
+        </Box>
+      </Flex>
+      )
+    )}
       <Modal isOpen={isAddEventOpen} onClose={closeEventModal}>
         <ModalOverlay />
         <ModalContent backgroundColor="gray.500">
