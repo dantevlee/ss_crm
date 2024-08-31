@@ -234,6 +234,18 @@ router.post("/archive/lead/:leadId", authenticateUser, async (req, res) => {
       array.every((otherFile) => file.lead_id === otherFile.lead_id)
     );
 
+    const leadApptId = await db.query(
+      `SELECT "lead_id" from "Lead_Appointments" WHERE lead_id = $1`,
+      [leadId]
+    );
+
+    const isAllSameLeadApptId= leadApptId.every((appt, _, array) =>
+      array.every((otherAppt) => appt.lead_id === otherAppt.lead_id)
+    );
+
+    if (isAllSameLeadApptId && leadApptId.length > 0) {
+      await db.query('DELETE FROM "Lead_Appointments" WHERE "lead_id" = $1', [leadId])
+    }
 
     if (
       leadNoteId.length > 0 &&

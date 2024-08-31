@@ -24,11 +24,16 @@ router.post("/register/user", async (req, res) => {
       [email]
     );
 
+    const regeExPw = /^(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$/;
+
     if (userExists.length > 0) {
       return res
         .status(409)
         .json({ error: `A user with this email already exists.` });
     } else {
+      if (!regeExPw.test(password)) {
+        return res.status(400).json({ error: "Password must contain at least 8 digits with one capital letter and one special character (!,@,#,etc.)" })
+      }
       const salt = await bcrypt.genSalt();
       if (password === confirmPassword) {
         try {
@@ -46,7 +51,7 @@ router.post("/register/user", async (req, res) => {
             ]
           );
 
-          const confirmationUrl = `http://localhost:3000/api/confirm-email?token=${confirmationToken}`;
+          const confirmationUrl = `http://localhost:3000/api/confirm-email?id=${confirmationToken}`;
           const mailContent = {
             from: process.env.ADMIN_EMAIL,
             to: email,
@@ -65,7 +70,7 @@ router.post("/register/user", async (req, res) => {
                 });
             } else {
               res.json({
-                message: `Confirmation email sent! Please check your email to activate your account.`,
+                error: `Confirmation email sent! Please check your email to activate your account.`,
               });
             }
           });
@@ -74,23 +79,23 @@ router.post("/register/user", async (req, res) => {
         }
       } else {
         return res.status(400).json({
-          message: "Passwords don't match. Please try another password.",
+          error: "Passwords don't match. Please try another password.",
         });
       }
     }
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: error.message });
+    return res.status(500).json({ error: error.message });
   }
 });
 
 router.get("/confirm-email", async (req, res) => {
-  const { token } = req.query;
+  const { id } = req.query;
   const db = await dbPromise;
   try {
     const user = await db.query(
       `SELECT * FROM "Users" WHERE "confirmation_token" = $1`,
-      [token]
+      [id]
     );
 
     if (user.length === 0) {
@@ -102,7 +107,7 @@ router.get("/confirm-email", async (req, res) => {
 
     await db.query(
       `UPDATE "Users" SET "confirmed_user" = $1 WHERE "confirmation_token" = $2`,
-      ["Y", token]
+      ["Y", id]
     );
     const loginUrl = `http://localhost:5173/`;
     return res.send(
@@ -218,7 +223,7 @@ router.post("/reset/request", async (req, res) => {
       [email, resetToken]
     );
 
-    const resetUrl = `http://localhost:5173/change-password?token=${resetToken}`;
+    const resetUrl = `http://localhost:5173/change-password?id=${resetToken}`;
 
     const mailContent = {
       from: process.env.ADMIN_EMAIL,
@@ -240,7 +245,7 @@ router.post("/reset/request", async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({
-      message:
+      error:
         "A systems error ocurred while attempting to send email to reset your password.",
     });
   }
@@ -248,13 +253,13 @@ router.post("/reset/request", async (req, res) => {
 
 router.post("/password/reset", async (req, res) => {
   const { newPassword, confirmPassword } = req.body;
-  const { token } = req.query;
+  const { id } = req.query;
   const db = await dbPromise;
 
   try {
     const findEmail = await db.query(
       `SELECT email from "Reset_Tokens" WHERE "token" = $1`,
-      [token]
+      [id]
     );
 
     if (findEmail.length === 0) {
@@ -268,7 +273,7 @@ router.post("/password/reset", async (req, res) => {
 
     const validToken = await db.query(
       `SELECT * FROM "Reset_Tokens" WHERE "email" = $1 AND "token" = $2`,
-      [email, token]
+      [email, id]
     );
 
     if (validToken.length === 0) {
@@ -278,7 +283,7 @@ router.post("/password/reset", async (req, res) => {
       });
     }
 
-    jwt.verify(token, process.env.SECRET_ACCESS_TOKEN, async (err) => {
+    jwt.verify(id, process.env.SECRET_ACCESS_TOKEN, async (err) => {
       if (err) {
         return res.status(401).json({
           message: "Invalid or expired reset token. Please request a new one.",
@@ -306,6 +311,12 @@ router.post("/password/reset", async (req, res) => {
             });
         }
 
+        const regeExPw = /^(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$/;
+
+        if (!regeExPw.test(newPassword)) {
+          return res.status(400).json({ message: "Password must contain at least 8 digits with one capital letter and one special character (!,@,#,etc.)" })
+        }
+
         if (newPassword === confirmPassword) {
           await db.query(
             `UPDATE "Users" SET "password" = $1 WHERE "email" = $2`,
@@ -313,7 +324,7 @@ router.post("/password/reset", async (req, res) => {
           );
           await db.query(
             `DELETE FROM "Reset_Tokens" WHERE "email" = $1 AND "token" = $2`,
-            [email, token]
+            [email, id]
           );
           return res
             .status(204)
@@ -338,7 +349,7 @@ router.post("/password/reset", async (req, res) => {
   }
 });
 
-router.get("/users/current", authenticateUser , async (req, res) => {
+router.get("/users/current", authenticateUser, async (req, res) => {
   const db = await dbPromise;
   try {
     const userId = req.id;
@@ -354,29 +365,35 @@ router.get("/users/current", authenticateUser , async (req, res) => {
   }
 });
 
-router.post('/upload/profile-picture', authenticateUser, validateImageType.single('profilePicture') , async(req, res) => {
+router.post('/upload/profile-picture', authenticateUser, validateImageType.single('profilePicture'), async (req, res) => {
 
   const db = await dbPromise;
 
-  try{
+  try {
 
 
-    if(!req.file){
-      return res.status(400).json({message: "Please select an image."})
+    if (!req.file) {
+      return res.status(400).json({ message: "Please select an image." })
     }
 
     const userId = req.id;
     const { buffer, originalname, mimetype, size } = req.file;
 
-    if(!mimetype){
-      return res.status(400).json({message: "Unsupported file type. Only JPEG, PNG, and GIF are allowed."})
+    if (!mimetype) {
+      return res.status(400).json({ message: "Unsupported file type. Only JPEG, PNG, and GIF are allowed." })
     }
 
-    const profilePicture = await db.query(`INSERT INTO "Profile_Pictures" ("user_id", "file_data", "file_name", "file_type", "file_size") VALUES($1, $2, $3, $4, $5) RETURNING *`,[userId, buffer, originalname, mimetype, size])
+    const profilePictureExists = await db.query('SELECT "id", "file_name" FROM "Profile_Pictures" WHERE "user_id" = $1', [userId])
+
+    if (profilePictureExists.length > 0){
+      await db.query(`DELETE FROM "Profile_Pictures" WHERE user_id = $1`, [userId])
+    }
+
+    const profilePicture = await db.query(`INSERT INTO "Profile_Pictures" ("user_id", "file_data", "file_name", "file_type", "file_size") VALUES($1, $2, $3, $4, $5) RETURNING *`, [userId, buffer, originalname, mimetype, size])
     return res.json(profilePicture[0])
-  } catch(error){
+  } catch (error) {
     console.error(error)
-    res.status(500).json({message: "Internal Server Error. Error uploading profile picture."})
+    res.status(500).json({ message: "Internal Server Error. Error uploading profile picture." })
   }
 
 })
@@ -390,7 +407,7 @@ router.get('/profile-picture', authenticateUser, async (req, res) => {
     const result = await db.query('SELECT * FROM "Profile_Pictures" WHERE "user_id" = $1 ORDER BY "uploaded_at" DESC LIMIT 1', [userId]);
 
     if (result.length === 0) {
-      return res.status(404).json({ message: "Profile picture not found." });
+      return;
     }
 
     const { file_data, file_type } = result[0];
@@ -439,7 +456,7 @@ router.put('/edit/user', authenticateUser, async (req, res) => {
       ]
     );
 
-    return res.json({user: updatedUser[0], message: "Changes successfully saved!"});
+    return res.json({ user: updatedUser[0], message: "Changes successfully saved!" });
 
   } catch (error) {
     console.error(error);

@@ -1,4 +1,4 @@
-import { Button, Flex, SimpleGrid, Spinner, Text } from "@chakra-ui/react";
+import { Box, Button, Flex, Heading, SimpleGrid, Spinner, Stack, Text } from "@chakra-ui/react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
@@ -90,9 +90,9 @@ const ArchivePage = () => {
             size="xl"
           />
         </Flex>
-      ) : (
+      ) : archives.length > 0 ? (
         <>
-        <Flex justifyContent="center" alignItems="center" >
+          <Flex justifyContent="center" alignItems="center">
             <SearchBar
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
@@ -116,7 +116,6 @@ const ArchivePage = () => {
                   <Text color="blue.500">Previous</Text>
                 </Button>
               )}
-
               {Array.from({ length: totalPages }, (_, index) => (
                 <Button
                   key={index}
@@ -139,9 +138,27 @@ const ArchivePage = () => {
             </Flex>
           )}
         </>
+      ) : (
+        <Flex flexDirection="column" justifyContent="center" alignItems="center">
+          <Box marginTop="250px" minW={{ base: "100%", md: "500px" }}>
+            <Stack
+              spacing={6}
+              p="3rem"
+              backgroundColor="whiteAlpha.900"
+              boxShadow="md"
+              flexDir="column"
+              mb="4"
+              justifyContent="center"
+              alignItems="center"
+            >
+              <Heading>No Archives found.</Heading>
+              <Text>You can archive a lead or client and add them here once they are no longer active.</Text>
+            </Stack>
+          </Box>
+        </Flex>
       )}
     </>
   );
-};
+}  
 
 export default ArchivePage;

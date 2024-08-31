@@ -1,7 +1,9 @@
 import { AddIcon } from "@chakra-ui/icons";
 import {
   Button,
+  Box,
   Flex,
+  Heading,
   Modal,
   ModalBody,
   ModalContent,
@@ -9,6 +11,7 @@ import {
   ModalOverlay,
   SimpleGrid,
   Spinner,
+  Stack,
   Text,
   useDisclosure,
 } from "@chakra-ui/react";
@@ -156,7 +159,7 @@ const LeadsPage = () => {
             size="xl"
           />
         </Flex>
-      ) : (
+      ) :  leads.length > 0 ? (
         <>
           <Flex justifyContent="center" alignItems="center" mt={10}>
             <SearchBar
@@ -205,7 +208,24 @@ const LeadsPage = () => {
             </Flex>
           )}
         </>
-      )}
+       ) :
+        <Flex flexDirection="column" justifyContent="center" alignItems="center">
+        <Box marginTop="250px" minW={{ base: "100%", md: "500px" }}>
+          <Stack
+            spacing={6}
+            p="3rem"
+            backgroundColor="whiteAlpha.900"
+            boxShadow="md"
+            flexDir="column"
+            mb="4"
+            justifyContent="center"
+            alignItems="center"
+          >
+            <Heading>No Currently Active Leads.</Heading>
+            <Text>Click the "Add Lead" Button To Get Started.</Text>
+          </Stack>
+        </Box>
+      </Flex>}
       <Modal isOpen={isAddLeadOpen} onClose={closeAddLeadModal}>
         <ModalOverlay />
         <ModalContent backgroundColor="gray.500">
