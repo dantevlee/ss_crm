@@ -457,6 +457,18 @@ const CalendarPage = ({onCurrentUser}) => {
         </Flex>
       ) :  (
         clients.length > 0 || leads.length > 0 ?
+        <Flex flexDirection="column" justifyContent="center" alignItems="center">
+          <Box marginTop="175px" minW={{ base: "100%", md: "500px" }}>
+          <Stack
+            spacing={6}
+            p="3rem"
+            backgroundColor="whiteAlpha.900"
+            boxShadow="md"
+            flexDir="column"
+            mb="4"
+            justifyContent="center"
+            alignItems="center"
+          >
       <Calendar
         localizer={localizer}
         defaultDate={new Date()}
@@ -467,11 +479,17 @@ const CalendarPage = ({onCurrentUser}) => {
           event: CustomEvents,
         }}
         style={{
-          minHeight: "625px",
-          marginTop: "200px",
-          minWidth: "150px",
+          fontWeight:"bold",
+          fontFamily: "sans-serif",
+          fontSize: "15px",
+          minHeight: "750px",
+          minWidth: "1500px",
+          backgroundColor: "white"
         }}
       />
+      </Stack>
+      </Box>
+      </Flex>
       : (
         <Flex flexDirection="column" justifyContent="center" alignItems="center">
         <Box marginTop="250px" minW={{ base: "100%", md: "500px" }}>

@@ -404,7 +404,7 @@ router.get('/profile-picture', authenticateUser, async (req, res) => {
 
   try {
 
-    const result = await db.query('SELECT * FROM "Profile_Pictures" WHERE "user_id" = $1 ORDER BY "uploaded_at" DESC LIMIT 1', [userId]);
+    const result = await db.query('SELECT * FROM "Profile_Pictures" WHERE "user_id" = $1', [userId]);
 
     if (result.length === 0) {
       return;
