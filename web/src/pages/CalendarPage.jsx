@@ -483,7 +483,7 @@ const CalendarPage = ({onCurrentUser}) => {
           fontFamily: "sans-serif",
           fontSize: "15px",
           minHeight: "750px",
-          minWidth: "1500px",
+          minWidth: "1450px",
           backgroundColor: "white"
         }}
       />

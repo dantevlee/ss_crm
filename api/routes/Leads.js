@@ -86,11 +86,14 @@ router.delete(`/delete/lead/:leadId`, authenticateUser, async (req, res) => {
     const leadId = req.params.leadId;
     const userId = req.id;
 
-    await db.query(`DELETE FROM "Client_Notes" WHERE "lead_id" = $1`, [leadId]);
+    await Promise.all([
+      db.query(`DELETE FROM "Client_Notes" WHERE "lead_id" = $1`, [leadId]),
 
-    await db.query(`DELETE FROM "Files" WHERE "lead_id" = $1`, [leadId]);
+    db.query(`DELETE FROM "Files" WHERE "lead_id" = $1`, [leadId]),
 
-    await db.query(`DELETE FROM "Lead_Appointments" WHERE "lead_id" = $1`, [leadId]);
+    db.query(`DELETE FROM "Lead_Appointments" WHERE "lead_id" = $1`, [leadId])])
+
+    
 
     await db.query(`DELETE FROM "Leads" WHERE "id" = $1 AND "user_id" = $2`, [
       leadId,
@@ -335,6 +338,10 @@ router.post(
         return res.status(409).json({ message: "Error: Missing End Date." });
       }
 
+      if (startDate > endDate) {
+        return res.status(400).json({ message: "Start date should be earlier than End date." })
+      }
+
       const client = await db.query(
         'INSERT into "Clients"("user_id", "firstName", "lastName", "client_email", "start_date", "end_date", "phone_number", "social_media_source", "social_media") VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING*',
         [
@@ -368,6 +375,19 @@ router.post(
         array.every((otherFile) => file.lead_id === otherFile.lead_id)
       );
 
+      const leadApptId = await db.query(
+        `SELECT "lead_id" from "Lead_Appointments" WHERE lead_id = $1`,
+        [leadId]
+      );
+  
+      const isAllSameLeadApptId= leadApptId.every((appt, _, array) =>
+        array.every((otherAppt) => appt.lead_id === otherAppt.lead_id)
+      );
+  
+      if (isAllSameLeadApptId && leadApptId.length > 0) {
+        await db.query('DELETE FROM "Lead_Appointments" WHERE "lead_id" = $1', [leadId])
+      }
+
       if (
         leadNoteId.length > 0 &&
         isAllSameLeadId &&
@@ -383,6 +403,8 @@ router.post(
           `UPDATE "Files" SET "client_id" = $1, "lead_id"= $2 WHERE "lead_id" = $3 RETURNING *`,
           [client[0].id, null, leadId]
         );
+
+       
 
         res.json({
           client: client[0],

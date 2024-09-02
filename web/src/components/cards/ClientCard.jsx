@@ -25,6 +25,7 @@ import {
   Alert,
   AlertIcon,
   AlertDescription,
+  useToast,
 } from "@chakra-ui/react";
 import { FaFileAlt } from "react-icons/fa";
 import { useEffect, useState } from "react";
@@ -47,6 +48,7 @@ const ClientCard = ({ client, onEdit, onDelete, onArchive }) => {
   const [errorMessage, setErrorMessage] = useState("");
   const [showAlert, setShowAlert] = useState(false);
   const token = Cookies.get("SessionID");
+  const toast = useToast()
 
   useEffect(() => {
     fetchNotes();
@@ -161,8 +163,14 @@ const ClientCard = ({ client, onEdit, onDelete, onArchive }) => {
         )
         .then((res) => {
           if (res.status === 200) {
+            toast({
+              title: "Client Note Successfully Created!",
+              status: "success",
+              duration: 7000,
+              position: "top 100px"
+            });
             closeNotesModal();
-            fetchNotes();
+            setNotes((prevNotes) => [...prevNotes, res.data])
           }
         });
     } catch (error) {
@@ -239,10 +247,22 @@ const ClientCard = ({ client, onEdit, onDelete, onArchive }) => {
         note.id === updatedNote.id ? updatedNote : note
       )
     );
+    toast({
+      title: " Client Note Edit Successful!",
+      status: "success",
+      duration: 7000,
+      position: "top 100px"
+    });
   };
 
   const handleDeleteNote = (noteId) => {
     setNotes((prevNotes) => prevNotes.filter((note) => note.id !== noteId))
+    toast({
+      title: "Client Note Successfully Deleted!",
+      status: "success",
+      duration: 7000,
+      position: "top 100px"
+    });
   }
 
   const formatDate = (dateString) => {
@@ -267,8 +287,8 @@ const ClientCard = ({ client, onEdit, onDelete, onArchive }) => {
         minWidth="250px"
         maxWidth="350px"
         marginStart="75px"
-        marginEnd="10px"
-        marginTop="175px"
+        marginEnd="15px"
+        marginTop="70px"
         backgroundColor="gray.300"
         borderRadius={15}
       >

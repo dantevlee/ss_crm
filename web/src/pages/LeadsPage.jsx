@@ -14,6 +14,7 @@ import {
   Stack,
   Text,
   useDisclosure,
+  useToast,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import LeadsForm from "../components/forms/LeadsForm";
@@ -33,6 +34,7 @@ const LeadsPage = () => {
 
   const token = Cookies.get("SessionID");
   const leadsPerPage = 8;
+  const toast = useToast()
 
   const fetchLeads = async () => {
     setLoading(true);
@@ -69,7 +71,14 @@ const LeadsPage = () => {
         }
       );
       if (response.status === 200) {
-        fetchLeads();
+        setLeads((prevLeads) => [...prevLeads, response.data])
+        toast({
+          title: "Lead Successfully Added!",
+          status: "success",
+          duration: 7000,
+          position: "top 100px", 
+          isClosable: true,
+        });
         closeAddLeadModal();
       }
     } catch (error) {
@@ -82,16 +91,37 @@ const LeadsPage = () => {
 
   const handleDeleteLead = (leadId) => {
     setLeads((prevLeads) => prevLeads.filter((lead) => lead.id !== leadId));
+    toast({
+      title: "Lead Successfully Deleted!",
+      status: "success",
+      duration: 7000,
+      position: "top 100px", 
+      isClosable: true,
+    });
   };
 
   const handleArchiveLead = (leadId) => {
     setLeads((prevLeads) => prevLeads.filter((lead) => lead.id !== leadId));
+    toast({
+      title: "Lead Successfully Archived!",
+      status: "success",
+      duration: 7000,
+      position: "top 100px", 
+      isClosable: true,
+    });
   };
 
   const handleLeadEdit = (updatedLead) => {
     setLeads((prevLeads) =>
       prevLeads.map((lead) => (lead.id === updatedLead.id ? updatedLead : lead))
     );
+    toast({
+      title: "Lead Edit Succesful!",
+      status: "success",
+      duration: 7000,
+      position: "top 100px", 
+      isClosable: true,
+    });
   };
 
   const {

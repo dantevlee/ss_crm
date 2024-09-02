@@ -19,7 +19,7 @@ router.post("/create-client", authenticateUser, async (req, res) => {
       socialMediaSource,
       socialMedia,
     } = req.body;
- 
+
     if (!firstName || !lastName || !clientEmail) {
       return res
         .status(409)
@@ -37,30 +37,34 @@ router.post("/create-client", authenticateUser, async (req, res) => {
       return res.status(409).json({ message: "Error: Missing End Date." });
     }
 
+    if (startDate > endDate) {
+      return res.status(400).json({ message: "Start date should be earlier than End date." })
+    }
+
     if (socialMediaSource) {
       if (!socialMedia) {
         return res
           .status(409)
           .json({ message: "Error: Missing Social Media Handle." });
       }
-    } 
-      const client = await db.query(
-        'INSERT into "Clients"("user_id", "firstName", "lastName", "client_email", "start_date", "end_date", "phone_number", "social_media_source", "social_media") VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING*',
-        [
-          userId,
-          firstName,
-          lastName,
-          clientEmail,
-          startDate,
-          endDate,
-          phoneNumber,
-          socialMediaSource,
-          socialMedia,
-        ]
-      );
+    }
+    const client = await db.query(
+      'INSERT into "Clients"("user_id", "firstName", "lastName", "client_email", "start_date", "end_date", "phone_number", "social_media_source", "social_media") VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING*',
+      [
+        userId,
+        firstName,
+        lastName,
+        clientEmail,
+        startDate,
+        endDate,
+        phoneNumber,
+        socialMediaSource,
+        socialMedia,
+      ]
+    );
 
-      return res.json(client[0]);
-    } catch (error) {
+    return res.json(client[0]);
+  } catch (error) {
     console.error(error);
     return res.status(500).json({
       message: "Internal Servor Error. Unable to create a client.",
@@ -95,13 +99,17 @@ router.delete(
       const clientId = req.params.clientId;
       const userId = req.id;
 
-      await db.query(`DELETE FROM "Client_Notes" WHERE "client_id" = $1`, [
-        clientId,
-      ]);
+      await Promise.all([
+        db.query(`DELETE FROM "Client_Notes" WHERE "client_id" = $1`, [
+          clientId,
+        ]),
 
-      await db.query(`DELETE FROM "Files" WHERE "client_id" = $1`, [clientId]);
+        db.query(`DELETE FROM "Files" WHERE "client_id" = $1`, [clientId]),
 
-      await db.query(`DELETE FROM "Client_Appointments" WHERE "client_id" = $1`, [clientId]);
+        db.query(`DELETE FROM "Client_Appointments" WHERE "client_id" = $1`, [clientId])
+      ])
+
+
 
       await db.query(
         `DELETE FROM "Clients" WHERE "id" = $1 and "user_id" = $2`,
@@ -153,32 +161,36 @@ router.put("/update/client/:clientId", authenticateUser, async (req, res) => {
 
     if (!endDate) {
       return res.status(409).json({ message: "Error: Missing End Date." });
-    } 
-    
+    }
+
+    if (startDate > endDate) {
+      return res.status(400).json({ message: "Start date should be earlier than End date." })
+    }
+
     if (socialMediaSource) {
       if (!socialMedia) {
         return res
           .status(409)
           .json({ message: "Error: Missing Social Media Handle." });
       }
-    } 
-      const updatedClient = await db.query(
-        'UPDATE "Clients" SET "firstName" = $1, "lastName" = $2, "client_email" = $3, "start_date" = $4, "end_date" = $5, "phone_number" = $6, "social_media_source" = $7, "social_media" = $8 WHERE "id" = $9 AND "user_id" = $10 RETURNING*',
-        [
-          firstName,
-          lastName,
-          clientEmail,
-          startDate,
-          endDate,
-          phoneNumber,
-          socialMediaSource,
-          socialMedia,
-          clientId,
-          userId,
-        ]
-      );
-      return res.json(updatedClient[0]);
-    
+    }
+    const updatedClient = await db.query(
+      'UPDATE "Clients" SET "firstName" = $1, "lastName" = $2, "client_email" = $3, "start_date" = $4, "end_date" = $5, "phone_number" = $6, "social_media_source" = $7, "social_media" = $8 WHERE "id" = $9 AND "user_id" = $10 RETURNING*',
+      [
+        firstName,
+        lastName,
+        clientEmail,
+        startDate,
+        endDate,
+        phoneNumber,
+        socialMediaSource,
+        socialMedia,
+        clientId,
+        userId,
+      ]
+    );
+    return res.json(updatedClient[0]);
+
   } catch (error) {
     console.error(error);
     return res.status(500).json({
@@ -202,19 +214,6 @@ router.post("/archive/client/:clientId", authenticateUser, async (req, res) => {
       socialMedia,
       lastActiveDate,
     } = req.body;
-    const archivedClient = await db.query(
-      'INSERT into "Archives"("user_id", "firstName", "lastName", "email", "phone_number", "social_media_source", "soical_media", "last_active_date") VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING*',
-      [
-        userId,
-        firstName,
-        lastName,
-        email,
-        phoneNumber,
-        socialMediaSource,
-        socialMedia,
-        lastActiveDate,
-      ]
-    );
 
     if (firstName.trim() == "" || lastName.trim() == "" || email.trim() == "") {
       return res
@@ -231,11 +230,25 @@ router.post("/archive/client/:clientId", authenticateUser, async (req, res) => {
           .status(409)
           .json({ message: "Error: Missing Social Media Handle." });
       }
-    } 
+    }
 
     if (lastActiveDate.trim() === "") {
       return res.status(409).json({ message: "Error: Missing End Date." });
     }
+
+    const archivedClient = await db.query(
+      'INSERT into "Archives"("user_id", "firstName", "lastName", "email", "phone_number", "social_media_source", "soical_media", "last_active_date") VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING*',
+      [
+        userId,
+        firstName,
+        lastName,
+        email,
+        phoneNumber,
+        socialMediaSource,
+        socialMedia,
+        lastActiveDate,
+      ]
+    );
 
     const clientNoteId = await db.query(
       `SELECT "client_id" from "Client_Notes" WHERE client_id = $1`,
@@ -260,7 +273,7 @@ router.post("/archive/client/:clientId", authenticateUser, async (req, res) => {
       [clientId]
     );
 
-    const isAllSameclientApptId= clientApptId.every((appt, _, array) =>
+    const isAllSameclientApptId = clientApptId.every((appt, _, array) =>
       array.every((otherAppt) => appt.client_id === otherAppt.client_id)
     );
 
@@ -272,7 +285,7 @@ router.post("/archive/client/:clientId", authenticateUser, async (req, res) => {
       clientNoteId.length > 0 &&
       isAllSameClientId &&
       isAllSameClientIdFiles &&
-      clientFilesId.length > 0 
+      clientFilesId.length > 0
     ) {
       const updatedNotes = await db.query(
         `UPDATE "Client_Notes" SET "archive_id" = $1, "client_id"= $2 WHERE "client_id" = $3 RETURNING *`,

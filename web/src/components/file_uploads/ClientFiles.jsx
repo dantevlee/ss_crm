@@ -7,6 +7,7 @@ import {
   Button,
   Flex,
   FormErrorMessage,
+  Heading,
   IconButton,
   Input,
   Link,
@@ -19,6 +20,7 @@ import {
   Spinner,
   Tooltip,
   useDisclosure,
+  useToast,
 } from "@chakra-ui/react";
 import axios from "axios";
 import Cookies from "js-cookie";
@@ -35,6 +37,7 @@ const ClientFiles = ({ onCancel, client }) => {
   const [showAlert, setShowAlert] = useState(false);
   const [fileInputTouched, setFileInputTouched] = useState(false);
   const fileInputRef = useRef(null);
+  const toast = useToast()
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const token = Cookies.get("SessionID");
@@ -86,10 +89,16 @@ const ClientFiles = ({ onCancel, client }) => {
         )
         .then((res) => {
           if (res.status === 200) {
+            toast({
+              title: "Client file upload Successful!",
+              status: "success",
+              duration: 7000,
+              position: "top 100px"
+            });
             setFiles((prevFiles) => [...prevFiles, res.data])
             setFileToUpload(null);
-            if (showAlert) {
-              setShowAlert(false);
+            if (errorMessage) {
+              setErrorMessage("");
             }
             if (fileInputRef.current) {
               fileInputRef.current.value = "";
@@ -129,6 +138,13 @@ const ClientFiles = ({ onCancel, client }) => {
       link.setAttribute("download", fileName);
       document.body.appendChild(link);
       link.click();
+      toast({
+        title: "Client file download Successful!",
+        description: "Check your downloads folder",
+        status: "success",
+        duration: 7000,
+        position: "top 100px"
+      });
     } catch (error) {
       console.error("Error downloading the file", error);
     }
@@ -147,6 +163,12 @@ const ClientFiles = ({ onCancel, client }) => {
           .then((res) => {
             if (res.status === 200) {
               setFiles((prevFiles) => prevFiles.filter((file) => file.id !== fileToDelete.id))
+              toast({
+                title: "Client file deleted!",
+                status: "success",
+                duration: 7000,
+                position: "top 100px"
+              });
               closeDeleteModal();
             }
           });
@@ -188,6 +210,7 @@ const ClientFiles = ({ onCancel, client }) => {
   return (
     <>
       <Box mt={8}>
+        <Heading>{client.firstName}'s Files</Heading>
         <Input
           type="file"
           onChange={handleFileChange}
@@ -237,14 +260,23 @@ const ClientFiles = ({ onCancel, client }) => {
         ) : files.length > 0 ? (
           files.map((file) => (
             <Flex key={file.id} alignItems="center" mt={5}>
-              <Link
-                onClick={() => downloadFile(file.file_name)}
-                color="blue.500"
-                fontWeight="bold"
-                cursor="pointer"
-              >
-                {file.file_name}
-              </Link>
+              <Tooltip label={file.file_name}>
+          <Box
+            flex="1"
+            isTruncated
+            as={Link}
+            onClick={() => downloadFile(file.file_name)}
+            color="blue.500"
+            fontWeight="bold"
+            cursor="pointer"
+            maxWidth="100%"
+            whiteSpace="nowrap"
+            overflow="hidden"
+            textOverflow="ellipsis"
+          >
+            {file.file_name}
+          </Box>
+        </Tooltip>
               <Tooltip label="Delete File">
                 <IconButton
                   onClick={() => openDeleteModal(file)}

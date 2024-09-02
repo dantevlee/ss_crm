@@ -12,7 +12,8 @@ import {
   Spinner,
   Stack,
   Text,
-  useDisclosure
+  useDisclosure,
+  useToast
 } from "@chakra-ui/react";
 import ClientForm from "../components/forms/ClientForm";
 import axios from "axios";
@@ -30,6 +31,7 @@ const ClientPage = () => {
   const [showAlert, setShowAlert] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
+  const toast = useToast();
   const clientsPerPage = 8;
 
   const fetchClients = async () => {
@@ -67,7 +69,13 @@ const ClientPage = () => {
         })
         .then((res) => {
           if (res.status === 200) {
-            fetchClients();
+            setClients((prevClients) => [...prevClients, res.data] )
+            toast({
+              title: "Client Successfully Added!",
+              status: "success",
+              duration: 7000,
+              position: "top 100px"
+            });
             closeAddClientModal();
           }
         });
@@ -85,18 +93,37 @@ const ClientPage = () => {
         client.id === updatedClient.id ? updatedClient : client
       )
     );
+    toast({
+      title: "Client Edit Successful!",
+      status: "success",
+      duration: 7000,
+      position: "top 100px"
+    });
+
   };
 
   const handleDeleteClient = (clientId) => {
     setClients((prevClients) =>
       prevClients.filter((client) => client.id !== clientId)
     );
+    toast({
+      title: "Client Successfully Deleted!",
+      status: "success",
+      duration: 7000,
+      position: "top 100px"
+    });
   };
 
   const handleArchiveClient = (clientId) => {
     setClients((prevClients) =>
       prevClients.filter((client) => client.id !== clientId)
     );
+    toast({
+      title: "Client Succesfully Archived!",
+      status: "success",
+      duration: 7000,
+      position: "top 100px"
+    });
   };
 
   const {
@@ -172,7 +199,7 @@ const ClientPage = () => {
               setSearchQuery={setSearchQuery}
             />
           </Flex>
-          <SimpleGrid mt={0} columns={{ base: 1, md: 2, lg: 4 }}>
+          <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }}>
             {paginateClients().map((client) => (
               <ClientCard
                 key={client.id}
