@@ -74,7 +74,8 @@ const ClientPage = () => {
               title: "Client Successfully Added!",
               status: "success",
               duration: 7000,
-              position: "top 100px"
+              position: "top 100px",
+              isClosable: true
             });
             closeAddClientModal();
           }
@@ -97,7 +98,8 @@ const ClientPage = () => {
       title: "Client Edit Successful!",
       status: "success",
       duration: 7000,
-      position: "top 100px"
+      position: "top 100px",
+      isClosable: true
     });
 
   };
@@ -110,7 +112,8 @@ const ClientPage = () => {
       title: "Client Successfully Deleted!",
       status: "success",
       duration: 7000,
-      position: "top 100px"
+      position: "top 100px",
+      isClosable: true
     });
   };
 
@@ -122,7 +125,8 @@ const ClientPage = () => {
       title: "Client Succesfully Archived!",
       status: "success",
       duration: 7000,
-      position: "top 100px"
+      position: "top 100px",
+      isClosable: true
     });
   };
 

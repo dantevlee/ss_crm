@@ -167,7 +167,8 @@ const ClientCard = ({ client, onEdit, onDelete, onArchive }) => {
               title: "Client Note Successfully Created!",
               status: "success",
               duration: 7000,
-              position: "top 100px"
+              position: "top 100px",
+              isClosable: true
             });
             closeNotesModal();
             setNotes((prevNotes) => [...prevNotes, res.data])
@@ -251,7 +252,8 @@ const ClientCard = ({ client, onEdit, onDelete, onArchive }) => {
       title: " Client Note Edit Successful!",
       status: "success",
       duration: 7000,
-      position: "top 100px"
+      position: "top 100px",
+      isClosable: true
     });
   };
 
@@ -261,7 +263,8 @@ const ClientCard = ({ client, onEdit, onDelete, onArchive }) => {
       title: "Client Note Successfully Deleted!",
       status: "success",
       duration: 7000,
-      position: "top 100px"
+      position: "top 100px",
+      isClosable: true
     });
   }
 

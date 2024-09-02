@@ -93,7 +93,8 @@ const ClientFiles = ({ onCancel, client }) => {
               title: "Client file upload Successful!",
               status: "success",
               duration: 7000,
-              position: "top 100px"
+              position: "top 100px",
+              isClosable: true
             });
             setFiles((prevFiles) => [...prevFiles, res.data])
             setFileToUpload(null);
@@ -143,7 +144,8 @@ const ClientFiles = ({ onCancel, client }) => {
         description: "Check your downloads folder",
         status: "success",
         duration: 7000,
-        position: "top 100px"
+        position: "top 100px",
+        isClosable: true
       });
     } catch (error) {
       console.error("Error downloading the file", error);
@@ -167,7 +169,8 @@ const ClientFiles = ({ onCancel, client }) => {
                 title: "Client file deleted!",
                 status: "success",
                 duration: 7000,
-                position: "top 100px"
+                position: "top 100px",
+                isClosable: true
               });
               closeDeleteModal();
             }
