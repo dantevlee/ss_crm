@@ -81,7 +81,8 @@ const UserFilesPage = ({ onCurrentUser }) => {
               description: "New file has been added for you.",
               status: "success",
               duration: 5000,
-              position: "top 100px"
+              position: "top 100px",
+              isClosable: true
             });
             setFiles((prevFiles) => [...prevFiles, res.data]);
           }
@@ -116,7 +117,8 @@ const UserFilesPage = ({ onCurrentUser }) => {
               description: `Please check your document files for ${fileName}.`,
               status: "success",
               duration: 5000,
-              position: "top"
+              position: "top",
+              isClosable: true
             });
           }
         })
@@ -126,7 +128,8 @@ const UserFilesPage = ({ onCurrentUser }) => {
             title: downloadError,
             status: "error",
             duration: 5000,
-            position: "top"
+            position: "top",
+            isClosable: true
           });
         });
      
@@ -153,7 +156,8 @@ const UserFilesPage = ({ onCurrentUser }) => {
                 description: `Succesfully deleted ${fileToDelete.file_name}.`,
                 status: "success",
                 duration: 5000,
-                position: "top"
+                position: "top",
+                isClosable: true
               });
               setFiles((prevFiles) =>
                 prevFiles.filter((file) => file.id !== fileToDelete.id)

@@ -44,7 +44,7 @@ const MainLayout = ({ setIsLoggedIn }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [currentUser, setCurrentUser] = useState([]);
   const [profilePicture, setProfilePicture] = useState(null);
-  const [showProfilePictureAlert, setShowProfilePictureAlert] = useState(true)
+  
   const btnRef = useRef();
   const navigate = useNavigate();
   const token = Cookies.get("SessionID");
@@ -117,12 +117,21 @@ const MainLayout = ({ setIsLoggedIn }) => {
   };
 
   useEffect(() => {
-    fetchCurrentUser();
     fetchProfilePicture();
-    if(!profilePicture){
-      profilePictureAlert()
-    }
-  }, []);
+    const init = async () => {
+        await fetchCurrentUser();
+        
+
+        if (!localStorage.getItem("profilePictureAlertShown")) {
+            if (!profilePicture) {
+                profilePictureAlert();
+            }
+            localStorage.setItem("profilePictureAlertShown", "true");
+        }
+    };
+    
+    init(); // Immediately invoke the async function
+}, []);
 
   const handleLogout = () => {
     Cookies.remove("SessionID");
@@ -291,7 +300,7 @@ const MainLayout = ({ setIsLoggedIn }) => {
         </DrawerContent>
       </Drawer>
       <Routes>
-        <Route path="/clients" element={<ClientPage />} />
+        <Route path="/clients" element={<ClientPage onCurrentUser />} />
         <Route path="/archives" element={<ArchivePage />} />
         <Route path="/leads" element={<LeadsPage />} />
         <Route
@@ -305,7 +314,7 @@ const MainLayout = ({ setIsLoggedIn }) => {
             />
           }
         />
-        <Route path="/calendar" element={<CalendarPage />} />
+        <Route path="/calendar" element={<CalendarPage onCurrentUser={currentUser} />} />
         <Route path="/user-files" element={<UserFilesPage
         onCurrentUser={currentUser}
         />} />

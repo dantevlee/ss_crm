@@ -34,7 +34,8 @@ const SettingsPage = ({ onProfileImg, onImgChange, onUserDetails, onUserEdit }) 
               title: "Profile Picture Changed!",
               status: "success",
               duration: 5000,
-              position: "top"
+              position: "top",
+              isClosable: true
             });
           }
         })
@@ -68,14 +69,15 @@ const SettingsPage = ({ onProfileImg, onImgChange, onUserDetails, onUserEdit }) 
         .then((res) => {
           if (res.status === 200) {
             onUserEdit(res.data.user)
-            if (errorMessage) {
-              setErrorMessage("false");
+            if (userEditErrorMessage) {
+              setUserEditErrorMessage("");
             }
             toast({
               title: "User Settings Changed!",
               status: "success",
               duration: 5000,
               position: "top",
+              isClosable: true
             });
           }
         })

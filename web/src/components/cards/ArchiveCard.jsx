@@ -370,8 +370,8 @@ const ArchiveCard = ({ archives, onRestore, onDelete, onEdit }) => {
         minWidth="250px"
         maxWidth="350px"
         marginStart="75px"
-        marginEnd="10px"
-        marginTop="125px"
+        marginEnd="15px"
+        marginTop="70px"
         backgroundColor="gray.300"
         borderRadius={15}
       >

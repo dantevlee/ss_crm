@@ -27,7 +27,7 @@ const ResetRequestForm = () => {
 
   useEffect(() => {
     const params = new URLSearchParams(location.search)
-    const token = params.get('token')
+    const token = params.get('id')
     if(!token){
       setRedirectTo("/");
     }
@@ -58,12 +58,12 @@ const ResetRequestForm = () => {
         confirmPassword: confirmPassword, 
       }
       const params = new URLSearchParams(location.search)
-      const token = params.get('token')
+      const token = params.get('id')
       try {
-        const passwordChangeResponse = await axios.post(`http://localhost:3000/api/password/reset?token=${token}`, requestBody)
+        const passwordChangeResponse = await axios.post(`http://localhost:3000/api/password/reset?id=${token}`, requestBody)
   
       if(passwordChangeResponse.status === 204){
-        history('/')
+        history('/calendar')
       }
       } catch(error){
         setErrorMessage(error.response.data.message)

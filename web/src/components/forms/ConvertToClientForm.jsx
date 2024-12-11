@@ -15,6 +15,8 @@ import {
   AlertDescription,
   Spinner,
   FormErrorMessage,
+  useTab,
+  useToast,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import axios from "axios";
@@ -31,6 +33,7 @@ const ConvertToClientForm = ({ onCancel, lead, onFetchLeads}) => {
   const [errorMessage, setErrorMessage] = useState("");
   const [showAlert, setShowAlert] = useState(false);
   const [loading, setLoading] = useState(false)
+  const toast = useToast()
 
   useEffect(() => {
     if (lead) {
@@ -110,6 +113,14 @@ const ConvertToClientForm = ({ onCancel, lead, onFetchLeads}) => {
           if (res.status === 200) {
             onFetchLeads();
             handleCancel();
+            toast({
+              title: "Success!",
+              description: "Lead successfully converted to client!",
+              status: "success",
+              duration: 7000,
+              position: "top 100px", 
+              isClosable: true
+            });
           }
         });
     } catch (error) {

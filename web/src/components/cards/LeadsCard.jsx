@@ -25,6 +25,7 @@ import {
   Text,
   Tooltip,
   useDisclosure,
+  useToast,
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 import LeadsForm from "../forms/LeadsForm";
@@ -47,6 +48,7 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive, onFetchLeads }) => {
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [showAlert, setShowAlert] = useState(false);
+  const toast = useToast()
 
   const token = Cookies.get("SessionID");
 
@@ -159,7 +161,14 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive, onFetchLeads }) => {
         .then((res) => {
           if (res.status === 200) {
             closeNotesModal();
-            fetchNotes();
+            toast({
+              title: "Lead Note Successfully Created!",
+              status: "success",
+              duration: 7000,
+              position: "top 100px", 
+              isClosable: true
+            });
+            setNotes((prevNotes) => [...prevNotes, res.data])
           }
         });
     } catch (error) {
@@ -173,6 +182,13 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive, onFetchLeads }) => {
 
   const handleDeleteNote = (noteId) => {
     setNotes((prevNotes) => prevNotes.filter((note) => note.id !== noteId))
+    toast({
+      title: "Lead Note Successfully deleted!",
+      status: "success",
+      duration: 7000,
+      position: "top 100px", 
+      isClosable: true
+    });
   }
 
   const handleEditNote = (updatedNote) => {
@@ -181,6 +197,13 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive, onFetchLeads }) => {
         note.id === updatedNote.id ? updatedNote : note
       )
     );
+    toast({
+      title: "Lead Note Edit Successful!",
+      status: "success",
+      duration: 7000,
+      position: "top 100px", 
+      isClosable: true
+    });
   };
 
 
@@ -263,8 +286,8 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive, onFetchLeads }) => {
         minWidth="250px"
         maxWidth="350px"
         marginStart="75px"
-        marginEnd="10px"
-        marginTop="175px"
+         marginEnd="15px"
+        marginTop="70px"
         backgroundColor="gray.300"
         borderRadius={15}
       >
@@ -443,7 +466,8 @@ const LeadsCard = ({ lead, onDelete, onEdit, onArchive, onFetchLeads }) => {
         <Modal isOpen={isOpen} onClose={closeConvertingModal}>
           <ModalOverlay />
           <ModalContent backgroundColor="gray.500">
-            <ModalHeader color="white">Convert To Client</ModalHeader>
+            <ModalHeader color="white">Convert To Client?</ModalHeader>
+            <Text fontWeight="bold" ml={5} color="white">(This will delete the existing lead appointments on your calendar for {lead.firstName} {lead.lastName}.)</Text>
             <ModalCloseButton />
             <ModalBody>
               <ConvertToClientForm

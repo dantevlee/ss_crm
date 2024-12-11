@@ -1,7 +1,9 @@
 import { AddIcon } from "@chakra-ui/icons";
 import {
   Button,
+  Box,
   Flex,
+  Heading,
   Modal,
   ModalBody,
   ModalContent,
@@ -9,8 +11,10 @@ import {
   ModalOverlay,
   SimpleGrid,
   Spinner,
+  Stack,
   Text,
   useDisclosure,
+  useToast,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import LeadsForm from "../components/forms/LeadsForm";
@@ -30,6 +34,7 @@ const LeadsPage = () => {
 
   const token = Cookies.get("SessionID");
   const leadsPerPage = 8;
+  const toast = useToast()
 
   const fetchLeads = async () => {
     setLoading(true);
@@ -66,7 +71,14 @@ const LeadsPage = () => {
         }
       );
       if (response.status === 200) {
-        fetchLeads();
+        setLeads((prevLeads) => [...prevLeads, response.data])
+        toast({
+          title: "Lead Successfully Added!",
+          status: "success",
+          duration: 7000,
+          position: "top 100px", 
+          isClosable: true,
+        });
         closeAddLeadModal();
       }
     } catch (error) {
@@ -79,16 +91,37 @@ const LeadsPage = () => {
 
   const handleDeleteLead = (leadId) => {
     setLeads((prevLeads) => prevLeads.filter((lead) => lead.id !== leadId));
+    toast({
+      title: "Lead Successfully Deleted!",
+      status: "success",
+      duration: 7000,
+      position: "top 100px", 
+      isClosable: true,
+    });
   };
 
   const handleArchiveLead = (leadId) => {
     setLeads((prevLeads) => prevLeads.filter((lead) => lead.id !== leadId));
+    toast({
+      title: "Lead Successfully Archived!",
+      status: "success",
+      duration: 7000,
+      position: "top 100px", 
+      isClosable: true,
+    });
   };
 
   const handleLeadEdit = (updatedLead) => {
     setLeads((prevLeads) =>
       prevLeads.map((lead) => (lead.id === updatedLead.id ? updatedLead : lead))
     );
+    toast({
+      title: "Lead Edit Succesful!",
+      status: "success",
+      duration: 7000,
+      position: "top 100px", 
+      isClosable: true,
+    });
   };
 
   const {
@@ -156,7 +189,7 @@ const LeadsPage = () => {
             size="xl"
           />
         </Flex>
-      ) : (
+      ) :  leads.length > 0 ? (
         <>
           <Flex justifyContent="center" alignItems="center" mt={10}>
             <SearchBar
@@ -205,7 +238,24 @@ const LeadsPage = () => {
             </Flex>
           )}
         </>
-      )}
+       ) :
+        <Flex flexDirection="column" justifyContent="center" alignItems="center">
+        <Box marginTop="250px" minW={{ base: "100%", md: "500px" }}>
+          <Stack
+            spacing={6}
+            p="3rem"
+            backgroundColor="whiteAlpha.900"
+            boxShadow="md"
+            flexDir="column"
+            mb="4"
+            justifyContent="center"
+            alignItems="center"
+          >
+            <Heading>No Currently Active Leads.</Heading>
+            <Text>Click the "Add Lead" Button To Get Started.</Text>
+          </Stack>
+        </Box>
+      </Flex>}
       <Modal isOpen={isAddLeadOpen} onClose={closeAddLeadModal}>
         <ModalOverlay />
         <ModalContent backgroundColor="gray.500">

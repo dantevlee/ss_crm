@@ -1,6 +1,8 @@
 import {
+  Box,
   Button,
   Flex,
+  Heading,
   Modal,
   ModalBody,
   ModalContent,
@@ -8,8 +10,10 @@ import {
   ModalOverlay,
   SimpleGrid,
   Spinner,
+  Stack,
   Text,
-  useDisclosure
+  useDisclosure,
+  useToast
 } from "@chakra-ui/react";
 import ClientForm from "../components/forms/ClientForm";
 import axios from "axios";
@@ -27,6 +31,7 @@ const ClientPage = () => {
   const [showAlert, setShowAlert] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
+  const toast = useToast();
   const clientsPerPage = 8;
 
   const fetchClients = async () => {
@@ -64,7 +69,14 @@ const ClientPage = () => {
         })
         .then((res) => {
           if (res.status === 200) {
-            fetchClients();
+            setClients((prevClients) => [...prevClients, res.data] )
+            toast({
+              title: "Client Successfully Added!",
+              status: "success",
+              duration: 7000,
+              position: "top 100px",
+              isClosable: true
+            });
             closeAddClientModal();
           }
         });
@@ -82,18 +94,40 @@ const ClientPage = () => {
         client.id === updatedClient.id ? updatedClient : client
       )
     );
+    toast({
+      title: "Client Edit Successful!",
+      status: "success",
+      duration: 7000,
+      position: "top 100px",
+      isClosable: true
+    });
+
   };
 
   const handleDeleteClient = (clientId) => {
     setClients((prevClients) =>
       prevClients.filter((client) => client.id !== clientId)
     );
+    toast({
+      title: "Client Successfully Deleted!",
+      status: "success",
+      duration: 7000,
+      position: "top 100px",
+      isClosable: true
+    });
   };
 
   const handleArchiveClient = (clientId) => {
     setClients((prevClients) =>
       prevClients.filter((client) => client.id !== clientId)
     );
+    toast({
+      title: "Client Succesfully Archived!",
+      status: "success",
+      duration: 7000,
+      position: "top 100px",
+      isClosable: true
+    });
   };
 
   const {
@@ -121,7 +155,7 @@ const ClientPage = () => {
   };
 
   const filteredClients = clients.filter((client) => {
-    const fullName = `${client.firstName} ${client.lastName}`.toLowerCase(); 
+    const fullName = `${client.firstName} ${client.lastName}`.toLowerCase();
     const query = searchQuery.toLowerCase(); // 
     return (
       client.firstName.toLowerCase().includes(query) ||
@@ -161,19 +195,15 @@ const ClientPage = () => {
             size="xl"
           />
         </Flex>
-      ) : (
+      ) : clients.length > 0 ? (
         <>
-          <Flex justifyContent="center" alignItems="center" mt={10} >
+          <Flex justifyContent="center" alignItems="center" mt={10}>
             <SearchBar
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
             />
           </Flex>
-          <SimpleGrid
-            mt={0}
-            columns={{ base: 1, md: 2, lg: 4 }}
-        
-          >
+          <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }}>
             {paginateClients().map((client) => (
               <ClientCard
                 key={client.id}
@@ -191,7 +221,6 @@ const ClientPage = () => {
                   <Text color="blue.500">Previous</Text>
                 </Button>
               )}
-
               {Array.from({ length: totalPages }, (_, index) => (
                 <Button
                   key={index}
@@ -207,14 +236,30 @@ const ClientPage = () => {
                 currentPage * clientsPerPage >= filteredClients.length ||
                 currentPage === totalPages
               ) && (
-                <Button onClick={handleNextPage} ml={2}>
-                  <Text color="blue.500">Next</Text>
-                </Button>
-              )}
+                  <Button onClick={handleNextPage} ml={2}>
+                    <Text color="blue.500">Next</Text>
+                  </Button>
+                )}
             </Flex>
           )}
         </>
-      )}
+      ) : <Flex flexDirection="column" justifyContent="center" alignItems="center">
+        <Box marginTop="250px" minW={{ base: "100%", md: "500px" }}>
+          <Stack
+            spacing={6}
+            p="3rem"
+            backgroundColor="whiteAlpha.900"
+            boxShadow="md"
+            flexDir="column"
+            mb="4"
+            justifyContent="center"
+            alignItems="center"
+          >
+            <Heading>No Currently Active Clients.</Heading>
+            <Text>Click the "Add Client" Button To Get Started.</Text>
+          </Stack>
+        </Box>
+      </Flex>}
       <Modal isOpen={isAddClientOpen} onClose={closeAddClientModal}>
         <ModalOverlay />
         <ModalContent backgroundColor="gray.500">

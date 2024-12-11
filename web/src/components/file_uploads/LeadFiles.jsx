@@ -7,6 +7,7 @@ import {
   Button,
   Flex,
   FormErrorMessage,
+  Heading,
   IconButton,
   Input,
   Link,
@@ -17,8 +18,10 @@ import {
   ModalHeader,
   ModalOverlay,
   Spinner,
+  Text,
   Tooltip,
   useDisclosure,
+  useToast,
 } from "@chakra-ui/react";
 import axios from "axios";
 import Cookies from "js-cookie";
@@ -35,6 +38,7 @@ const LeadFiles = ({ lead, onCancel }) => {
   const [showAlert, setShowAlert] = useState(false);
   const [fileInputTouched, setFileInputTouched] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const toast = useToast()
   const fileInputRef = useRef(null);
 
   const token = Cookies.get("SessionID");
@@ -85,10 +89,17 @@ const LeadFiles = ({ lead, onCancel }) => {
         )
         .then((res) => {
           if (res.status === 200) {
-            fetchFiles();
+            setFiles((prevFiles) => [...prevFiles, res.data])
+            toast({
+              title: "Lead file upload Successful!",
+              status: "success",
+              duration: 7000,
+              position: "top 100px", 
+              isClosable: true
+            });
             setFileToUpload(null);
-            if (showAlert) {
-              setShowAlert(false);
+            if (errorMessage) {
+              setErrorMessage("");
             }
             if (fileInputRef.current) {
               fileInputRef.current.value = "";
@@ -125,6 +136,14 @@ const LeadFiles = ({ lead, onCancel }) => {
       link.setAttribute("download", fileName);
       document.body.appendChild(link);
       link.click();
+      toast({
+        title: "Lead file download Successful!",
+        description: "Check your downloads folder",
+        status: "success",
+        duration: 7000,
+        position: "top 100px", 
+        isClosable: true
+      });
     } catch (error) {
       console.error(error)
     }
@@ -168,7 +187,14 @@ const LeadFiles = ({ lead, onCancel }) => {
           })
           .then((res) => {
             if (res.status === 200) {
-              fetchFiles();
+              setFiles((prevFiles) => prevFiles.filter((file) => file.id !== fileToDelete.id))
+              toast({
+                title: "Lead file deleted!",
+                status: "success",
+                duration: 7000,
+                position: "top 100px", 
+                isClosable: true
+              });
               closeDeleteModal();
             }
           });
@@ -184,6 +210,7 @@ const LeadFiles = ({ lead, onCancel }) => {
   return (
     <>
       <Box mt={8}>
+        <Text>{lead.firstName}'s Files</Text>
         <Input
           mt={8}
           type="file"
@@ -233,14 +260,23 @@ const LeadFiles = ({ lead, onCancel }) => {
         files.length > 0 ? (
           files.map((file) => (
             <Flex key={file.id} alignItems="center" mt={2}>
-              <Link
-                onClick={() => downloadFile(file.file_name)}
-                color="blue.500"
-                fontWeight="bold"
-                cursor="pointer"
-              >
-                {file.file_name}
-              </Link>
+              <Tooltip label={file.file_name}>
+          <Box
+            flex="1"
+            isTruncated
+            as={Link}
+            onClick={() => downloadFile(file.file_name)}
+            color="blue.500"
+            fontWeight="bold"
+            cursor="pointer"
+            maxWidth="100%"
+            whiteSpace="nowrap"
+            overflow="hidden"
+            textOverflow="ellipsis"
+          >
+            {file.file_name}
+          </Box>
+        </Tooltip>
               <Tooltip label="Delete File">
                 <IconButton
                   onClick={() => openDeleteModal(file)}
